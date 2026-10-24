@@ -82,7 +82,7 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
   const [windows, setWindows] = useState<Record<string, WindowState>>({
     terminal: {
       id: 'terminal',
-      title: 'wyacoomz@thinkpad-t14: ~ (bash)',
+      title: 'wyacoomz@dev-laptop: ~ (bash)',
       icon: '💻',
       isOpen: true,
       isMinimized: false,
@@ -263,7 +263,7 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
           '  • leetcode   - View LeetCode benchmarks (150+ Solved)',
           '  • resume     - Open PDF Resume Document Viewer',
           '  • contact    - Contact channels & social profiles',
-          '  • neofetch   - ASCII ThinkPad & hardware diagnostics',
+          '  • neofetch   - ASCII hardware diagnostics & system spec',
           '  • clear      - Clear terminal history'
         ];
         break;
@@ -415,7 +415,7 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
             Activities
           </button>
           <span className="text-[#64748b] text-[11px]">•</span>
-          <span className="text-[#94a3b8] text-[11px] font-mono">ThinkPad T14 Gen 3</span>
+          <span className="text-[#94a3b8] text-[11px] font-mono">DevBook Pro 16″</span>
         </div>
 
         {/* Center: Live Date & Time Clock */}
@@ -470,9 +470,9 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
         {/* Linux Dark Polygon Wallpaper */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#080b11] via-[#0f172a] to-[#0a0f1d] pointer-events-none">
           <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:24px_24px]" />
-          {/* Subtle ThinkPad Watermark */}
+          {/* Modern Wallpaper Watermark */}
           <div className="absolute bottom-6 right-8 text-right pointer-events-none opacity-20">
-            <div className="text-4xl font-black font-sans tracking-tight text-[#ffffff]">ThinkPad <span className="text-[#ef4444]">T14</span></div>
+            <div className="text-4xl font-black font-sans tracking-tight text-[#ffffff]">DEVBOOK <span className="text-[#38bdf8]">PRO</span></div>
             <div className="text-xs font-mono text-[#94a3b8]">Ubuntu 24.04 LTS • wyacoomz</div>
           </div>
         </div>
@@ -586,7 +586,7 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
                   <div className="h-full flex flex-col font-mono text-xs">
                     <div className="flex-1 overflow-y-auto space-y-3 pr-2">
                       <div className="text-[#38bdf8]">
-                        Ubuntu 24.04 LTS (GNU/Linux 6.8.0-45-generic x86_64) • ThinkPad T14
+                        Ubuntu 24.04 LTS (GNU/Linux 6.8.0-45-generic x86_64) • DevBook Pro
                       </div>
                       <div className="text-[#64748b]">
                         Type 'help' to see commands, or click quick buttons below.
@@ -595,7 +595,7 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
                       {terminalHistory.map((item, idx) => (
                         <div key={idx} className="space-y-1">
                           <div className="flex items-center space-x-2">
-                            <span className="text-[#22c55e] font-bold">wyacoomz@thinkpad-t14:~$</span>
+                            <span className="text-[#22c55e] font-bold">wyacoomz@dev-laptop:~$</span>
                             <span className="text-[#f8fafc]">{item.command}</span>
                           </div>
                           <div className="space-y-0.5 text-[#cbd5e1] pl-2 border-l border-[#1e293b]">
@@ -612,7 +612,7 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
 
                     {/* Active Input Line */}
                     <div className="pt-3 border-t border-[#1e293b] flex items-center space-x-2">
-                      <span className="text-[#22c55e] font-bold flex-shrink-0">wyacoomz@thinkpad-t14:~$</span>
+                      <span className="text-[#22c55e] font-bold flex-shrink-0">wyacoomz@dev-laptop:~$</span>
                       <input
                         type="text"
                         value={terminalInput}
@@ -851,16 +851,16 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
                 {/* 6. ABOUT / NEOFETCH WINDOW */}
                 {win.id === 'about' && (
                   <div className="flex flex-col sm:flex-row gap-6 p-2 font-mono">
-                    {/* ASCII Tux / ThinkPad */}
-                    <div className="text-[#ef4444] text-xs font-bold leading-none select-none flex-shrink-0">
+                    {/* ASCII Tux / Modern System */}
+                    <div className="text-[#38bdf8] text-xs font-bold leading-none select-none flex-shrink-0">
                       <pre>{`
          .---.
         /     \\
        | () () |
         \\  -  /
         .-'---'-.
-       /  Think  \\
-      | |  Pad  | |
+       /  DEV    \\
+      | | BOOK  | |
       | \\     / |
      (_/ '---' \\_)
                       `}</pre>
@@ -868,9 +868,9 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
 
                     {/* Hardware & Profile Specs */}
                     <div className="space-y-1 text-xs">
-                      <div className="text-[#38bdf8] font-bold pb-2 border-b border-[#253244]">wyacoomz@thinkpad-t14</div>
+                      <div className="text-[#38bdf8] font-bold pb-2 border-b border-[#253244]">wyacoomz@dev-laptop</div>
                       <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">OS:</span><span className="text-[#f8fafc]">Ubuntu 24.04 LTS x86_64</span></div>
-                      <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">Host:</span><span className="text-[#f8fafc]">Lenovo ThinkPad T14 Gen 3</span></div>
+                      <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">Host:</span><span className="text-[#f8fafc]">DevBook Pro 16″ CNC Aluminum</span></div>
                       <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">Kernel:</span><span className="text-[#f8fafc]">6.8.0-45-generic</span></div>
                       <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">Shell:</span><span className="text-[#f8fafc]">bash 5.2.21</span></div>
                       <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">CPU:</span><span className="text-[#f8fafc]">12th Gen Intel Core i7-1260P (16) @ 4.70GHz</span></div>
