@@ -45,7 +45,7 @@ import {
 import { PERSONAL_INFO, PROJECTS, WORK_EXPERIENCES, EDUCATION_DATA, SKILL_CATEGORIES } from '../data/portfolioData';
 
 export interface WindowState {
-  id: 'about' | 'projects' | 'winamp' | 'dos' | 'resume' | 'contact' | 'minesweeper' | 'display';
+  id: 'about' | 'projects' | 'winamp' | 'dos' | 'resume' | 'contact' | 'minesweeper' | 'display' | 'trash';
   title: string;
   shortTitle: string;
   icon: string;
@@ -62,6 +62,7 @@ export interface WindowState {
 interface Win98DesktopProps {
   onPlayKeyClick?: () => void;
   onExitFocus?: () => void;
+  onCloseLaptop?: () => void;
   soundEnabled?: boolean;
   onToggleSound?: () => void;
   isStandaloneOverlay?: boolean;
@@ -275,6 +276,7 @@ const Win98TitleBar: React.FC<Win98TitleBarProps> = ({
 export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
   onPlayKeyClick = () => {},
   onExitFocus,
+  onCloseLaptop,
   soundEnabled = true,
   onToggleSound,
   isStandaloneOverlay = false
@@ -469,8 +471,33 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       y: 110,
       w: 410,
       h: 350
+    },
+    trash: {
+      id: 'trash',
+      title: 'Recycle Bin',
+      shortTitle: 'Recycle Bin',
+      icon: '🗑️',
+      isOpen: false,
+      isMinimized: false,
+      isMaximized: false,
+      zIndex: 3,
+      x: 310,
+      y: 120,
+      w: 460,
+      h: 270
     }
   });
+
+  // Shut Down Dialog state
+  const [showShutDownDialog, setShowShutDownDialog] = useState<boolean>(false);
+  const [shutDownAction, setShutDownAction] = useState<'shutdown' | 'restart'>('shutdown');
+
+  // Recycle Bin Items state
+  const [recycledItems, setRecycledItems] = useState([
+    { name: 'ai_slop_generator.exe', path: 'C:\\WINDOWS\\SYSTEM', size: '0 KB', date: '10/25/1998 3:42 AM' },
+    { name: 'bloated_frameworks.zip', path: 'C:\\WINDOWS\\TEMP', size: '450 MB', date: '10/25/1998 2:15 AM' },
+    { name: 'untested_code.bak', path: 'C:\\DEVEL', size: '12 KB', date: '10/25/1998 1:30 AM' }
+  ]);
 
   // DRAG MANAGEMENT
   const [draggingWindow, setDraggingWindow] = useState<{ id: string; startX: number; startY: number; initX: number; initY: number } | null>(null);
@@ -876,7 +903,7 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
           { id: 'resume', label: 'Resume.doc', icon: '📄', action: () => focusWindow('resume') },
           { id: 'contact', label: 'Outlook Express', icon: '✉️', action: () => focusWindow('contact') },
           { id: 'display', label: 'Display Settings', icon: '🖥️', action: () => focusWindow('display') },
-          { id: 'trash', label: 'Recycle Bin', icon: '🗑️', action: () => focusWindow('about') }
+          { id: 'trash', label: 'Recycle Bin', icon: '🗑️', action: () => focusWindow('trash') }
         ].map((item) => {
           const isSelected = selectedIcon === item.id;
           return (
@@ -1665,6 +1692,103 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       )}
 
       {/* ========================================================= */}
+      {/* 9b. WINDOW: RECYCLE BIN (AUTHENTIC WIN98 EXPLORER)        */}
+      {/* ========================================================= */}
+      {windows.trash.isOpen && !windows.trash.isMinimized && (
+        <div
+          onClick={() => focusWindow('trash')}
+          style={{
+            zIndex: windows.trash.zIndex,
+            left: `${windows.trash.x}px`,
+            top: `${windows.trash.y}px`,
+            width: `${windows.trash.w}px`,
+            height: `${windows.trash.h}px`
+          }}
+          className="absolute bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
+        >
+          <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
+            <Win98TitleBar
+              id="trash"
+              icon="🗑️"
+              title="Recycle Bin"
+              isActive={activeWindowId === 'trash'}
+              onStartDrag={startDrag}
+              onMinimize={toggleMinimizeWindow}
+              onClose={closeWindow}
+            />
+
+            {/* Menu Bar */}
+            <div className="h-[20px] px-2 flex items-center space-x-3 text-[11px] text-black bg-[#c0c0c0] border-b border-[#808080]">
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>F</u>ile</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>E</u>dit</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>V</u>iew</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>H</u>elp</span>
+            </div>
+
+            {/* Action Toolbar */}
+            <div className="h-[28px] px-2 flex items-center justify-between bg-[#c0c0c0] border-b border-[#808080] text-[11px]">
+              <div className="flex items-center space-x-2">
+                <span className="text-gray-600 font-mono text-[10px]">Address</span>
+                <div className="bg-white px-2 py-0.5 border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] font-mono text-[10px] w-40">
+                  C:\RECYCLED
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  onPlayKeyClick();
+                  setRecycledItems([]);
+                }}
+                disabled={recycledItems.length === 0}
+                className="px-2 py-0.5 bg-[#c0c0c0] hover:bg-[#d4d4d4] active:bg-[#a8a8a8] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-black text-[10px] font-bold cursor-pointer disabled:opacity-40"
+              >
+                Empty Recycle Bin
+              </button>
+            </div>
+
+            {/* File List */}
+            <div className="flex-1 bg-white p-2 overflow-y-auto text-black font-sans text-[11px] border-t-2 border-l-2 border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] m-1">
+              {recycledItems.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-gray-500 italic space-y-1">
+                  <span className="text-2xl">🗑️</span>
+                  <span>The Recycle Bin is empty.</span>
+                </div>
+              ) : (
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-300 text-[10px] text-gray-600">
+                      <th className="pb-1 font-bold">Name</th>
+                      <th className="pb-1 font-bold">Original Location</th>
+                      <th className="pb-1 font-bold">Date Deleted</th>
+                      <th className="pb-1 font-bold">Size</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recycledItems.map((item, idx) => (
+                      <tr key={idx} className="hover:bg-[#000080] hover:text-white cursor-pointer select-none">
+                        <td className="py-1 flex items-center space-x-1">
+                          <span>🗑️</span>
+                          <span className="font-mono text-[10px]">{item.name}</span>
+                        </td>
+                        <td className="py-1 font-mono text-[10px]">{item.path}</td>
+                        <td className="py-1 text-[10px]">{item.date}</td>
+                        <td className="py-1 text-[10px] font-mono">{item.size}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Status Bar */}
+            <div className="h-[20px] px-2 flex items-center justify-between text-[11px] text-[#404040] bg-[#c0c0c0] border-t border-[#ffffff]">
+              <span>{recycledItems.length} object(s)</span>
+              <span>{recycledItems.length > 0 ? '450 MB' : '0 bytes'}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
       {/* 10. DESKTOP RIGHT-CLICK CONTEXT MENU                      */}
       {/* ========================================================= */}
       {contextMenu && (
@@ -1779,13 +1903,8 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
 
             <div
               onClick={() => {
-                closeWindow('about');
-                closeWindow('projects');
-                closeWindow('winamp');
-                closeWindow('minesweeper');
-                closeWindow('dos');
-                closeWindow('resume');
-                closeWindow('contact');
+                onPlayKeyClick();
+                setShowShutDownDialog(true);
                 setStartOpen(false);
               }}
               className="px-3 py-1.5 flex items-center space-x-2 hover:bg-[#000080] hover:text-white cursor-pointer"
@@ -1882,6 +2001,88 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
           <span className="font-sans font-medium">{timeStr || '12:00 PM'}</span>
         </div>
       </div>
+
+      {/* ========================================================= */}
+      {/* AUTHENTIC SHUT DOWN DIALOG (WINOWS98)                     */}
+      {/* ========================================================= */}
+      {showShutDownDialog && (
+        <div className="absolute inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="w-[340px] bg-[#c0c0c0] border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px] shadow-2xl">
+            <div className="w-full flex flex-col border border-[#808080]">
+              {/* Titlebar */}
+              <div className="h-[22px] px-2 bg-gradient-to-r from-[#000080] to-[#1084d0] flex items-center justify-between text-white font-bold text-[12px] select-none">
+                <span>Shut Down WINOWS98</span>
+                <button
+                  onClick={() => setShowShutDownDialog(false)}
+                  className="w-4 h-3.5 bg-[#c0c0c0] hover:bg-[#d8d8d8] text-black font-bold flex items-center justify-center border border-t-white border-l-white border-r-black border-b-black text-[10px]"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Dialog Content */}
+              <div className="p-4 space-y-4">
+                <div className="flex items-start space-x-3">
+                  <div className="text-3xl">💻</div>
+                  <div className="space-y-2 text-xs">
+                    <p className="font-bold text-black">What do you want the computer to do?</p>
+                    <div className="space-y-1 text-[11px]">
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="shutdownAction"
+                          checked={shutDownAction === 'shutdown'}
+                          onChange={() => setShutDownAction('shutdown')}
+                          className="cursor-pointer"
+                        />
+                        <span><u>S</u>hut down and close laptop</span>
+                      </label>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="shutdownAction"
+                          checked={shutDownAction === 'restart'}
+                          onChange={() => setShutDownAction('restart')}
+                          className="cursor-pointer"
+                        />
+                        <span><u>R</u>estart WINOWS98</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dialog Buttons */}
+                <div className="flex items-center justify-end space-x-2 pt-2 border-t border-[#808080]">
+                  <button
+                    onClick={() => {
+                      onPlayKeyClick();
+                      setShowShutDownDialog(false);
+                      if (shutDownAction === 'shutdown') {
+                        Object.keys(windows).forEach((wId) => closeWindow(wId));
+                        if (onCloseLaptop) onCloseLaptop();
+                      } else {
+                        window.location.reload();
+                      }
+                    }}
+                    className="w-18 py-1 bg-[#c0c0c0] hover:bg-[#d8d8d8] active:bg-[#a8a8a8] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] font-bold text-xs"
+                  >
+                    OK
+                  </button>
+                  <button
+                    onClick={() => {
+                      onPlayKeyClick();
+                      setShowShutDownDialog(false);
+                    }}
+                    className="w-18 py-1 bg-[#c0c0c0] hover:bg-[#d8d8d8] active:bg-[#a8a8a8] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-xs"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1170,24 +1170,43 @@ export const ThinkPadWorkstation: React.FC = () => {
     wallMesh.position.set(0, 4.0, -2.55);
     scene.add(wallMesh);
 
-    // Matte Black Steel Trestle Desk Legs
+    // Studio Floor Plane (Warm architectural studio floor with soft shadows)
+    const floorMat = new THREE.MeshStandardMaterial({
+      color: 0xd6ccbb,
+      roughness: 0.85,
+      metalness: 0.02
+    });
+    const floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(28, 18), floorMat);
+    floorMesh.position.set(0, -2.80, 2.0);
+    floorMesh.rotation.x = -Math.PI / 2;
+    floorMesh.receiveShadow = true;
+    scene.add(floorMesh);
+
+    // Matte Black Steel Trestle Desk Legs (Cleanly attached UNDER the 0.18m wood top)
     const steelLegMat = new THREE.MeshStandardMaterial({
       color: 0x16181e,
       roughness: 0.55,
       metalness: 0.85
     });
+    // Underside of desk is at y = -0.18. Floor is at y = -2.80. Height = 2.62, Center = -1.49.
     [-3.8, 3.8].forEach((lx) => {
-      const legA = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.8, 0.08), steelLegMat);
-      legA.position.set(lx, -1.4, -1.8);
+      const legA = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.62, 0.08), steelLegMat);
+      legA.position.set(lx, -1.49, -1.8);
+      legA.castShadow = true;
       scene.add(legA);
 
-      const legB = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.8, 0.08), steelLegMat);
-      legB.position.set(lx, -1.4, 1.8);
+      const legB = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.62, 0.08), steelLegMat);
+      legB.position.set(lx, -1.49, 1.8);
+      legB.castShadow = true;
       scene.add(legB);
 
       const legCross = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 3.6), steelLegMat);
       legCross.position.set(lx, -0.22, 0);
       scene.add(legCross);
+
+      const footCross = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.04, 3.8), steelLegMat);
+      footCross.position.set(lx, -2.78, 0);
+      scene.add(footCross);
     });
 
 
@@ -1686,11 +1705,38 @@ export const ThinkPadWorkstation: React.FC = () => {
     clockFace.position.set(1.55, 2.22, -2.29);
     scene.add(clockFace);
 
-    // Cascading trailing green vine
+    // Trailing Pothos Plant on Shelf (with stoneware planter pot and connected vine stem)
+    const shelfPlanter = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.12, 0.09, 0.16, 20),
+      stonewareMat
+    );
+    shelfPlanter.position.set(-2.05, 2.16, -2.25);
+    shelfPlanter.castShadow = true;
+    scene.add(shelfPlanter);
+
+    const shelfSoil = new THREE.Mesh(
+      new THREE.CircleGeometry(0.11, 16),
+      new THREE.MeshStandardMaterial({ color: 0x1f1610, roughness: 0.95 })
+    );
+    shelfSoil.rotation.x = -Math.PI / 2;
+    shelfSoil.position.set(-2.05, 2.24, -2.25);
+    scene.add(shelfSoil);
+
+    // Cascading trailing green vine with continuous stem
     const vineMat = new THREE.MeshStandardMaterial({ color: 0x2f5e3b, roughness: 0.5, side: THREE.DoubleSide });
-    for (let v = 0; v < 6; v++) {
-      const leaf = new THREE.Mesh(new THREE.CircleGeometry(0.045, 8), vineMat);
-      leaf.position.set(-2.05 + Math.sin(v * 0.7) * 0.05, 2.02 - v * 0.08, -2.18);
+    const stemMat = new THREE.MeshStandardMaterial({ color: 0x244a2e, roughness: 0.7 });
+    for (let v = 0; v < 7; v++) {
+      const vx = -2.05 + Math.sin(v * 0.7) * 0.05;
+      const vy = 2.16 - v * 0.075;
+      const vz = -2.18 + v * 0.015;
+
+      const stemSeg = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.007, 0.08, 8), stemMat);
+      stemSeg.position.set(vx, vy, vz);
+      stemSeg.rotation.z = Math.sin(v * 0.8) * 0.25;
+      scene.add(stemSeg);
+
+      const leaf = new THREE.Mesh(new THREE.CircleGeometry(0.042, 8), vineMat);
+      leaf.position.set(vx + 0.025, vy - 0.015, vz + 0.01);
       leaf.rotation.x = 0.3 + v * 0.1;
       leaf.rotation.z = Math.sin(v) * 0.4;
       scene.add(leaf);
@@ -2066,6 +2112,7 @@ export const ThinkPadWorkstation: React.FC = () => {
           <LinuxDesktopOS
             onPlayKeyClick={() => audioEngine.playKeyClick()}
             onExitFocus={() => setIsFocused(false)}
+            onCloseLaptop={closeLaptop}
             soundEnabled={soundEnabled}
             onToggleSound={toggleSound}
             isStandaloneOverlay={false}
