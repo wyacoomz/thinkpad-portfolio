@@ -153,20 +153,42 @@ class TacticalAudioEngine {
     if (!this.ctx) return;
     try {
       const t = this.ctx.currentTime;
-      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 major chord
-      notes.forEach((freq, idx) => {
+      // Authentic Windows 98 major chord swell: F# - B - C# - F# with shimmer
+      const chordNotes = [369.99, 493.88, 554.37, 739.99]; // F#4, B4, C#5, F#5
+      chordNotes.forEach((freq, idx) => {
         const osc = this.ctx!.createOscillator();
         const gain = this.ctx!.createGain();
-        const start = t + idx * 0.06;
-        osc.type = 'sine';
+        const start = t + idx * 0.08;
+        osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, start);
-        gain.gain.setValueAtTime(0.05, start);
-        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.50);
+        gain.gain.setValueAtTime(0.001, start);
+        gain.gain.linearRampToValueAtTime(0.08, start + 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 1.2);
         osc.connect(gain);
         gain.connect(this.ctx!.destination);
         osc.start(start);
-        osc.stop(start + 0.52);
+        osc.stop(start + 1.25);
       });
+    } catch {}
+  }
+
+  public playCupClink() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(2200, t);
+      osc.frequency.exponentialRampToValueAtTime(900, t + 0.15);
+      gain.gain.setValueAtTime(0.08, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.18);
     } catch {}
   }
 }
@@ -1430,8 +1452,23 @@ export const ThinkPadWorkstation: React.FC = () => {
 
       raycaster.setFromCamera(mouse, camera);
 
+      // 1. Lamp click toggles lamp with click sound
+      const lampHit = raycaster.intersectObjects([lampGroup], true);
+      if (lampHit.length > 0) {
+        toggleLamp();
+        return;
+      }
+
+      // 2. Mug click plays ceramic clink sound
+      const mugHit = raycaster.intersectObjects([mugGroup], true);
+      if (mugHit.length > 0) {
+        audioEngine.playCupClink();
+        return;
+      }
+
+      // 3. Laptop & Notebook click
       if (!stateRef.current.isLidOpen) {
-        const intersects = raycaster.intersectObjects([laptopGroup], true);
+        const intersects = raycaster.intersectObjects([laptopGroup, notebookGroup], true);
         if (intersects.length > 0) {
           openLaptop();
         }
@@ -1450,8 +1487,15 @@ export const ThinkPadWorkstation: React.FC = () => {
       mouse.y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
       raycaster.setFromCamera(mouse, camera);
 
+      const lampHit = raycaster.intersectObjects([lampGroup], true);
+      const mugHit = raycaster.intersectObjects([mugGroup], true);
+      if (lampHit.length > 0 || mugHit.length > 0) {
+        renderer.domElement.style.cursor = 'pointer';
+        return;
+      }
+
       if (!stateRef.current.isLidOpen) {
-        const intersects = raycaster.intersectObjects([laptopGroup], true);
+        const intersects = raycaster.intersectObjects([laptopGroup, notebookGroup], true);
         renderer.domElement.style.cursor = intersects.length > 0 ? 'pointer' : 'grab';
       } else {
         const intersects = raycaster.intersectObject(screenMesh);

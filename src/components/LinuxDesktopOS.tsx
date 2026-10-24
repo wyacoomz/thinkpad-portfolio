@@ -34,12 +34,18 @@ import {
   Trash2,
   Disc,
   Sliders,
-  Send
+  Send,
+  Monitor,
+  Flame,
+  Bomb,
+  Flag,
+  Smile,
+  Frown
 } from 'lucide-react';
 import { PERSONAL_INFO, PROJECTS, WORK_EXPERIENCES, EDUCATION_DATA, SKILL_CATEGORIES } from '../data/portfolioData';
 
 export interface WindowState {
-  id: 'about' | 'projects' | 'winamp' | 'dos' | 'resume' | 'contact' | 'd365';
+  id: 'about' | 'projects' | 'winamp' | 'dos' | 'resume' | 'contact' | 'minesweeper' | 'display';
   title: string;
   shortTitle: string;
   icon: string;
@@ -47,6 +53,10 @@ export interface WindowState {
   isMinimized: boolean;
   isMaximized: boolean;
   zIndex: number;
+  x: number;
+  y: number;
+  w?: number;
+  h?: number;
 }
 
 interface Win98DesktopProps {
@@ -86,6 +96,12 @@ class Win98LofiEngine {
       [164.81, 196.00, 246.94, 293.66],         // Em7
       [146.83, 174.61, 220.00, 261.63],         // Dm7
       [130.81, 164.81, 196.00, 246.94]          // Cmaj7
+    ]},
+    { title: '04. Abdul - Late Night Code.mp3', name: 'Late Night Code', artist: 'Abdul Samad Khan', chords: [
+      [220.00, 261.63, 329.63, 392.00],         // Am7
+      [174.61, 220.00, 261.63, 329.63],         // Fmaj7
+      [196.00, 246.94, 293.66, 349.23],         // G7
+      [261.63, 329.63, 392.00, 523.25]          // Cmaj7
     ]}
   ];
 
@@ -183,6 +199,9 @@ class Win98LofiEngine {
 
 const winampEngine = new Win98LofiEngine();
 
+// ==========================================
+// MAIN COMPONENT
+// ==========================================
 export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
   onPlayKeyClick = () => {},
   onExitFocus,
@@ -209,22 +228,26 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
     return () => clearInterval(interval);
   }, []);
 
+  // Wallpaper Theme State ('teal' | 'clouds' | 'twilight' | 'bliss')
+  const [wallpaperTheme, setWallpaperTheme] = useState<'teal' | 'clouds' | 'twilight' | 'bliss'>('teal');
+
   // Start Menu State
   const [startOpen, setStartOpen] = useState<boolean>(false);
   const startMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close start menu on outside click
+  // Desktop Right-Click Context Menu State
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (startMenuRef.current && !startMenuRef.current.contains(e.target as Node)) {
         setStartOpen(false);
       }
+      setContextMenu(null);
     };
-    if (startOpen) {
-      window.addEventListener('mousedown', handleClickOutside);
-    }
+    window.addEventListener('mousedown', handleClickOutside);
     return () => window.removeEventListener('mousedown', handleClickOutside);
-  }, [startOpen]);
+  }, []);
 
   // Selected desktop icon
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
@@ -260,7 +283,7 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
     return () => clearInterval(interval);
   }, [winampPlaying]);
 
-  // Window Management (Classic Windows 98)
+  // Window Management & Draggable Coordinates
   const [highestZ, setHighestZ] = useState<number>(10);
   const [activeWindowId, setActiveWindowId] = useState<string | null>('about');
 
@@ -273,7 +296,11 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       isOpen: true,
       isMinimized: false,
       isMaximized: false,
-      zIndex: 6
+      zIndex: 6,
+      x: 95,
+      y: 20,
+      w: 560,
+      h: 410
     },
     projects: {
       id: 'projects',
@@ -283,7 +310,11 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
-      zIndex: 5
+      zIndex: 5,
+      x: 180,
+      y: 60,
+      w: 640,
+      h: 430
     },
     winamp: {
       id: 'winamp',
@@ -293,7 +324,25 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
-      zIndex: 4
+      zIndex: 4,
+      x: 720,
+      y: 50,
+      w: 340,
+      h: 360
+    },
+    minesweeper: {
+      id: 'minesweeper',
+      title: 'Minesweeper',
+      shortTitle: 'Minesweeper',
+      icon: '💣',
+      isOpen: false,
+      isMinimized: false,
+      isMaximized: false,
+      zIndex: 7,
+      x: 260,
+      y: 80,
+      w: 240,
+      h: 320
     },
     dos: {
       id: 'dos',
@@ -303,7 +352,11 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
-      zIndex: 3
+      zIndex: 3,
+      x: 220,
+      y: 90,
+      w: 580,
+      h: 360
     },
     resume: {
       id: 'resume',
@@ -313,7 +366,11 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
-      zIndex: 2
+      zIndex: 2,
+      x: 160,
+      y: 45,
+      w: 600,
+      h: 430
     },
     contact: {
       id: 'contact',
@@ -323,19 +380,76 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
-      zIndex: 2
+      zIndex: 2,
+      x: 280,
+      y: 75,
+      w: 480,
+      h: 340
     },
-    d365: {
-      id: 'd365',
-      title: 'D365_Bot.exe - Automation Diagnostics',
-      shortTitle: 'D365_Bot.exe',
-      icon: '⚙️',
+    display: {
+      id: 'display',
+      title: 'Display Properties',
+      shortTitle: 'Display',
+      icon: '🖥️',
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
-      zIndex: 2
+      zIndex: 8,
+      x: 340,
+      y: 110,
+      w: 410,
+      h: 350
     }
   });
+
+  // DRAG MANAGEMENT
+  const [draggingWindow, setDraggingWindow] = useState<{ id: string; startX: number; startY: number; initX: number; initY: number } | null>(null);
+
+  const startDrag = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    focusWindow(id);
+    const win = windows[id];
+    setDraggingWindow({
+      id,
+      startX: e.clientX,
+      startY: e.clientY,
+      initX: win.x,
+      initY: win.y
+    });
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!draggingWindow) return;
+      const dx = e.clientX - draggingWindow.startX;
+      const dy = e.clientY - draggingWindow.startY;
+      setWindows((wMap) => {
+        const win = wMap[draggingWindow.id];
+        if (!win) return wMap;
+        return {
+          ...wMap,
+          [draggingWindow.id]: {
+            ...win,
+            x: Math.max(10, Math.min(1000, draggingWindow.initX + dx)),
+            y: Math.max(10, Math.min(500, draggingWindow.initY + dy))
+          }
+        };
+      });
+    };
+
+    const handleMouseUp = () => {
+      setDraggingWindow(null);
+    };
+
+    if (draggingWindow) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [draggingWindow]);
 
   const focusWindow = (id: string) => {
     onPlayKeyClick();
@@ -394,6 +508,168 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
     }
   };
 
+  // ==========================================
+  // PLAYABLE MINESWEEPER LOGIC (9x9 with 10 mines)
+  // ==========================================
+  interface Cell {
+    row: number;
+    col: number;
+    isMine: boolean;
+    isRevealed: boolean;
+    isFlagged: boolean;
+    adjacentMines: number;
+  }
+
+  const [grid, setGrid] = useState<Cell[][]>([]);
+  const [mineCount, setMineCount] = useState<number>(10);
+  const [gameStatus, setGameStatus] = useState<'idle' | 'playing' | 'won' | 'lost'>('idle');
+  const [mineTimer, setMineTimer] = useState<number>(0);
+  const [faceEmotion, setFaceEmotion] = useState<'normal' | 'scared' | 'won' | 'dead'>('normal');
+
+  const initMinesweeper = () => {
+    const rows = 9;
+    const cols = 9;
+    const totalMines = 10;
+    const newGrid: Cell[][] = [];
+
+    for (let r = 0; r < rows; r++) {
+      newGrid[r] = [];
+      for (let c = 0; c < cols; c++) {
+        newGrid[r][c] = {
+          row: r,
+          col: c,
+          isMine: false,
+          isRevealed: false,
+          isFlagged: false,
+          adjacentMines: 0
+        };
+      }
+    }
+
+    // Place mines randomly
+    let placed = 0;
+    while (placed < totalMines) {
+      const rr = Math.floor(Math.random() * rows);
+      const cc = Math.floor(Math.random() * cols);
+      if (!newGrid[rr][cc].isMine) {
+        newGrid[rr][cc].isMine = true;
+        placed++;
+      }
+    }
+
+    // Calculate neighbor mine numbers
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (!newGrid[r][c].isMine) {
+          let count = 0;
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              const nr = r + dr;
+              const nc = c + dc;
+              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && newGrid[nr][nc].isMine) {
+                count++;
+              }
+            }
+          }
+          newGrid[r][c].adjacentMines = count;
+        }
+      }
+    }
+
+    setGrid(newGrid);
+    setMineCount(totalMines);
+    setGameStatus('idle');
+    setMineTimer(0);
+    setFaceEmotion('normal');
+  };
+
+  useEffect(() => {
+    initMinesweeper();
+  }, []);
+
+  // Timer
+  useEffect(() => {
+    if (gameStatus !== 'playing') return;
+    const tInterval = setInterval(() => {
+      setMineTimer((prev) => Math.min(999, prev + 1));
+    }, 1000);
+    return () => clearInterval(tInterval);
+  }, [gameStatus]);
+
+  const revealCell = (r: number, c: number) => {
+    if (gameStatus === 'won' || gameStatus === 'lost') return;
+    if (grid[r][c].isFlagged || grid[r][c].isRevealed) return;
+    onPlayKeyClick();
+
+    if (gameStatus === 'idle') {
+      setGameStatus('playing');
+    }
+
+    const nextGrid = grid.map((row) => row.map((cell) => ({ ...cell })));
+    const target = nextGrid[r][c];
+
+    // Clicked a mine!
+    if (target.isMine) {
+      // Reveal all mines
+      for (let rr = 0; rr < 9; rr++) {
+        for (let cc = 0; cc < 9; cc++) {
+          if (nextGrid[rr][cc].isMine) {
+            nextGrid[rr][cc].isRevealed = true;
+          }
+        }
+      }
+      setGrid(nextGrid);
+      setGameStatus('lost');
+      setFaceEmotion('dead');
+      return;
+    }
+
+    // Flood fill empty spaces
+    const flood = (cr: number, cc: number) => {
+      if (cr < 0 || cr >= 9 || cc < 0 || cc >= 9) return;
+      const cell = nextGrid[cr][cc];
+      if (cell.isRevealed || cell.isFlagged || cell.isMine) return;
+      cell.isRevealed = true;
+      if (cell.adjacentMines === 0) {
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            flood(cr + dr, cc + dc);
+          }
+        }
+      }
+    };
+
+    flood(r, c);
+    setGrid(nextGrid);
+
+    // Check win condition
+    let unrevealedSafe = 0;
+    for (let rr = 0; rr < 9; rr++) {
+      for (let cc = 0; cc < 9; cc++) {
+        if (!nextGrid[rr][cc].isMine && !nextGrid[rr][cc].isRevealed) {
+          unrevealedSafe++;
+        }
+      }
+    }
+    if (unrevealedSafe === 0) {
+      setGameStatus('won');
+      setFaceEmotion('won');
+    }
+  };
+
+  const toggleFlag = (e: React.MouseEvent, r: number, c: number) => {
+    e.preventDefault();
+    if (gameStatus === 'won' || gameStatus === 'lost') return;
+    if (grid[r][c].isRevealed) return;
+    onPlayKeyClick();
+
+    const nextGrid = grid.map((row) => row.map((cell) => ({ ...cell })));
+    const target = nextGrid[r][c];
+    target.isFlagged = !target.isFlagged;
+    setGrid(nextGrid);
+    setMineCount((prev) => (target.isFlagged ? prev - 1 : prev + 1));
+  };
+
   // MS-DOS Prompt State
   const [dosHistory, setDosHistory] = useState<Array<{ cmd: string; res: string }>>([
     { cmd: 'ver', res: 'Windows 98 [Version 4.10.1998]' },
@@ -410,11 +686,11 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
     let res = '';
 
     if (cmd === 'help' || cmd === '/?') {
-      res = 'Available commands: DIR, WHOAMI, PROJECTS, WINAMP, CLS, VER, EXIT, HELP';
+      res = 'Available commands: DIR, WHOAMI, PROJECTS, WINAMP, MINES, CLS, VER, EXIT, HELP';
     } else if (cmd === 'ver') {
       res = 'Microsoft(R) Windows 98 [Version 4.10.1998]';
     } else if (cmd === 'dir') {
-      res = ' Volume in drive C has no label.\n Volume Serial Number is 1998-2026\n Directory of C:\\WINDOWS\n\nABOUT    TXT         1,248 10-25-98  12:00a\nPROJECTS DIR             0 10-25-98  12:00a\nWINAMP   EXE       245,760 10-25-98  12:00a\nRESUME   DOC        48,128 10-25-98  12:00a\n        4 file(s)        295,136 bytes\n        1 dir(s)   4,294,967,296 bytes free';
+      res = ' Volume in drive C has no label.\n Volume Serial Number is 1998-2026\n Directory of C:\\WINDOWS\n\nABOUT    TXT         1,248 10-25-98  12:00a\nPROJECTS DIR             0 10-25-98  12:00a\nWINAMP   EXE       245,760 10-25-98  12:00a\nMINES    EXE        32,768 10-25-98  12:00a\nRESUME   DOC        48,128 10-25-98  12:00a\n        5 file(s)        327,904 bytes\n        1 dir(s)   4,294,967,296 bytes free';
     } else if (cmd === 'whoami') {
       res = `${PERSONAL_INFO.name} (${PERSONAL_INFO.handle})\n${PERSONAL_INFO.title}\n${PERSONAL_INFO.location}\nBio: ${PERSONAL_INFO.shortBio}`;
     } else if (cmd === 'projects') {
@@ -423,6 +699,9 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       focusWindow('winamp');
       toggleWinampPlay();
       res = 'Starting Winamp audio subsystem...';
+    } else if (cmd === 'mines' || cmd === 'minesweeper') {
+      focusWindow('minesweeper');
+      res = 'Launching Minesweeper...';
     } else if (cmd === 'cls') {
       setDosHistory([]);
       setDosInput('');
@@ -452,26 +731,73 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
 
   const currentTrack = winampEngine.tracks[winampTrack];
 
+  // Number colors in classic Minesweeper
+  const numColors = ['', 'text-blue-600', 'text-green-600', 'text-red-600', 'text-indigo-800', 'text-amber-800', 'text-teal-700', 'text-black', 'text-gray-500'];
+
+  // Handle right-click on desktop
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenu({ x: Math.min(e.clientX, 1100), y: Math.min(e.clientY, 600) });
+  };
+
   return (
     <div
+      onContextMenu={handleContextMenu}
       onClick={() => setSelectedIcon(null)}
-      className="relative w-full h-full overflow-hidden select-none bg-[#008080] font-sans text-xs"
+      className="relative w-full h-full overflow-hidden select-none font-sans text-xs transition-colors duration-500"
       style={{
-        fontFamily: "'MS Sans Serif', Tahoma, 'Segoe UI', sans-serif"
+        fontFamily: "'MS Sans Serif', Tahoma, 'Segoe UI', sans-serif",
+        backgroundColor: wallpaperTheme === 'teal' ? '#008080' : undefined
       }}
     >
       {/* ========================================================= */}
+      {/* WALLPAPER BACKGROUNDS                                     */}
+      {/* ========================================================= */}
+      {wallpaperTheme === 'clouds' && (
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1b58b8] via-[#4d88e0] to-[#b3d4fc] pointer-events-none flex items-center justify-center">
+          <div className="text-center font-bold tracking-widest text-white/40 text-6xl font-serif">
+            Microsoft Windows 98
+          </div>
+        </div>
+      )}
+
+      {wallpaperTheme === 'twilight' && (
+        <div className="absolute inset-0 bg-gradient-to-b from-[#181a2e] via-[#4a2e48] to-[#d97760] pointer-events-none flex items-center justify-center">
+          <div className="text-center font-bold tracking-widest text-white/30 text-5xl font-serif">
+            Twilight Ridge
+          </div>
+        </div>
+      )}
+
+      {wallpaperTheme === 'bliss' && (
+        <div className="absolute inset-0 bg-gradient-to-b from-[#2872ba] via-[#74b4ea] to-[#409c3e] pointer-events-none flex items-center justify-center">
+          <div className="text-center font-bold tracking-widest text-white/30 text-6xl font-serif">
+            Windows Bliss
+          </div>
+        </div>
+      )}
+
+      {wallpaperTheme === 'teal' && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
+          <div className="text-center font-bold tracking-widest text-white text-6xl font-serif">
+            Microsoft Windows 98
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
       {/* 1. DESKTOP ICONS (CLASSIC WINDOWS 98 PIXEL STYLE)         */}
       {/* ========================================================= */}
-      <div className="absolute top-4 left-4 z-10 flex flex-col space-y-4">
+      <div className="absolute top-2 left-2 z-10 flex flex-col space-y-1.5">
         {[
           { id: 'about', label: 'About_Me.txt', icon: '📝', action: () => focusWindow('about') },
           { id: 'projects', label: 'My Projects', icon: '📁', action: () => focusWindow('projects') },
           { id: 'winamp', label: 'Winamp (Lo-Fi)', icon: '⚡', action: () => focusWindow('winamp') },
+          { id: 'minesweeper', label: 'Minesweeper', icon: '💣', action: () => focusWindow('minesweeper') },
           { id: 'dos', label: 'MS-DOS Prompt', icon: '💻', action: () => focusWindow('dos') },
           { id: 'resume', label: 'Resume.doc', icon: '📄', action: () => focusWindow('resume') },
           { id: 'contact', label: 'Outlook Express', icon: '✉️', action: () => focusWindow('contact') },
-          { id: 'd365', label: 'D365_Bot.exe', icon: '⚙️', action: () => focusWindow('d365') },
+          { id: 'display', label: 'Display Settings', icon: '🖥️', action: () => focusWindow('display') },
           { id: 'trash', label: 'Recycle Bin', icon: '🗑️', action: () => focusWindow('about') }
         ].map((item) => {
           const isSelected = selectedIcon === item.id;
@@ -483,17 +809,17 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
                 setSelectedIcon(item.id);
                 item.action();
               }}
-              className="flex flex-col items-center w-20 cursor-pointer group"
+              className="flex flex-col items-center w-[74px] cursor-pointer group select-none"
             >
               <div
-                className={`w-11 h-11 flex items-center justify-center text-2xl transition-transform ${
+                className={`w-10 h-10 flex items-center justify-center text-2xl transition-transform ${
                   isSelected ? 'bg-[#000080]/30 outline-1 outline-dotted outline-[#ffffff]' : ''
                 }`}
               >
                 <span>{item.icon}</span>
               </div>
               <span
-                className={`mt-1 text-center text-[11px] leading-tight px-1 py-0.5 rounded-none text-white ${
+                className={`mt-0.5 text-center text-[11px] leading-tight px-1 py-0.5 rounded-none text-white ${
                   isSelected ? 'bg-[#000080]' : 'text-shadow-win98'
                 }`}
               >
@@ -504,128 +830,122 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
         })}
       </div>
 
-      {/* Subtle Windows 98 Center Watermark */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
-        <div className="text-center font-bold tracking-widest text-white text-6xl font-serif">
-          Microsoft Windows 98
-        </div>
-      </div>
-
       {/* ========================================================= */}
       {/* 2. WINDOW: ABOUT_ME.TXT (NOTEPAD)                         */}
       {/* ========================================================= */}
       {windows.about.isOpen && !windows.about.isMinimized && (
         <div
           onClick={() => focusWindow('about')}
-          style={{ zIndex: windows.about.zIndex }}
-          className="absolute top-8 left-28 w-[560px] h-[410px] bg-[#c0c0c0] shadow-2xl flex flex-col"
-          style-win98-window="true"
+          style={{
+            zIndex: windows.about.zIndex,
+            left: `${windows.about.x}px`,
+            top: `${windows.about.y}px`,
+            width: `${windows.about.w}px`,
+            height: `${windows.about.h}px`
+          }}
+          className="absolute bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
         >
-          {/* Win98 3D Outer Raised Border */}
-          <div className="w-full h-full flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]">
-            {/* Inner Border */}
-            <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
-              {/* Titlebar */}
-              <div
-                className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none ${
-                  activeWindowId === 'about'
-                    ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
-                    : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
-                }`}
-              >
-                <div className="flex items-center space-x-1.5">
-                  <span className="text-xs">📝</span>
-                  <span>About_Me.txt - Notepad</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => toggleMinimizeWindow('about')}
-                    className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] active:border-r-[#ffffff] active:border-b-[#ffffff] text-[10px] pb-1"
-                  >
-                    _
-                  </button>
-                  <button
-                    onClick={() => closeWindow('about')}
-                    className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] active:border-r-[#ffffff] active:border-b-[#ffffff] text-[10px]"
-                  >
-                    ✕
-                  </button>
-                </div>
+          <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
+            {/* Titlebar with Drag Listener */}
+            <div
+              onMouseDown={(e) => startDrag('about', e)}
+              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
+                activeWindowId === 'about'
+                  ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
+                  : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
+              }`}
+            >
+              <div className="flex items-center space-x-1.5">
+                <span className="text-xs">📝</span>
+                <span>About_Me.txt - Notepad</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <button onClick={() => toggleMinimizeWindow('about')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px] pb-1">_</button>
+                <button onClick={() => closeWindow('about')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
+              </div>
+            </div>
+
+            {/* Menu Bar */}
+            <div className="h-[20px] px-2 flex items-center space-x-3 text-[11px] text-black bg-[#c0c0c0] border-b border-[#808080]">
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>F</u>ile</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>E</u>dit</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>S</u>earch</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>H</u>elp</span>
+            </div>
+
+            {/* Text Area */}
+            <div className="flex-1 bg-white p-3 overflow-y-auto font-mono text-[12px] text-black leading-relaxed border-t-2 border-l-2 border-t-[#808080] border-l-[#808080] border-r-2 border-b-2 border-r-[#ffffff] border-b-[#ffffff] m-1">
+              <div className="pb-3 border-b border-dashed border-gray-400">
+                <strong>====================================================</strong><br />
+                <strong>ABDUL SAMAD KHAN (wyacoomz) - PERSONAL LOG</strong><br />
+                <strong>====================================================</strong><br />
+                Role: RPA Developer & Systems Engineer @ Trufe<br />
+                Location: Bhopal, India (IST, UTC+05:30)<br />
+                Email: abdulischad@gmail.com<br />
+                GitHub: github.com/wyacoomz<br />
               </div>
 
-              {/* Menu Bar */}
-              <div className="h-[20px] px-2 flex items-center space-x-3 text-[11px] text-black bg-[#c0c0c0] border-b border-[#808080]">
-                <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>F</u>ile</span>
-                <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>E</u>dit</span>
-                <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>S</u>earch</span>
-                <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>H</u>elp</span>
+              <div className="mt-3 space-y-2">
+                <p><strong>[1. WHO I AM]</strong></p>
+                <p>
+                  I build dependable software, enterprise automation bots, and stylized indie games.
+                  My day-to-day focus is architecting unattended high-throughput invoice processing
+                  and Dynamics 365 ERP synchronization that eliminates hundreds of hours of manual toil.
+                </p>
+
+                <p><strong>[2. GAME DEVELOPMENT PASSION]</strong></p>
+                <p>
+                  Outside enterprise systems, I create games in Godot 4:
+                  <br />• <em>KOKE</em>: Atmospheric low-poly adventure with stylized faceless characters and volumetric fog.
+                  <br />• <em>Faceless Shooter</em>: High-velocity tactical shooter.
+                </p>
+
+                <p><strong>[3. PHILOSOPHY]</strong></p>
+                <p>
+                  • Keep systems calm, resilient, and tactile.<br />
+                  • Eliminate friction without adding bloated AI gimmicks.<br />
+                  • Respect cross-platform parity between Windows PC and Android.
+                </p>
+
+                <p><strong>[4. RETRO EASTER EGGS]</strong></p>
+                <p>
+                  • Click <strong>Minesweeper</strong> on the desktop for a quick game!<br />
+                  • Click <strong>Winamp (Lo-Fi)</strong> to play ambient chord progressions while reading.
+                </p>
               </div>
+            </div>
 
-              {/* Text Area (White with inset border) */}
-              <div className="flex-1 bg-white p-3 overflow-y-auto font-mono text-[12px] text-black leading-relaxed border-t-2 border-l-2 border-t-[#808080] border-l-[#808080] border-r-2 border-b-2 border-r-[#ffffff] border-b-[#ffffff] m-1">
-                <div className="pb-3 border-b border-dashed border-gray-400">
-                  <strong>====================================================</strong><br />
-                  <strong>ABDUL SAMAD KHAN (wyacoomz) - PERSONAL LOG</strong><br />
-                  <strong>====================================================</strong><br />
-                  Role: RPA Developer & Systems Engineer @ Trufe<br />
-                  Location: Bhopal, India (IST, UTC+05:30)<br />
-                  Email: abdulischad@gmail.com<br />
-                  GitHub: github.com/wyacoomz<br />
-                </div>
-
-                <div className="mt-3 space-y-2">
-                  <p><strong>[1. WHO I AM]</strong></p>
-                  <p>
-                    I build dependable software, enterprise automation bots, and stylized indie games.
-                    My day-to-day focus is architecting unattended high-throughput invoice processing
-                    and Dynamics 365 ERP synchronization that eliminates hundreds of hours of manual toil.
-                  </p>
-
-                  <p><strong>[2. GAME DEVELOPMENT PASSION]</strong></p>
-                  <p>
-                    Outside enterprise systems, I create games in Godot 4:
-                    <br />• <em>KOKE</em>: Atmospheric low-poly adventure with stylized faceless characters and volumetric fog.
-                    <br />• <em>Faceless Shooter</em>: High-velocity tactical shooter.
-                  </p>
-
-                  <p><strong>[3. PHILOSOPHY]</strong></p>
-                  <p>
-                    • Keep systems calm, resilient, and tactile.<br />
-                    • Eliminate friction without adding bloated AI gimmicks.<br />
-                    • Respect cross-platform parity between Windows PC and Android.
-                  </p>
-
-                  <p><strong>[4. QUICK LAUNCH TIP]</strong></p>
-                  <p>
-                    Double-click <strong>Winamp (Lo-Fi)</strong> on the desktop to play calming ambient Rhodes chords while you browse!
-                  </p>
-                </div>
-              </div>
-
-              {/* Status Bar */}
-              <div className="h-[20px] px-2 flex items-center justify-between text-[11px] text-[#404040] bg-[#c0c0c0] border-t border-[#ffffff]">
-                <span>Status: Ready</span>
-                <span>Ln 32, Col 1</span>
-              </div>
+            {/* Status Bar */}
+            <div className="h-[20px] px-2 flex items-center justify-between text-[11px] text-[#404040] bg-[#c0c0c0] border-t border-[#ffffff]">
+              <span>Status: Ready</span>
+              <span>Ln 32, Col 1</span>
             </div>
           </div>
         </div>
       )}
 
       {/* ========================================================= */}
-      {/* 3. WINDOW: WINAMP (LO-FI AMBIENT AUDIO PLAYER)            */}
+      {/* 3. WINDOW: WINAMP 2.8 (DRAGGABLE & ANIMATED)              */}
       {/* ========================================================= */}
       {windows.winamp.isOpen && !windows.winamp.isMinimized && (
         <div
           onClick={() => focusWindow('winamp')}
-          style={{ zIndex: windows.winamp.zIndex }}
-          className="absolute top-16 right-16 w-[340px] bg-[#292929] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-1 font-mono select-none"
+          style={{
+            zIndex: windows.winamp.zIndex,
+            left: `${windows.winamp.x}px`,
+            top: `${windows.winamp.y}px`,
+            width: `${windows.winamp.w}px`
+          }}
+          className="absolute bg-[#292929] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-1 font-mono select-none"
         >
-          {/* Winamp Titlebar */}
-          <div className="h-[18px] bg-gradient-to-r from-[#000080] via-[#004080] to-[#1084d0] px-1 flex items-center justify-between text-[11px] text-white font-bold">
+          {/* Winamp Titlebar with Drag Listener */}
+          <div
+            onMouseDown={(e) => startDrag('winamp', e)}
+            className="h-[18px] bg-gradient-to-r from-[#000080] via-[#004080] to-[#1084d0] px-1 flex items-center justify-between text-[11px] text-white font-bold cursor-move"
+          >
             <div className="flex items-center space-x-1">
               <span>⚡</span>
-              <span className="tracking-wider">WINAMP</span>
+              <span className="tracking-wider">WINAMP 2.8</span>
             </div>
             <div className="flex items-center space-x-1">
               <button onClick={() => toggleMinimizeWindow('winamp')} className="w-3.5 h-3 bg-[#c0c0c0] text-black font-bold text-[9px] flex items-center justify-center">_</button>
@@ -653,9 +973,9 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
                 {formatTime(trackSeconds)}
               </div>
 
-              {/* Pseudo-Spectrum EQ Bars */}
+              {/* Spectrum EQ Bars */}
               <div className="flex items-end space-x-1 h-5">
-                {[18, 12, 16, 20, 14, 19, 10, 15, 17].map((h, i) => (
+                {[18, 12, 16, 20, 14, 19, 10, 15, 17, 13].map((h, i) => (
                   <div
                     key={i}
                     className="w-1.5 bg-[#00ff00] transition-all duration-150"
@@ -738,19 +1058,123 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* 4. WINDOW: C:\PROJECTS (WINDOWS EXPLORER)                 */}
+      {/* 4. WINDOW: PLAYABLE 9x9 MINESWEEPER                       */}
+      {/* ========================================================= */}
+      {windows.minesweeper.isOpen && !windows.minesweeper.isMinimized && (
+        <div
+          onClick={() => focusWindow('minesweeper')}
+          style={{
+            zIndex: windows.minesweeper.zIndex,
+            left: `${windows.minesweeper.x}px`,
+            top: `${windows.minesweeper.y}px`,
+            width: '246px'
+          }}
+          className="absolute bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px] select-none"
+        >
+          <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
+            {/* Titlebar with Drag Listener */}
+            <div
+              onMouseDown={(e) => startDrag('minesweeper', e)}
+              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
+                activeWindowId === 'minesweeper'
+                  ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
+                  : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
+              }`}
+            >
+              <div className="flex items-center space-x-1.5">
+                <span>💣</span>
+                <span>Minesweeper</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <button onClick={() => toggleMinimizeWindow('minesweeper')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px] pb-1">_</button>
+                <button onClick={() => closeWindow('minesweeper')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
+              </div>
+            </div>
+
+            {/* Menu Bar */}
+            <div className="h-[20px] px-2 flex items-center space-x-3 text-[11px] text-black bg-[#c0c0c0] border-b border-[#808080]">
+              <span onClick={initMinesweeper} className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>G</u>ame</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>H</u>elp</span>
+            </div>
+
+            {/* Minesweeper Header Bar (LEDs + Smiley) */}
+            <div className="p-2 border-t-2 border-l-2 border-t-[#808080] border-l-[#808080] border-r-2 border-b-2 border-r-[#ffffff] border-b-[#ffffff] m-1 flex items-center justify-between bg-[#c0c0c0]">
+              {/* Mine Counter (3-digit red LED) */}
+              <div className="bg-black px-1.5 py-0.5 border border-gray-600 text-red-600 font-mono font-bold text-lg tracking-widest">
+                {mineCount < 0 ? `-${Math.abs(mineCount).toString().padStart(2, '0')}` : mineCount.toString().padStart(3, '0')}
+              </div>
+
+              {/* Smiley Reset Button */}
+              <button
+                onClick={initMinesweeper}
+                className="w-7 h-7 bg-[#c0c0c0] border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] flex items-center justify-center text-base"
+                title="Restart Game"
+              >
+                {faceEmotion === 'normal' && '🙂'}
+                {faceEmotion === 'scared' && '😮'}
+                {faceEmotion === 'won' && '😎'}
+                {faceEmotion === 'dead' && '😵'}
+              </button>
+
+              {/* Timer (3-digit red LED) */}
+              <div className="bg-black px-1.5 py-0.5 border border-gray-600 text-red-600 font-mono font-bold text-lg tracking-widest">
+                {mineTimer.toString().padStart(3, '0')}
+              </div>
+            </div>
+
+            {/* 9x9 Mine Grid */}
+            <div className="p-1 border-t-2 border-l-2 border-t-[#808080] border-l-[#808080] border-r-2 border-b-2 border-r-[#ffffff] border-b-[#ffffff] m-1 bg-[#808080] flex justify-center">
+              <div className="grid grid-cols-9 gap-[1px] bg-[#808080]">
+                {grid.map((row, r) =>
+                  row.map((cell, c) => (
+                    <button
+                      key={`${r}-${c}`}
+                      onClick={() => revealCell(r, c)}
+                      onContextMenu={(e) => toggleFlag(e, r, c)}
+                      className={`w-[22px] h-[22px] font-bold text-xs flex items-center justify-center ${
+                        cell.isRevealed
+                          ? 'bg-[#c0c0c0] border border-[#808080]'
+                          : 'bg-[#c0c0c0] border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#808080] border-b-[#808080] active:border-none'
+                      }`}
+                    >
+                      {cell.isRevealed ? (
+                        cell.isMine ? (
+                          '💣'
+                        ) : cell.adjacentMines > 0 ? (
+                          <span className={numColors[cell.adjacentMines]}>{cell.adjacentMines}</span>
+                        ) : null
+                      ) : cell.isFlagged ? (
+                        '🚩'
+                      ) : null}
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 5. WINDOW: C:\PROJECTS (EXPLORER)                         */}
       {/* ========================================================= */}
       {windows.projects.isOpen && !windows.projects.isMinimized && (
         <div
           onClick={() => focusWindow('projects')}
-          style={{ zIndex: windows.projects.zIndex }}
-          className="absolute top-12 left-36 w-[640px] h-[430px] bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
+          style={{
+            zIndex: windows.projects.zIndex,
+            left: `${windows.projects.x}px`,
+            top: `${windows.projects.y}px`,
+            width: `${windows.projects.w}px`,
+            height: `${windows.projects.h}px`
+          }}
+          className="absolute bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
         >
-          {/* Inner Border */}
           <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
-            {/* Titlebar */}
+            {/* Titlebar with Drag Listener */}
             <div
-              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none ${
+              onMouseDown={(e) => startDrag('projects', e)}
+              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
                 activeWindowId === 'projects'
                   ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
                   : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
@@ -774,7 +1198,7 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
               <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>H</u>elp</span>
             </div>
 
-            {/* Explorer Address Bar */}
+            {/* Address Bar */}
             <div className="h-[24px] px-2 flex items-center space-x-2 text-[11px] bg-[#c0c0c0] border-b border-[#808080]">
               <span className="text-gray-700">Address:</span>
               <div className="flex-1 bg-white px-2 py-0.5 border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] font-mono text-[11px]">
@@ -784,7 +1208,6 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
 
             {/* Main Area: Split Left Tree + Right Icons */}
             <div className="flex-1 flex overflow-hidden p-1 gap-1">
-              {/* Left Explorer Tree */}
               <div className="w-40 bg-white border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] p-2 overflow-y-auto text-[11px] space-y-1">
                 <div className="font-bold text-[#000080]">📂 C:\Projects</div>
                 <div className="pl-3 text-gray-700 cursor-pointer hover:underline">├── 📁 Automation</div>
@@ -793,7 +1216,6 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
                 <div className="pl-3 text-gray-700 cursor-pointer hover:underline">└── 📁 Financial_Bots</div>
               </div>
 
-              {/* Right File List & Details Pane */}
               <div className="flex-1 bg-white border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] p-3 overflow-y-auto">
                 <div className="grid grid-cols-1 gap-2.5">
                   {PROJECTS.map((p) => {
@@ -844,19 +1266,24 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* 5. WINDOW: MS-DOS PROMPT                                  */}
+      {/* 6. WINDOW: MS-DOS PROMPT                                  */}
       {/* ========================================================= */}
       {windows.dos.isOpen && !windows.dos.isMinimized && (
         <div
           onClick={() => focusWindow('dos')}
-          style={{ zIndex: windows.dos.zIndex }}
-          className="absolute top-20 left-48 w-[580px] h-[360px] bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
+          style={{
+            zIndex: windows.dos.zIndex,
+            left: `${windows.dos.x}px`,
+            top: `${windows.dos.y}px`,
+            width: `${windows.dos.w}px`,
+            height: `${windows.dos.h}px`
+          }}
+          className="absolute bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
         >
-          {/* Inner Border */}
           <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
-            {/* Titlebar */}
             <div
-              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none ${
+              onMouseDown={(e) => startDrag('dos', e)}
+              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
                 activeWindowId === 'dos'
                   ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
                   : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
@@ -872,7 +1299,6 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
               </div>
             </div>
 
-            {/* Black DOS Terminal Area */}
             <div className="flex-1 bg-black p-3 text-white font-mono text-[12px] overflow-y-auto leading-relaxed border-t border-l border-t-black border-l-black">
               <div className="text-gray-400 mb-2">
                 Microsoft(R) Windows 98<br />
@@ -894,7 +1320,6 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
               <div ref={dosBottomRef} />
             </div>
 
-            {/* DOS Prompt Input */}
             <form onSubmit={handleDosSubmit} className="bg-black px-3 py-1 flex items-center text-white font-mono text-[12px] border-t border-gray-800">
               <span className="text-[#39ff14] mr-2">C:\WINDOWS&gt;</span>
               <input
@@ -903,7 +1328,7 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
                 onChange={(e) => setDosInput(e.target.value)}
                 className="flex-1 bg-transparent text-white outline-none font-mono"
                 autoFocus
-                placeholder="type dir, whoami, winamp, projects..."
+                placeholder="type dir, whoami, winamp, mines..."
               />
             </form>
           </div>
@@ -911,18 +1336,24 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* 6. WINDOW: RESUME.DOC (WORDPAD)                           */}
+      {/* 7. WINDOW: RESUME.DOC (WORDPAD)                           */}
       {/* ========================================================= */}
       {windows.resume.isOpen && !windows.resume.isMinimized && (
         <div
           onClick={() => focusWindow('resume')}
-          style={{ zIndex: windows.resume.zIndex }}
-          className="absolute top-10 left-32 w-[600px] h-[420px] bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
+          style={{
+            zIndex: windows.resume.zIndex,
+            left: `${windows.resume.x}px`,
+            top: `${windows.resume.y}px`,
+            width: `${windows.resume.w}px`,
+            height: `${windows.resume.h}px`
+          }}
+          className="absolute bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
         >
           <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
-            {/* Titlebar */}
             <div
-              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none ${
+              onMouseDown={(e) => startDrag('resume', e)}
+              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
                 activeWindowId === 'resume'
                   ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
                   : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
@@ -938,7 +1369,6 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
               </div>
             </div>
 
-            {/* Menu Bar & WordPad Toolbar */}
             <div className="h-[20px] px-2 flex items-center space-x-3 text-[11px] text-black bg-[#c0c0c0] border-b border-[#808080]">
               <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>F</u>ile</span>
               <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>E</u>dit</span>
@@ -962,7 +1392,6 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
               </a>
             </div>
 
-            {/* WordPad Paper Area */}
             <div className="flex-1 bg-white p-6 overflow-y-auto text-black font-serif text-[12px] leading-relaxed border-t-2 border-l-2 border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] m-1">
               <div className="text-center pb-4 border-b border-gray-300">
                 <h2 className="text-xl font-bold font-sans">{PERSONAL_INFO.name}</h2>
@@ -1006,18 +1435,23 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* 7. WINDOW: OUTLOOK EXPRESS (CONTACT DISPATCH)             */}
+      {/* 8. WINDOW: OUTLOOK EXPRESS (CONTACT DISPATCH)             */}
       {/* ========================================================= */}
       {windows.contact.isOpen && !windows.contact.isMinimized && (
         <div
           onClick={() => focusWindow('contact')}
-          style={{ zIndex: windows.contact.zIndex }}
-          className="absolute top-14 left-44 w-[480px] bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
+          style={{
+            zIndex: windows.contact.zIndex,
+            left: `${windows.contact.x}px`,
+            top: `${windows.contact.y}px`,
+            width: `${windows.contact.w}px`
+          }}
+          className="absolute bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
         >
           <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
-            {/* Titlebar */}
             <div
-              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none ${
+              onMouseDown={(e) => startDrag('contact', e)}
+              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
                 activeWindowId === 'contact'
                   ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
                   : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
@@ -1033,11 +1467,10 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
               </div>
             </div>
 
-            {/* Outlook Toolbar */}
             <div className="h-[28px] px-2 flex items-center space-x-2 bg-[#c0c0c0] border-b border-[#808080]">
               <a
                 href={`mailto:${PERSONAL_INFO.email}`}
-                className="px-2.5 py-0.5 bg-[#c0c0c0] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] text-black font-bold text-[11px] flex items-center space-x-1"
+                className="px-2.5 py-0.5 bg-[#c0c0c0] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-black font-bold text-[11px] flex items-center space-x-1"
               >
                 <Send className="w-3 h-3" />
                 <span>Send</span>
@@ -1046,7 +1479,6 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
               <span className="text-gray-600 text-[11px]">Dial-Up Connection Ready</span>
             </div>
 
-            {/* Email Header Fields */}
             <div className="p-3 bg-[#c0c0c0] space-y-2 border-b border-[#808080] text-[11px]">
               <div className="flex items-center space-x-2">
                 <span className="w-12 font-bold text-gray-700"><u>T</u>o:</span>
@@ -1072,17 +1504,16 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
                 <span className="w-12 font-bold text-gray-700"><u>S</u>ubject:</span>
                 <input
                   type="text"
-                  defaultValue="Hello Abdul! Saw your Windows 98 Workstation"
+                  defaultValue="Hello Abdul! Testing your Windows 98 Workstation"
                   className="flex-1 bg-white px-2 py-0.5 border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] text-[11px]"
                 />
               </div>
             </div>
 
-            {/* Message Body */}
             <div className="p-2 bg-[#c0c0c0]">
               <textarea
                 rows={5}
-                defaultValue={`Hi Abdul,\n\nI was testing your 3D developer workstation. Really love the nostalgic Windows 98 aesthetic and the relaxing Winamp lo-fi audio!\n\nBest regards,`}
+                defaultValue={`Hi Abdul,\n\nI was testing your 3D developer workstation. Really love the nostalgic Windows 98 aesthetic, the playable Minesweeper, and the relaxing Winamp lo-fi audio!\n\nBest regards,`}
                 className="w-full bg-white p-2 border-t-2 border-l-2 border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] text-xs font-sans outline-none resize-none"
               />
             </div>
@@ -1091,41 +1522,93 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* 8. WINDOW: D365_BOT.EXE                                   */}
+      {/* 9. WINDOW: DISPLAY PROPERTIES (WALLPAPER CHOOSER)         */}
       {/* ========================================================= */}
-      {windows.d365.isOpen && !windows.d365.isMinimized && (
+      {windows.display.isOpen && !windows.display.isMinimized && (
         <div
-          onClick={() => focusWindow('d365')}
-          style={{ zIndex: windows.d365.zIndex }}
-          className="absolute top-16 left-40 w-[520px] bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
+          onClick={() => focusWindow('display')}
+          style={{
+            zIndex: windows.display.zIndex,
+            left: `${windows.display.x}px`,
+            top: `${windows.display.y}px`,
+            width: `${windows.display.w}px`
+          }}
+          className="absolute bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
         >
           <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
             <div
-              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none ${
-                activeWindowId === 'd365'
+              onMouseDown={(e) => startDrag('display', e)}
+              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
+                activeWindowId === 'display'
                   ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
                   : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
               }`}
             >
               <div className="flex items-center space-x-1.5">
-                <span>⚙️</span>
-                <span>D365_Bot.exe - Automation Diagnostics</span>
+                <span>🖥️</span>
+                <span>Display Properties</span>
               </div>
-              <div className="flex items-center space-x-1">
-                <button onClick={() => toggleMinimizeWindow('d365')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px] pb-1">_</button>
-                <button onClick={() => closeWindow('d365')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
-              </div>
+              <button onClick={() => closeWindow('display')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
             </div>
 
-            <div className="p-4 bg-white m-1 border-t-2 border-l-2 border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] text-xs font-mono space-y-3">
-              <div className="font-bold text-[#000080]">TRUFE ENTERPRISE RPA // WIN98 DIAGNOSTIC DRIVER</div>
-              <div className="p-2 bg-gray-100 border border-gray-300 space-y-1 text-[11px]">
-                <div>• Pipeline: Multi-Entity Invoice Processor</div>
-                <div>• Modules: AI Builder OCR, Deterministic Gate, ERP Upload</div>
-                <div>• Status: Running unattended in production at Trufe</div>
+            <div className="p-3 bg-[#c0c0c0] space-y-3">
+              {/* Virtual Mini CRT Monitor Preview */}
+              <div className="flex justify-center">
+                <div className="w-40 h-28 bg-[#202020] border-4 border-[#dcdcdc] rounded-sm p-1 shadow-inner flex flex-col items-center justify-center">
+                  <div
+                    className="w-full h-full border border-black flex items-center justify-center text-[10px] text-white font-bold"
+                    style={{
+                      backgroundColor:
+                        wallpaperTheme === 'teal' ? '#008080' :
+                        wallpaperTheme === 'clouds' ? '#4d88e0' :
+                        wallpaperTheme === 'twilight' ? '#4a2e48' : '#2872ba'
+                    }}
+                  >
+                    {wallpaperTheme.toUpperCase()}
+                  </div>
+                </div>
               </div>
-              <div className="text-[11px] text-gray-600">
-                Processed 1,200+ monthly documents with 99.2% extraction accuracy.
+
+              {/* Wallpaper Picker List */}
+              <div>
+                <label className="font-bold text-[11px] block mb-1">Wallpaper:</label>
+                <div className="bg-white border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] p-1 h-28 overflow-y-auto space-y-0.5">
+                  {[
+                    { id: 'teal', label: '(None) - Classic Teal 98' },
+                    { id: 'clouds', label: 'Windows 98 Clouds' },
+                    { id: 'twilight', label: 'Twilight Mountain Ridge' },
+                    { id: 'bliss', label: 'Windows Bliss Hill' }
+                  ].map((w) => (
+                    <div
+                      key={w.id}
+                      onClick={() => {
+                        onPlayKeyClick();
+                        setWallpaperTheme(w.id as any);
+                      }}
+                      className={`px-2 py-1 cursor-pointer text-[11px] ${
+                        wallpaperTheme === w.id ? 'bg-[#000080] text-white' : 'hover:bg-gray-200'
+                      }`}
+                    >
+                      {w.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bottom Buttons */}
+              <div className="flex justify-end space-x-2 pt-2 border-t border-[#808080]">
+                <button
+                  onClick={() => closeWindow('display')}
+                  className="px-4 py-1 bg-[#c0c0c0] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] font-bold text-[11px]"
+                >
+                  OK
+                </button>
+                <button
+                  onClick={() => closeWindow('display')}
+                  className="px-4 py-1 bg-[#c0c0c0] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[11px]"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
@@ -1133,7 +1616,26 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* 9. WINDOWS 98 START MENU FLYOUT                           */}
+      {/* 10. DESKTOP RIGHT-CLICK CONTEXT MENU                      */}
+      {/* ========================================================= */}
+      {contextMenu && (
+        <div
+          style={{ left: `${contextMenu.x}px`, top: `${contextMenu.y}px` }}
+          className="absolute z-50 w-44 bg-[#c0c0c0] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] shadow-xl py-1 text-[11px] text-black"
+        >
+          <div onClick={() => { focusWindow('about'); setContextMenu(null); }} className="px-3 py-1 hover:bg-[#000080] hover:text-white cursor-pointer">About Me</div>
+          <div onClick={() => { focusWindow('projects'); setContextMenu(null); }} className="px-3 py-1 hover:bg-[#000080] hover:text-white cursor-pointer">Browse Projects</div>
+          <div onClick={() => { focusWindow('minesweeper'); setContextMenu(null); }} className="px-3 py-1 hover:bg-[#000080] hover:text-white cursor-pointer">Play Minesweeper</div>
+          <div onClick={() => { toggleWinampPlay(); setContextMenu(null); }} className="px-3 py-1 hover:bg-[#000080] hover:text-white cursor-pointer">
+            {winampPlaying ? 'Pause Lo-Fi Music' : 'Play Lo-Fi Music'}
+          </div>
+          <div className="border-t border-[#808080] my-1 mx-1" />
+          <div onClick={() => { focusWindow('display'); setContextMenu(null); }} className="px-3 py-1 hover:bg-[#000080] hover:text-white cursor-pointer font-bold">Properties (Wallpaper)</div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 11. WINDOWS 98 START MENU FLYOUT                          */}
       {/* ========================================================= */}
       {startOpen && (
         <div
@@ -1174,6 +1676,14 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
             </div>
 
             <div
+              onClick={() => { focusWindow('minesweeper'); setStartOpen(false); }}
+              className="px-3 py-1.5 flex items-center space-x-2 hover:bg-[#000080] hover:text-white cursor-pointer"
+            >
+              <span>💣</span>
+              <span><u>M</u>inesweeper.exe</span>
+            </div>
+
+            <div
               onClick={() => { focusWindow('dos'); setStartOpen(false); }}
               className="px-3 py-1.5 flex items-center space-x-2 hover:bg-[#000080] hover:text-white cursor-pointer"
             >
@@ -1197,6 +1707,14 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
               <span><u>O</u>utlook Express</span>
             </div>
 
+            <div
+              onClick={() => { focusWindow('display'); setStartOpen(false); }}
+              className="px-3 py-1.5 flex items-center space-x-2 hover:bg-[#000080] hover:text-white cursor-pointer"
+            >
+              <span>🖥️</span>
+              <span><u>D</u>isplay Properties</span>
+            </div>
+
             <div className="border-t border-[#808080] my-1 mx-2" />
 
             <div
@@ -1215,6 +1733,7 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
                 closeWindow('about');
                 closeWindow('projects');
                 closeWindow('winamp');
+                closeWindow('minesweeper');
                 closeWindow('dos');
                 closeWindow('resume');
                 closeWindow('contact');
@@ -1230,7 +1749,7 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* 10. AUTHENTIC WINDOWS 98 TASKBAR                           */}
+      {/* 12. AUTHENTIC WINDOWS 98 TASKBAR                          */}
       {/* ========================================================= */}
       <div className="absolute bottom-0 left-0 right-0 h-9 z-40 bg-[#c0c0c0] border-t-2 border-t-[#ffffff] border-b border-b-[#000000] flex items-center justify-between px-1 select-none">
         <div className="flex items-center space-x-1.5 h-full py-1">
