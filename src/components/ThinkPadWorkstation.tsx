@@ -1170,16 +1170,203 @@ export const ThinkPadWorkstation: React.FC = () => {
     sceneRef.current.screenMesh = screenMesh;
     setScreenMounted(true);
 
-    // (F) Desk Accessories
-    const coasterGeo = new THREE.CylinderGeometry(0.24, 0.25, 0.015, 24);
-    const coasterMat = new THREE.MeshStandardMaterial({ color: 0x6e3c1b, roughness: 0.7 });
-    const coasterMesh = new THREE.Mesh(coasterGeo, coasterMat);
-    coasterMesh.position.set(2.5, 0.008, 0.45);
+    // (F) Cozy Studio Desk Accessories (Warm, tactile, calming setup)
+
+    // 1. Large Charcoal Wool Felt Desk Mat (Grounds the laptop & mouse)
+    const deskMatGeo = new THREE.BoxGeometry(5.4, 0.014, 2.7);
+    const woolFeltMat = new THREE.MeshStandardMaterial({
+      color: 0x22252c,
+      roughness: 0.88,
+      metalness: 0.02
+    });
+    const deskMatMesh = new THREE.Mesh(deskMatGeo, woolFeltMat);
+    deskMatMesh.position.set(0, 0.007, 0.25);
+    deskMatMesh.receiveShadow = true;
+    scene.add(deskMatMesh);
+
+    // Stitched edge border for desk mat
+    const matBorderGeo = new THREE.BoxGeometry(5.44, 0.008, 2.74);
+    const matBorderMat = new THREE.MeshStandardMaterial({ color: 0x181a20, roughness: 0.9 });
+    const matBorderMesh = new THREE.Mesh(matBorderGeo, matBorderMat);
+    matBorderMesh.position.set(0, 0.004, 0.25);
+    matBorderMesh.receiveShadow = true;
+    scene.add(matBorderMesh);
+
+    // 2. Minimalist Ergonomic Studio Wireless Mouse (on right of desk mat)
+    const mouseGroup = new THREE.Group();
+    mouseGroup.position.set(2.15, 0.015, 0.45);
+    scene.add(mouseGroup);
+
+    const mouseBodyGeo = new THREE.BoxGeometry(0.28, 0.075, 0.46);
+    const mouseMat = new THREE.MeshPhysicalMaterial({
+      color: 0x242730,
+      metalness: 0.35,
+      roughness: 0.30,
+      clearcoat: 0.25
+    });
+    const mouseBody = new THREE.Mesh(mouseBodyGeo, mouseMat);
+    mouseBody.position.set(0, 0.038, 0);
+    mouseBody.castShadow = true;
+    mouseBody.receiveShadow = true;
+    mouseGroup.add(mouseBody);
+
+    // Mouse scroll wheel
+    const wheelGeo = new THREE.CylinderGeometry(0.018, 0.018, 0.03, 16);
+    wheelGeo.rotateZ(Math.PI / 2);
+    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8, roughness: 0.2 });
+    const wheelMesh = new THREE.Mesh(wheelGeo, wheelMat);
+    wheelMesh.position.set(0, 0.076, -0.10);
+    mouseGroup.add(wheelMesh);
+
+    // 3. Designer Articulated Architect Desk Lamp (Back left with warm glow)
+    const lampGroup = new THREE.Group();
+    lampGroup.position.set(-2.8, 0.015, -0.65);
+    scene.add(lampGroup);
+
+    const brassMat = new THREE.MeshStandardMaterial({
+      color: 0xb5935b,
+      metalness: 0.82,
+      roughness: 0.32
+    });
+    const darkMetalMat = new THREE.MeshStandardMaterial({
+      color: 0x22242a,
+      metalness: 0.75,
+      roughness: 0.35
+    });
+
+    // Lamp circular base
+    const lampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.34, 0.05, 28), brassMat);
+    lampBase.position.set(0, 0.025, 0);
+    lampBase.castShadow = true;
+    lampGroup.add(lampBase);
+
+    // Lower arm
+    const lowerArm = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.25, 16), darkMetalMat);
+    lowerArm.position.set(0.12, 0.62, 0.08);
+    lowerArm.rotation.z = -0.25;
+    lowerArm.castShadow = true;
+    lampGroup.add(lowerArm);
+
+    // Middle elbow joint
+    const elbowJoint = new THREE.Mesh(new THREE.SphereGeometry(0.055, 16, 16), brassMat);
+    elbowJoint.position.set(0.28, 1.20, 0.16);
+    lampGroup.add(elbowJoint);
+
+    // Upper arm angling towards center of desk
+    const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.15, 16), darkMetalMat);
+    upperArm.position.set(0.68, 1.55, 0.26);
+    upperArm.rotation.z = -1.15;
+    upperArm.rotation.y = 0.32;
+    upperArm.castShadow = true;
+    lampGroup.add(upperArm);
+
+    // Lamp shade joint & bell shade
+    const lampHeadGroup = new THREE.Group();
+    lampHeadGroup.position.set(1.18, 1.72, 0.42);
+    lampGroup.add(lampHeadGroup);
+
+    const shadeGeo = new THREE.ConeGeometry(0.26, 0.36, 24, 1, true);
+    shadeGeo.rotateX(Math.PI);
+    shadeGeo.rotateZ(0.40);
+    const shadeMesh = new THREE.Mesh(shadeGeo, darkMetalMat);
+    shadeMesh.castShadow = true;
+    lampHeadGroup.add(shadeMesh);
+
+    // Glowing warm bulb interior
+    const bulbMat = new THREE.MeshBasicMaterial({ color: 0xffedd5 });
+    const bulbMesh = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 16), bulbMat);
+    bulbMesh.position.set(0.04, -0.06, 0.02);
+    lampHeadGroup.add(bulbMesh);
+
+    // 4. Ceramic Potted Botanical Plant (Left side, brings calming life)
+    const plantGroup = new THREE.Group();
+    plantGroup.position.set(-2.45, 0.015, 0.55);
+    scene.add(plantGroup);
+
+    // Matte stoneware ceramic pot
+    const ceramicPotMat = new THREE.MeshPhysicalMaterial({
+      color: 0xeeebe2,
+      roughness: 0.35,
+      metalness: 0.05,
+      clearcoat: 0.15
+    });
+    const potMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.20, 0.42, 24), ceramicPotMat);
+    potMesh.position.set(0, 0.21, 0);
+    potMesh.castShadow = true;
+    potMesh.receiveShadow = true;
+    plantGroup.add(potMesh);
+
+    // Potting soil
+    const soilMat = new THREE.MeshStandardMaterial({ color: 0x1f1610, roughness: 0.95 });
+    const soilMesh = new THREE.Mesh(new THREE.CircleGeometry(0.23, 20), soilMat);
+    soilMesh.position.set(0, 0.39, 0);
+    soilMesh.rotation.x = -Math.PI / 2;
+    plantGroup.add(soilMesh);
+
+    // Organic green succulent / monstera leaves
+    const leafMat = new THREE.MeshStandardMaterial({
+      color: 0x3d6648,
+      roughness: 0.45,
+      metalness: 0.08,
+      side: THREE.DoubleSide
+    });
+    const leafGeo = new THREE.ConeGeometry(0.09, 0.38, 6);
+    leafGeo.rotateX(Math.PI / 2);
+
+    for (let i = 0; i < 9; i++) {
+      const angle = (i / 9) * Math.PI * 2;
+      const leaf = new THREE.Mesh(leafGeo, leafMat);
+      leaf.position.set(
+        Math.cos(angle) * 0.12,
+        0.42 + (i % 3) * 0.04,
+        Math.sin(angle) * 0.12
+      );
+      leaf.rotation.y = angle;
+      leaf.rotation.x = 0.55 + (i % 2) * 0.25;
+      leaf.castShadow = true;
+      plantGroup.add(leaf);
+    }
+
+    // 5. Hardcover Studio Journal & Brass Drafting Pen
+    const notebookGroup = new THREE.Group();
+    notebookGroup.position.set(-2.15, 0.015, 1.05);
+    notebookGroup.rotation.y = 0.12;
+    scene.add(notebookGroup);
+
+    // Linen hardcover cover
+    const bookCoverMat = new THREE.MeshStandardMaterial({ color: 0x223628, roughness: 0.75 });
+    const bookCover = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.038, 0.96), bookCoverMat);
+    bookCover.position.set(0, 0.019, 0);
+    bookCover.castShadow = true;
+    bookCover.receiveShadow = true;
+    notebookGroup.add(bookCover);
+
+    // Cream paper pages edge
+    const pagesMat = new THREE.MeshStandardMaterial({ color: 0xf5eedd, roughness: 0.9 });
+    const bookPages = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.030, 0.92), pagesMat);
+    bookPages.position.set(0.015, 0.019, 0);
+    notebookGroup.add(bookPages);
+
+    // Brass drafting pen resting on notebook
+    const penMat = new THREE.MeshStandardMaterial({ color: 0xc49d58, metalness: 0.85, roughness: 0.25 });
+    const penGeo = new THREE.CylinderGeometry(0.014, 0.014, 0.62, 12);
+    penGeo.rotateZ(Math.PI / 2);
+    const penMesh = new THREE.Mesh(penGeo, penMat);
+    penMesh.position.set(0.18, 0.045, -0.05);
+    penMesh.rotation.y = 0.08;
+    penMesh.castShadow = true;
+    notebookGroup.add(penMesh);
+
+    // 6. Glazed Ceramic Coffee Mug on Natural Cork Coaster
+    const corkMat = new THREE.MeshStandardMaterial({ color: 0xa87c4f, roughness: 0.85 });
+    const coasterGeo = new THREE.CylinderGeometry(0.26, 0.27, 0.016, 24);
+    const coasterMesh = new THREE.Mesh(coasterGeo, corkMat);
+    coasterMesh.position.set(2.45, 0.008, -0.15);
     coasterMesh.receiveShadow = true;
     scene.add(coasterMesh);
 
     const mugGroup = new THREE.Group();
-    mugGroup.position.set(2.5, 0.015, 0.45);
+    mugGroup.position.set(2.45, 0.016, -0.15);
     scene.add(mugGroup);
 
     const mugOuter = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.18, 0.42, 28), porcelainMugMat);
@@ -1197,6 +1384,40 @@ export const ThinkPadWorkstation: React.FC = () => {
     handleMesh.position.set(0.21, 0.21, 0);
     handleMesh.rotation.y = Math.PI / 2;
     mugGroup.add(handleMesh);
+
+    // 7. Studio Back Wall: Floating Wooden Shelf & Minimalist Framed Print
+    const shelfMat = new THREE.MeshStandardMaterial({ color: 0x4a3a2e, roughness: 0.65 });
+    const shelfGeo = new THREE.BoxGeometry(5.6, 0.06, 0.42);
+    const shelfMesh = new THREE.Mesh(shelfGeo, shelfMat);
+    shelfMesh.position.set(0, 3.4, -2.55);
+    shelfMesh.castShadow = true;
+    shelfMesh.receiveShadow = true;
+    scene.add(shelfMesh);
+
+    // Framed minimalist art print on shelf
+    const frameMat = new THREE.MeshStandardMaterial({ color: 0x181a20, roughness: 0.5 });
+    const frameGeo = new THREE.BoxGeometry(1.4, 1.8, 0.05);
+    const frameMesh = new THREE.Mesh(frameGeo, frameMat);
+    frameMesh.position.set(-0.9, 4.35, -2.52);
+    frameMesh.rotation.x = -0.05;
+    frameMesh.castShadow = true;
+    scene.add(frameMesh);
+
+    const canvasMat = new THREE.MeshBasicMaterial({ color: 0xf4eedd });
+    const canvasMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 1.65), canvasMat);
+    canvasMesh.position.set(-0.9, 4.35, -2.49);
+    canvasMesh.rotation.x = -0.05;
+    scene.add(canvasMesh);
+
+    // 3 Studio Books on the shelf
+    const bookColors = [0x7a3e3e, 0x2e4a3e, 0x3e4266];
+    bookColors.forEach((col, idx) => {
+      const bMat = new THREE.MeshStandardMaterial({ color: col, roughness: 0.7 });
+      const bMesh = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.72 + (idx % 2) * 0.08, 0.32), bMat);
+      bMesh.position.set(0.8 + idx * 0.16, 3.8, -2.52);
+      bMesh.castShadow = true;
+      scene.add(bMesh);
+    });
 
     // 6. Interaction Raycaster (Clicking laptop when closed opens it!)
     const raycaster = new THREE.Raycaster();
