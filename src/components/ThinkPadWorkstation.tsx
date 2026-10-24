@@ -344,114 +344,176 @@ function generateRichWalnutDeskTexture(): THREE.CanvasTexture {
   return texture;
 }
 
-// 2. Modern Space Gray Unibody Outer Lid Texture
-function generateModernOuterLidTexture(): THREE.CanvasTexture {
+// 2. Vintage 90s Matte Charcoal Outer Lid Texture (with Embossed MOGRO Badge & Latch Sliders)
+function generateRetroOuterLidTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 2048;
   canvas.height = 1360;
   const ctx = canvas.getContext('2d')!;
 
-  // Space Gray anodized aluminum base
-  const bgGrad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  bgGrad.addColorStop(0, '#24272f');
-  bgGrad.addColorStop(0.5, '#2b2f38');
-  bgGrad.addColorStop(1, '#22252d');
+  // Sturdy late-90s matte dark charcoal / slate ABS composite
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  bgGrad.addColorStop(0, '#26282e');
+  bgGrad.addColorStop(0.5, '#2b2d35');
+  bgGrad.addColorStop(1, '#22242a');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Subtle bead-blasted aluminum grain
-  ctx.globalAlpha = 0.03;
-  for (let i = 0; i < 30000; i++) {
+  // Mechanical matte stipple grain (coarse vintage polymer)
+  ctx.globalAlpha = 0.045;
+  for (let i = 0; i < 40000; i++) {
     ctx.fillStyle = Math.random() > 0.5 ? '#ffffff' : '#000000';
     ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
   }
   ctx.globalAlpha = 1.0;
 
-  // CNC diamond-cut chamfer edge highlight
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+  // Signature 90s Structural Stiffening Chamfers & Grooves
+  ctx.strokeStyle = '#181a1f';
   ctx.lineWidth = 4;
-  ctx.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);
+  ctx.strokeRect(32, 32, canvas.width - 64, canvas.height - 64);
 
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
   ctx.lineWidth = 2;
-  ctx.strokeRect(6, 6, canvas.width - 12, canvas.height - 12);
+  ctx.strokeRect(36, 36, canvas.width - 72, canvas.height - 72);
 
-  // Centered Minimalist Developer Monogram Emblem (Polished Mirror Nickel)
+  // Inset lid accent ridges (parallel structural lines across top & bottom)
+  [120, canvas.height - 120].forEach((y) => {
+    ctx.beginPath();
+    ctx.moveTo(120, y);
+    ctx.lineTo(canvas.width - 120, y);
+    ctx.strokeStyle = '#15171b';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(120, y + 2);
+    ctx.lineTo(canvas.width - 120, y + 2);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
+
+  // Centered Vintage MOGRO Embossed Metallic Emblem
   const cx = canvas.width / 2;
   const cy = canvas.height / 2;
 
-  // Outer polished ring
+  // Recessed badge plate
+  ctx.fillStyle = '#1c1e23';
   ctx.beginPath();
-  ctx.arc(cx, cy, 64, 0, Math.PI * 2);
-  const ringGrad = ctx.createLinearGradient(cx - 64, cy - 64, cx + 64, cy + 64);
-  ringGrad.addColorStop(0, '#e2e8f0');
-  ringGrad.addColorStop(0.5, '#64748b');
-  ringGrad.addColorStop(1, '#cbd5e1');
-  ctx.strokeStyle = ringGrad;
-  ctx.lineWidth = 3.5;
+  ctx.roundRect(cx - 210, cy - 65, 420, 130, 8);
+  ctx.fill();
+  ctx.strokeStyle = '#101115';
+  ctx.lineWidth = 3;
   ctx.stroke();
 
-  // Subtle dark mirror core
+  // Inset brushed aluminum badge
+  const plateGrad = ctx.createLinearGradient(cx - 200, cy - 55, cx + 200, cy + 55);
+  plateGrad.addColorStop(0, '#7a828e');
+  plateGrad.addColorStop(0.3, '#a3abb8');
+  plateGrad.addColorStop(0.7, '#676e7a');
+  plateGrad.addColorStop(1, '#8e96a4');
+  ctx.fillStyle = plateGrad;
   ctx.beginPath();
-  ctx.arc(cx, cy, 58, 0, Math.PI * 2);
-  const coreGrad = ctx.createRadialGradient(cx - 15, cy - 15, 5, cx, cy, 60);
-  coreGrad.addColorStop(0, '#334155');
-  coreGrad.addColorStop(0.7, '#1e293b');
-  coreGrad.addColorStop(1, '#0f172a');
-  ctx.fillStyle = coreGrad;
+  ctx.roundRect(cx - 200, cy - 55, 400, 110, 6);
   ctx.fill();
 
-  // Geometric Lambda / Engineering Monogram
-  ctx.font = '600 48px "JetBrains Mono", system-ui, sans-serif';
-  ctx.fillStyle = '#f8fafc';
+  // Badge beveled border
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(cx - 198, cy - 53, 396, 106);
+
+  // Embossed MOGRO Logotype
+  ctx.font = '900 italic 54px "Arial Black", Impact, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(56, 189, 248, 0.6)';
-  ctx.shadowBlur = 12;
-  ctx.fillText('λ', cx, cy - 2);
-  ctx.shadowBlur = 0;
 
-  // Front lip machined scoop notch at bottom center
-  ctx.save();
-  ctx.fillStyle = '#181a20';
-  ctx.beginPath();
-  ctx.roundRect(cx - 110, canvas.height - 16, 220, 16, 8);
-  ctx.fill();
-  ctx.restore();
+  // Emboss shadow
+  ctx.fillStyle = '#2d333b';
+  ctx.fillText('MOGRO', cx + 2, cy - 8 + 2);
+
+  // Main metallic letters
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillText('MOGRO', cx, cy - 8);
+
+  // Sub-badge text
+  ctx.font = 'bold tracking-[0.25em] 15px "JetBrains Mono", monospace';
+  ctx.fillStyle = '#1e2530';
+  ctx.fillText('PENTIUM II NOTEBOOK 98', cx, cy + 30);
+
+  // Front lip mechanical sliding latches (Dual spring release catches)
+  [cx - 240, cx + 240].forEach((lx) => {
+    ctx.fillStyle = '#16181d';
+    ctx.beginPath();
+    ctx.roundRect(lx - 45, canvas.height - 24, 90, 24, 4);
+    ctx.fill();
+
+    // Latch grip ridges
+    ctx.strokeStyle = '#383c46';
+    ctx.lineWidth = 2;
+    for (let r = -30; r <= 30; r += 10) {
+      ctx.beginPath();
+      ctx.moveTo(lx + r, canvas.height - 18);
+      ctx.lineTo(lx + r, canvas.height - 6);
+      ctx.stroke();
+    }
+  });
+
+  // Rear hinge external status LEDs (Power Green & Battery Amber)
+  const drawLidLed = (x: number, y: number, color: string, label: string) => {
+    ctx.beginPath();
+    ctx.arc(x, y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.font = 'bold 11px system-ui, sans-serif';
+    ctx.fillStyle = '#8f95a3';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x, y + 20);
+  };
+  drawLidLed(160, 75, '#22c55e', 'POWER');
+  drawLidLed(220, 75, '#f59e0b', 'BATTERY');
 
   return new THREE.CanvasTexture(canvas);
 }
 
-// 3. Modern Ultrabook Keyboard Deck Texture with Dual CNC Speaker Grilles
-function generateModernKeyboardDeckTexture(): THREE.CanvasTexture {
+// 3. Vintage 90s Ergonomic Keyboard Deck with Inset Status LED Panel & Dual Clickpad Buttons
+function generateRetroKeyboardDeckTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 3072;
   canvas.height = 1536;
   const ctx = canvas.getContext('2d')!;
 
-  // Space Gray anodized aluminum chassis
+  // Matte dark slate ABS chassis
   const chassisGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  chassisGrad.addColorStop(0, '#262931');
-  chassisGrad.addColorStop(0.6, '#282b34');
-  chassisGrad.addColorStop(1, '#23262d');
+  chassisGrad.addColorStop(0, '#272930');
+  chassisGrad.addColorStop(0.5, '#2b2d35');
+  chassisGrad.addColorStop(1, '#23252b');
   ctx.fillStyle = chassisGrad;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // CNC Micro-Drilled Speaker Grilles on Left & Right
-  const drawSpeakerGrille = (startX: number, endX: number, topY: number, bottomY: number) => {
+  // Micro polymer stipple texture
+  ctx.globalAlpha = 0.04;
+  for (let i = 0; i < 45000; i++) {
+    ctx.fillStyle = Math.random() > 0.5 ? '#ffffff' : '#000000';
+    ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
+  }
+  ctx.globalAlpha = 1.0;
+
+  // Dual stereo speaker grilles at top left & right
+  const drawRetroSpeakerGrille = (startX: number, endX: number, topY: number, bottomY: number) => {
     ctx.save();
-    const dotSpacing = 16;
-    for (let x = startX; x <= endX; x += dotSpacing) {
-      for (let y = topY; y <= bottomY; y += dotSpacing) {
-        // Subtle acoustic perforation hole
+    for (let x = startX; x <= endX; x += 18) {
+      for (let y = topY; y <= bottomY; y += 18) {
         ctx.beginPath();
-        ctx.arc(x, y, 2.8, 0, Math.PI * 2);
-        ctx.fillStyle = '#101216';
+        ctx.arc(x, y, 3.2, 0, Math.PI * 2);
+        ctx.fillStyle = '#14161b';
         ctx.fill();
 
-        // Micro highlight on bottom rim
         ctx.beginPath();
-        ctx.arc(x, y + 0.8, 2.2, 0, Math.PI);
+        ctx.arc(x, y + 0.8, 2.4, 0, Math.PI);
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
         ctx.lineWidth = 0.8;
         ctx.stroke();
@@ -459,35 +521,79 @@ function generateModernKeyboardDeckTexture(): THREE.CanvasTexture {
     }
     ctx.restore();
   };
+  drawRetroSpeakerGrille(120, 360, 90, 880);
+  drawRetroSpeakerGrille(2712, 2952, 90, 880);
 
-  // Left speaker grille
-  drawSpeakerGrille(100, 360, 90, 880);
-  // Right speaker grille
-  drawSpeakerGrille(2712, 2972, 90, 880);
-
-  // Centered Recessed Keyboard Well
+  // Recessed Keyboard Well
   const wellW = 2240;
   const wellH = 830;
   const wellX = (canvas.width - wellW) / 2; // 416
-  const wellY = 70;
+  const wellY = 75;
 
-  // Dark recessed well
-  ctx.fillStyle = '#14161a';
+  // Inset status display bar above keyboard
+  ctx.fillStyle = '#111317';
   ctx.beginPath();
-  ctx.roundRect(wellX, wellY, wellW, wellH, 14);
+  ctx.roundRect(wellX, 16, wellW, 46, 6);
   ctx.fill();
+  ctx.strokeStyle = '#090a0d';
+  ctx.lineWidth = 2;
+  ctx.stroke();
 
-  ctx.strokeStyle = '#0d0e12';
+  // Status jewel LEDs (Power, Battery, HDD, NumLock, CapsLock, ScrollLock)
+  const drawStatusLed = (x: number, y: number, color: string, icon: string, label: string) => {
+    // LED jewel
+    ctx.beginPath();
+    ctx.arc(x, y, 5.5, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 6;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Label
+    ctx.font = 'bold 10px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#94a3b8';
+    ctx.textAlign = 'left';
+    ctx.fillText(`${icon} ${label}`, x + 10, y + 3.5);
+  };
+  drawStatusLed(wellX + 40, 39, '#22c55e', '⚡', 'PWR');
+  drawStatusLed(wellX + 170, 39, '#22c55e', '🔋', 'BATT');
+  drawStatusLed(wellX + 310, 39, '#f59e0b', '💽', 'HDD');
+  drawStatusLed(wellX + 440, 39, '#22c55e', '1', 'NUM');
+  drawStatusLed(wellX + 560, 39, '#22c55e', 'A', 'CAPS');
+  drawStatusLed(wellX + 690, 39, '#22c55e', '↓', 'SCRL');
+
+  // Round mechanical silver Power button on far right of status bar
+  const pwrX = wellX + wellW - 55;
+  const pwrY = 39;
+  ctx.beginPath();
+  ctx.arc(pwrX, pwrY, 15, 0, Math.PI * 2);
+  const pwrGrad = ctx.createRadialGradient(pwrX - 3, pwrY - 3, 2, pwrX, pwrY, 15);
+  pwrGrad.addColorStop(0, '#e2e8f0');
+  pwrGrad.addColorStop(0.7, '#64748b');
+  pwrGrad.addColorStop(1, '#334155');
+  ctx.fillStyle = pwrGrad;
+  ctx.fill();
+  ctx.strokeStyle = '#1e293b';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.font = 'bold 14px system-ui';
+  ctx.fillStyle = '#22c55e';
+  ctx.textAlign = 'center';
+  ctx.fillText('⏻', pwrX, pwrY + 4);
+
+  // Recessed Keyboard Tub
+  ctx.fillStyle = '#14161b';
+  ctx.beginPath();
+  ctx.roundRect(wellX, wellY, wellW, wellH, 10);
+  ctx.fill();
+  ctx.strokeStyle = '#0a0b0e';
   ctx.lineWidth = 4;
   ctx.stroke();
 
-  // Subtle inner shadow
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
-  ctx.lineWidth = 6;
-  ctx.strokeRect(wellX + 2, wellY + 2, wellW - 4, wellH - 4);
-
-  // Helper function to draw modern chiclet keycaps
-  const drawModernKey = (
+  // Helper function to draw authentic contoured late-90s keycaps
+  const drawRetroKey = (
     x: number,
     y: number,
     w: number,
@@ -498,308 +604,471 @@ function generateModernKeyboardDeckTexture(): THREE.CanvasTexture {
       fontSize?: number;
       isSpecial?: boolean;
       align?: 'center' | 'left';
-      isTouchID?: boolean;
+      accentColor?: string;
     } = {}
   ) => {
-    const { fontSize = 28, isSpecial = false, align = 'center', isTouchID = false } = options;
+    ctx.save();
+    const r = 5;
 
-    if (isTouchID) {
-      // Modern circular TouchID / Power sensor
-      ctx.fillStyle = '#0a0b0e';
-      ctx.beginPath();
-      ctx.roundRect(x, y, w, h, 8);
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(x + w / 2, y + h / 2, 22, 0, Math.PI * 2);
-      ctx.fillStyle = '#1e2229';
-      ctx.fill();
-      ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      return;
-    }
-
-    // Key shadow
-    ctx.fillStyle = '#07080a';
+    // Key base shadow
+    ctx.fillStyle = '#0a0b0e';
     ctx.beginPath();
-    ctx.roundRect(x + 1, y + 2, w, h, 8);
+    ctx.roundRect(x, y + 3, w, h, r);
     ctx.fill();
 
-    // Key body gradient
+    // Sculptured key top with 90s dual-tone gradient
     const keyGrad = ctx.createLinearGradient(x, y, x, y + h);
-    if (isSpecial) {
-      keyGrad.addColorStop(0, '#24272f');
-      keyGrad.addColorStop(1, '#181a20');
+    if (options.isSpecial) {
+      keyGrad.addColorStop(0, '#2a2c34');
+      keyGrad.addColorStop(0.6, '#23252c');
+      keyGrad.addColorStop(1, '#1b1d23');
     } else {
-      keyGrad.addColorStop(0, '#2a2d36');
-      keyGrad.addColorStop(1, '#1b1d24');
+      keyGrad.addColorStop(0, '#32353e');
+      keyGrad.addColorStop(0.5, '#292b33');
+      keyGrad.addColorStop(1, '#21232a');
     }
     ctx.fillStyle = keyGrad;
     ctx.beginPath();
-    ctx.roundRect(x, y, w, h, 7);
+    ctx.roundRect(x, y, w, h, r);
     ctx.fill();
 
-    // Subtle key border
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-    ctx.lineWidth = 1.0;
+    // Top bevel highlight
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y + 1);
+    ctx.lineTo(x + w - r, y + 1);
     ctx.stroke();
 
-    // Laser-etched white legend
-    ctx.font = `500 ${fontSize}px system-ui, -apple-system, sans-serif`;
-    ctx.fillStyle = '#f8fafc';
-    ctx.shadowColor = 'rgba(255, 255, 255, 0.25)';
-    ctx.shadowBlur = 3;
+    // Bottom bevel shadow
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y + h - 1);
+    ctx.lineTo(x + w - r, y + h - 1);
+    ctx.stroke();
 
-    if (align === 'center') {
-      ctx.textAlign = 'center';
-      const textY = subLabel ? y + h / 2 + fontSize * 0.15 : y + h / 2 + fontSize * 0.35;
-      ctx.fillText(label, x + w / 2, textY);
-    } else {
+    // Labeling
+    const fontSize = options.fontSize || 22;
+    ctx.font = `600 ${fontSize}px system-ui, -apple-system, sans-serif`;
+    ctx.fillStyle = options.accentColor || '#f1f5f9';
+
+    if (options.align === 'left') {
       ctx.textAlign = 'left';
-      ctx.fillText(label, x + 14, y + h / 2 + fontSize * 0.35);
-    }
-    ctx.shadowBlur = 0;
-
-    // Sub-label
-    if (subLabel) {
-      ctx.font = `400 18px system-ui, sans-serif`;
-      ctx.fillStyle = '#94a3b8';
+      ctx.textBaseline = 'top';
+      ctx.fillText(label, x + 10, y + 8);
+    } else {
       ctx.textAlign = 'center';
-      ctx.fillText(subLabel, x + w / 2, y + 26);
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, x + w / 2, y + h / 2 - (subLabel ? 6 : 0));
     }
+
+    if (subLabel) {
+      ctx.font = '500 13px system-ui, sans-serif';
+      ctx.fillStyle = '#60a5fa'; // Blue Fn sub-labels
+      ctx.textAlign = 'center';
+      ctx.fillText(subLabel, x + w / 2, y + h / 2 + 13);
+    }
+    ctx.restore();
   };
 
-  // Keyboard Rows Layout
-  const gap = 12;
-  const stdW = 126;
+  // Keyboard Rows layout
+  const startX = wellX + 16;
+  const startY = wellY + 16;
+  const kw = 126;
+  const kh = 114;
+  const gap = 14;
 
-  // ROW 0: Function Keys
-  const r0Y = wellY + 14;
-  const r0H = 75;
-  const fnW = 110;
-  let cx = wellX + 16;
-
-  drawModernKey(cx, r0Y, 115, r0H, 'esc', '', { fontSize: 22 });
-  cx += 115 + gap;
-
-  const fKeys = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'];
-  fKeys.forEach((f) => {
-    drawModernKey(cx, r0Y, fnW, r0H, f, '', { fontSize: 20 });
-    cx += fnW + gap;
+  // Row 0: Esc + Function Keys F1-F12 + PrtSc/Pause/Del
+  const fLabels = [
+    { m: 'Esc', s: '' },
+    { m: 'F1', s: '?' }, { m: 'F2', s: 'LCD' }, { m: 'F3', s: 'BAT' }, { m: 'F4', s: 'Zzz' },
+    { m: 'F5', s: 'SPK' }, { m: 'F6', s: 'MUT' }, { m: 'F7', s: 'DIM' }, { m: 'F8', s: 'BRT' },
+    { m: 'F9', s: 'EXT' }, { m: 'F10', s: 'PAD' }, { m: 'F11', s: 'NUM' }, { m: 'F12', s: 'SCR' },
+    { m: 'PrtSc', s: 'SysRq' }, { m: 'Pause', s: 'Break' }, { m: 'Del', s: 'Ins' }
+  ];
+  let curX = startX;
+  const fKw = 123;
+  const fKh = 74;
+  fLabels.forEach((fn) => {
+    drawRetroKey(curX, startY, fKw, fKh, fn.m, fn.s, { fontSize: 15, isSpecial: true });
+    curX += fKw + gap;
   });
 
-  // TouchID / Power key at top right
-  drawModernKey(cx, r0Y, 105, r0H, '', '', { isTouchID: true });
-
-  // ROW 1: Numbers (~ ` to delete)
-  const r1Y = r0Y + r0H + gap;
-  const r1H = 135;
-  cx = wellX + 16;
-
-  const row1 = ['~ `', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '- _', '= +'];
+  // Row 1: Number Row
+  const row1 = ['~ `', '! 1', '@ 2', '# 3', '$ 4', '% 5', '^ 6', '& 7', '* 8', '( 9', ') 0', '_ -', '+ =', 'Backspace'];
+  let yPos = startY + fKh + gap + 4;
+  curX = startX;
   row1.forEach((k) => {
-    drawModernKey(cx, r1Y, stdW, r1H, k, '', { fontSize: 26 });
-    cx += stdW + gap;
+    const isBack = k === 'Backspace';
+    const w = isBack ? 260 : kw;
+    drawRetroKey(curX, yPos, w, kh, k, '', { isSpecial: isBack, fontSize: isBack ? 17 : 20 });
+    curX += w + gap;
   });
-  const delW = wellX + wellW - 16 - cx;
-  drawModernKey(cx, r1Y, delW, r1H, 'delete', '', { fontSize: 22, isSpecial: true });
 
-  // ROW 2: Tab, QWERTYUIOP, [ ], \
-  const r2Y = r1Y + r1H + gap;
-  const r2H = 135;
-  cx = wellX + 16;
-
-  const tabW = 180;
-  drawModernKey(cx, r2Y, tabW, r2H, 'tab', '', { fontSize: 22, isSpecial: true, align: 'left' });
-  cx += tabW + gap;
-
-  const row2 = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']'];
+  // Row 2: Tab + QWERTY
+  const row2 = ['Tab', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{ [', '} ]', '| \\'];
+  yPos += kh + gap;
+  curX = startX;
   row2.forEach((k) => {
-    drawModernKey(cx, r2Y, stdW, r2H, k, '', { fontSize: 28 });
-    cx += stdW + gap;
+    const isTab = k === 'Tab';
+    const w = isTab ? 190 : kw;
+    drawRetroKey(curX, yPos, w, kh, k, '', { isSpecial: isTab, fontSize: 19 });
+    curX += w + gap;
   });
-  const slashW = wellX + wellW - 16 - cx;
-  drawModernKey(cx, r2Y, slashW, r2H, '\\', '', { fontSize: 26 });
 
-  // ROW 3: CapsLock, ASDFGHJKL, Return
-  const r3Y = r2Y + r2H + gap;
-  const r3H = 135;
-  cx = wellX + 16;
-
-  const capsW = 215;
-  drawModernKey(cx, r3Y, capsW, r3H, 'caps lock', '', { fontSize: 22, isSpecial: true, align: 'left' });
-  cx += capsW + gap;
-
-  const row3 = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\''];
+  // Row 3: CapsLock + ASDF + Enter
+  const row3 = ['Caps Lock', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ': ;', '\" \'', 'Enter'];
+  yPos += kh + gap;
+  curX = startX;
   row3.forEach((k) => {
-    drawModernKey(cx, r3Y, stdW, r3H, k, '', { fontSize: 28 });
-    cx += stdW + gap;
+    const isCaps = k === 'Caps Lock';
+    const isEnter = k === 'Enter';
+    const w = isCaps ? 225 : isEnter ? 239 : kw;
+    drawRetroKey(curX, yPos, w, kh, k, '', { isSpecial: isCaps || isEnter, fontSize: 18 });
+    curX += w + gap;
   });
-  const returnW = wellX + wellW - 16 - cx;
-  drawModernKey(cx, r3Y, returnW, r3H, 'return', '', { fontSize: 22, isSpecial: true });
 
-  // ROW 4: Shift, ZXCVBNM, Shift
-  const r4Y = r3Y + r3H + gap;
-  const r4H = 135;
-  cx = wellX + 16;
-
-  const lShiftW = 275;
-  drawModernKey(cx, r4Y, lShiftW, r4H, 'shift', '', { fontSize: 22, isSpecial: true, align: 'left' });
-  cx += lShiftW + gap;
-
-  const row4 = ['Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?'];
+  // Row 4: Shift + ZXCV + Shift
+  const row4 = ['Shift', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '< ,', '> .', '? /', '▲', 'Shift'];
+  yPos += kh + gap;
+  curX = startX;
   row4.forEach((k) => {
-    drawModernKey(cx, r4Y, stdW, r4H, k, '', { fontSize: 28 });
-    cx += stdW + gap;
+    const isShift = k === 'Shift';
+    const w = isShift ? (curX === startX ? 280 : 254) : kw;
+    drawRetroKey(curX, yPos, w, kh, k, '', { isSpecial: isShift, fontSize: 18 });
+    curX += w + gap;
   });
-  const rShiftW = wellX + wellW - 16 - cx;
-  drawModernKey(cx, r4Y, rShiftW, r4H, 'shift', '', { fontSize: 22, isSpecial: true });
 
-  // ROW 5: Bottom Modifier Row & Spacebar & Inverted-T Arrows
-  const r5Y = r4Y + r4H + gap;
-  const r5H = 145;
-  cx = wellX + 16;
+  // Row 5: Ctrl, Fn, Win98 Logo, Alt, Space, Alt, Win98 Menu, Ctrl, ◀, ▼, ▶
+  yPos += kh + gap;
+  curX = startX;
+  drawRetroKey(curX, yPos, 140, kh, 'Ctrl', '', { isSpecial: true, fontSize: 16 }); curX += 140 + gap;
+  drawRetroKey(curX, yPos, 120, kh, 'Fn', '', { isSpecial: true, fontSize: 16, accentColor: '#60a5fa' }); curX += 120 + gap;
+  drawRetroKey(curX, yPos, 120, kh, '🪟', '', { isSpecial: true, fontSize: 20 }); curX += 120 + gap;
+  drawRetroKey(curX, yPos, 130, kh, 'Alt', '', { isSpecial: true, fontSize: 16 }); curX += 130 + gap;
 
-  drawModernKey(cx, r5Y, 115, r5H, 'fn', '', { fontSize: 20, isSpecial: true });
-  cx += 115 + gap;
+  // Spacebar
+  const spaceW = 760;
+  drawRetroKey(curX, yPos, spaceW, kh, '', '', { isSpecial: false }); curX += spaceW + gap;
 
-  drawModernKey(cx, r5Y, 125, r5H, 'control', '', { fontSize: 20, isSpecial: true });
-  cx += 125 + gap;
+  drawRetroKey(curX, yPos, 130, kh, 'Alt', '', { isSpecial: true, fontSize: 16 }); curX += 130 + gap;
+  drawRetroKey(curX, yPos, 120, kh, '📑', '', { isSpecial: true, fontSize: 18 }); curX += 120 + gap;
+  drawRetroKey(curX, yPos, 140, kh, 'Ctrl', '', { isSpecial: true, fontSize: 16 }); curX += 140 + gap;
+  drawRetroKey(curX, yPos, kw, kh, '◀', '', { isSpecial: true, fontSize: 16 }); curX += kw + gap;
+  drawRetroKey(curX, yPos, kw, kh, '▼', '', { isSpecial: true, fontSize: 16 }); curX += kw + gap;
+  drawRetroKey(curX, yPos, kw, kh, '▶', '', { isSpecial: true, fontSize: 16 });
 
-  drawModernKey(cx, r5Y, 135, r5H, 'option', '', { fontSize: 20, isSpecial: true });
-  cx += 135 + gap;
+  // Palm Rest Area (Center Trackpad + Left/Right Badges)
+  const palmY = wellY + wellH + 30;
 
-  drawModernKey(cx, r5Y, 175, r5H, 'command', '', { fontSize: 20, isSpecial: true });
-  cx += 175 + gap;
+  // Authentic 90s Trackpad Well & Dual Click Buttons
+  const padCenterX = canvas.width / 2;
+  const padBoxW = 440;
+  const padBoxH = 440;
 
-  // Wide Spacebar
-  const spaceW = 750;
-  drawModernKey(cx, r5Y, spaceW, r5H, '', '', { fontSize: 24 });
-  cx += spaceW + gap;
+  // Recessed Trackpad Foundation
+  ctx.fillStyle = '#181a20';
+  ctx.beginPath();
+  ctx.roundRect(padCenterX - padBoxW / 2, palmY, padBoxW, padBoxH, 10);
+  ctx.fill();
+  ctx.strokeStyle = '#0e0f14';
+  ctx.lineWidth = 3;
+  ctx.stroke();
 
-  drawModernKey(cx, r5Y, 175, r5H, 'command', '', { fontSize: 20, isSpecial: true });
-  cx += 175 + gap;
+  // Active capacitive touch surface
+  const touchW = padBoxW - 32;
+  const touchH = 260;
+  const touchX = padCenterX - touchW / 2;
+  const touchY = palmY + 16;
+  const touchGrad = ctx.createLinearGradient(touchX, touchY, touchX, touchY + touchH);
+  touchGrad.addColorStop(0, '#2e313a');
+  touchGrad.addColorStop(1, '#23252c');
+  ctx.fillStyle = touchGrad;
+  ctx.beginPath();
+  ctx.roundRect(touchX, touchY, touchW, touchH, 6);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
 
-  drawModernKey(cx, r5Y, 135, r5H, 'option', '', { fontSize: 20, isSpecial: true });
-  cx += 135 + gap;
+  // Dual Physical Clickpad Buttons (Left & Right with tactile central divider)
+  const btnY = touchY + touchH + 16;
+  const btnW = (touchW - 14) / 2;
+  const btnH = 120;
 
-  // Inverted-T Arrow Cluster
-  const arrowW = 95;
-  const arrowHalfH = (r5H - gap) / 2;
+  const drawClickBtn = (bx: number, by: number, bw: number, bh: number, isLeft: boolean) => {
+    // Button base
+    const btnGrad = ctx.createLinearGradient(bx, by, bx, by + bh);
+    btnGrad.addColorStop(0, '#363944');
+    btnGrad.addColorStop(0.5, '#2c2e37');
+    btnGrad.addColorStop(1, '#21232a');
+    ctx.fillStyle = btnGrad;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bw, bh, 6);
+    ctx.fill();
 
-  drawModernKey(cx + arrowW + gap, r5Y, arrowW, arrowHalfH, '▲', '', { fontSize: 16 });
-  drawModernKey(cx, r5Y + arrowHalfH + gap, arrowW, arrowHalfH, '◀', '', { fontSize: 16 });
-  drawModernKey(cx + arrowW + gap, r5Y + arrowHalfH + gap, arrowW, arrowHalfH, '▼', '', { fontSize: 16 });
-  drawModernKey(cx + (arrowW + gap) * 2, r5Y + arrowHalfH + gap, arrowW, arrowHalfH, '▶', '', { fontSize: 16 });
+    // Top bevel highlight
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(bx + 4, by + 2);
+    ctx.lineTo(bx + bw - 4, by + 2);
+    ctx.stroke();
+
+    // Bottom bevel shadow
+    ctx.strokeStyle = '#0e0f14';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(bx + 4, by + bh - 2);
+    ctx.lineTo(bx + bw - 4, by + bh - 2);
+    ctx.stroke();
+  };
+  drawClickBtn(touchX, btnY, btnW, btnH, true);
+  drawClickBtn(touchX + btnW + 14, btnY, btnW, btnH, false);
+
+  // Center divider groove between buttons
+  ctx.fillStyle = '#101217';
+  ctx.fillRect(touchX + btnW + 5, btnY + 8, 4, btnH - 16);
+
+  // ==========================================
+  // AUTHENTIC LATE-90s PALM REST BADGES
+  // ==========================================
+
+  // BADGE 1 (Left Palm Rest): Intel Inside Pentium II Holographic Badge
+  const b1X = 420;
+  const b1Y = palmY + 60;
+  const bW = 210;
+  const bH = 260;
+
+  // Silver beveled sticker plate
+  ctx.fillStyle = '#081738';
+  ctx.beginPath();
+  ctx.roundRect(b1X, b1Y, bW, bH, 8);
+  ctx.fill();
+
+  ctx.strokeStyle = '#d4af37'; // Gold foil rim
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Blue cosmic swirl
+  const swirlGrad = ctx.createRadialGradient(b1X + bW / 2, b1Y + 70, 5, b1X + bW / 2, b1Y + 70, 80);
+  swirlGrad.addColorStop(0, '#38bdf8');
+  swirlGrad.addColorStop(0.5, '#1d4ed8');
+  swirlGrad.addColorStop(1, '#0b193d');
+  ctx.fillStyle = swirlGrad;
+  ctx.beginPath();
+  ctx.arc(b1X + bW / 2, b1Y + 80, 60, 0, Math.PI * 2);
+  ctx.fill();
+
+  // "intel" logo in gold/white
+  ctx.font = 'bold 36px "Arial Black", sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.fillText('intel', b1X + bW / 2, b1Y + 80);
+
+  // "inside" in script
+  ctx.font = 'italic bold 22px Georgia, serif';
+  ctx.fillStyle = '#fde047'; // Gold
+  ctx.fillText('inside™', b1X + bW / 2, b1Y + 115);
+
+  // Gold separator line
+  ctx.strokeStyle = '#fde047';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(b1X + 25, b1Y + 155);
+  ctx.lineTo(b1X + bW - 25, b1Y + 155);
+  ctx.stroke();
+
+  // "pentium II"
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('pentium® II', b1X + bW / 2, b1Y + 195);
+
+  ctx.font = 'bold 11px system-ui';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText('PROCESSOR 400MHz', b1X + bW / 2, b1Y + 225);
+
+  // BADGE 2 (Right Palm Rest): Designed for Mogrosoft WINOWS98
+  const b2X = canvas.width - 420 - bW;
+  const b2Y = palmY + 60;
+
+  // White beveled sticker plate
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect(b2X, b2Y, bW, bH, 8);
+  ctx.fill();
+
+  ctx.strokeStyle = '#808080';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Flying 4-Color Tiles Flag
+  const fx = b2X + bW / 2 - 25;
+  const fy = b2Y + 45;
+  const tw = 22;
+  const th = 22;
+  ctx.fillStyle = '#ea4335'; ctx.fillRect(fx, fy, tw, th);
+  ctx.fillStyle = '#34a853'; ctx.fillRect(fx + tw + 4, fy, tw, th);
+  ctx.fillStyle = '#4285f4'; ctx.fillRect(fx, fy + th + 4, tw, th);
+  ctx.fillStyle = '#fbbc05'; ctx.fillRect(fx + tw + 4, fy + th + 4, tw, th);
+
+  // Badge Text
+  ctx.font = 'bold 12px system-ui, sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.textAlign = 'center';
+  ctx.fillText('Designed for', b2X + bW / 2, b2Y + 130);
+
+  ctx.font = '900 italic 16px "Arial Black", sans-serif';
+  ctx.fillStyle = '#0f172a';
+  ctx.fillText('Mogrosoft®', b2X + bW / 2, b2Y + 155);
+
+  ctx.font = '900 24px "Arial Black", Impact, sans-serif';
+  ctx.fillStyle = '#1e3a8a';
+  ctx.fillText('WINOWS98', b2X + bW / 2, b2Y + 190);
+
+  ctx.font = 'bold 11px system-ui';
+  ctx.fillStyle = '#64748b';
+  ctx.fillText('MOGRO NOTEBOOK 9800', b2X + bW / 2, b2Y + 225);
 
   return new THREE.CanvasTexture(canvas);
 }
 
-// 4. Modern Micro-Edge Display Bezel Texture (94% screen-to-body)
-function generateModernBezelTexture(): THREE.CanvasTexture {
+// 4. Vintage 90s Matte Display Bezel Texture with Corner Rubber Bumpers & Latch Catches
+function generateRetroBezelTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 2048;
-  canvas.height = 1300;
+  canvas.height = 1360;
   const ctx = canvas.getContext('2d')!;
 
-  // Deep matte black bezel
-  ctx.fillStyle = '#0f1115';
+  // Deep matte dark slate ABS frame
+  ctx.fillStyle = '#1a1c22';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Center display cutout placeholder
-  const padX = 36;
-  const padTop = 44;
-  const padBtm = 44;
-  ctx.fillStyle = '#050608';
-  ctx.fillRect(padX, padTop, canvas.width - padX * 2, canvas.height - padTop - padBtm);
+  // Micro polymer stipple
+  ctx.globalAlpha = 0.035;
+  for (let i = 0; i < 30000; i++) {
+    ctx.fillStyle = Math.random() > 0.5 ? '#ffffff' : '#000000';
+    ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
+  }
+  ctx.globalAlpha = 1.0;
 
-  // Top bezel center: Micro HD Webcam Lens + Ambient Light Sensor
-  const camX = canvas.width / 2;
-  const camY = padTop / 2;
+  // Inner display inset bevel border
+  const padX = 110;
+  const padY = 90;
+  ctx.fillStyle = '#08090c';
+  ctx.fillRect(padX, padY, canvas.width - padX * 2, canvas.height - padY * 2);
 
-  // Camera lens ring
+  // 4 Corner Rubber Cushion Nubs (To prevent screen scratching base when closed)
+  const drawRubberNub = (rx: number, ry: number) => {
+    ctx.fillStyle = '#0f1014';
+    ctx.beginPath();
+    ctx.roundRect(rx - 14, ry - 6, 28, 12, 3);
+    ctx.fill();
+    ctx.strokeStyle = '#272932';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  };
+  drawRubberNub(55, 45);
+  drawRubberNub(canvas.width - 55, 45);
+  drawRubberNub(55, canvas.height - 45);
+  drawRubberNub(canvas.width - 55, canvas.height - 45);
+
+  // Top Bezel: Mechanical Dual Latch Catches
+  [canvas.width / 2 - 240, canvas.width / 2 + 240].forEach((lx) => {
+    ctx.fillStyle = '#0d0e12';
+    ctx.beginPath();
+    ctx.roundRect(lx - 20, 16, 40, 26, 4);
+    ctx.fill();
+
+    // Steel catch pin
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillRect(lx - 6, 22, 12, 14);
+  });
+
+  // Bottom Bezel: Embossed Metallic MOGRO Badge & Spec Text
+  const bx = canvas.width / 2;
+  const by = canvas.height - 45;
+
+  ctx.font = '900 italic 28px "Arial Black", Impact, sans-serif';
+  ctx.fillStyle = '#e2e8f0';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('MOGRO', bx, by - 6);
+
+  ctx.font = 'bold tracking-[0.2em] 12px "JetBrains Mono", monospace';
+  ctx.fillStyle = '#64748b';
+  ctx.fillText('14.1" ACTIVE MATRIX COLOR TFT DISPLAY • 1024x768 XGA', bx, by + 18);
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+// 5. Vintage 90s Side Ports Texture (PCMCIA, 3.5" Floppy Disk Drive & CD-ROM)
+function generateRetroSidePortsTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 96;
+  const ctx = canvas.getContext('2d')!;
+
+  ctx.fillStyle = '#22242a';
+  ctx.fillRect(0, 0, 1024, 96);
+
+  // Fine texture stipple
+  ctx.globalAlpha = 0.04;
+  for (let i = 0; i < 6000; i++) {
+    ctx.fillStyle = Math.random() > 0.5 ? '#ffffff' : '#000000';
+    ctx.fillRect(Math.random() * 1024, Math.random() * 96, 2, 2);
+  }
+  ctx.globalAlpha = 1.0;
+
+  // Left Section: Dual PCMCIA Type II Card Slots with Eject Buttons
+  ctx.fillStyle = '#121418';
+  ctx.fillRect(60, 20, 220, 26);
+  ctx.fillRect(60, 52, 220, 26);
+
+  // Eject push buttons
+  ctx.fillStyle = '#2e323c';
+  ctx.fillRect(290, 26, 24, 16);
+  ctx.fillRect(290, 58, 24, 16);
+
+  // Middle: Cooling Exhaust Fins / Ventilation Slits
+  ctx.fillStyle = '#101115';
+  for (let s = 360; s <= 560; s += 16) {
+    ctx.fillRect(s, 24, 8, 48);
+  }
+
+  // Right Section: 3.5" 1.44MB Floppy Disk Drive Slot with Mechanical Eject Button
+  ctx.fillStyle = '#14161b';
+  ctx.fillRect(640, 28, 320, 14); // Diskette slot
+
+  // Floppy mechanical eject button
+  ctx.fillStyle = '#3a3e4a';
   ctx.beginPath();
-  ctx.arc(camX, camY, 7, 0, Math.PI * 2);
-  ctx.fillStyle = '#020305';
+  ctx.roundRect(900, 50, 48, 22, 3);
   ctx.fill();
-  ctx.strokeStyle = '#232730';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
 
-  // Blue anti-reflective lens glint
-  ctx.beginPath();
-  ctx.arc(camX - 1.5, camY - 1.5, 2.5, 0, Math.PI * 2);
-  ctx.fillStyle = '#38bdf8';
-  ctx.fill();
+  ctx.font = 'bold 12px system-ui';
+  ctx.fillStyle = '#cbd5e1';
+  ctx.textAlign = 'center';
+  ctx.fillText('⏏', 924, 65);
 
-  // Green camera indicator LED (subtle)
+  // Floppy activity green LED
   ctx.beginPath();
-  ctx.arc(camX + 22, camY, 2, 0, Math.PI * 2);
+  ctx.arc(880, 61, 4, 0, Math.PI * 2);
   ctx.fillStyle = '#22c55e';
   ctx.shadowColor = '#22c55e';
   ctx.shadowBlur = 4;
   ctx.fill();
   ctx.shadowBlur = 0;
 
-  // Stereo microphones
-  ctx.fillStyle = '#050608';
-  ctx.beginPath();
-  ctx.arc(camX - 40, camY, 1.8, 0, Math.PI * 2);
-  ctx.arc(camX + 40, camY, 1.8, 0, Math.PI * 2);
-  ctx.fill();
+  // 3.5" Disk label printed text
+  ctx.font = 'bold 10px monospace';
+  ctx.fillStyle = '#64748b';
+  ctx.textAlign = 'left';
+  ctx.fillText('3.5" 1.44MB FLOPPY', 645, 65);
 
   return new THREE.CanvasTexture(canvas);
 }
-
-// 5. Modern Thunderbolt / USB-C Side Ports Texture
-function generateModernSidePortsTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 1024;
-  canvas.height = 64;
-  const ctx = canvas.getContext('2d')!;
-
-  ctx.fillStyle = '#22252c';
-  ctx.fillRect(0, 0, 1024, 64);
-
-  // Slim Thunderbolt 4 / USB-C Oval Ports
-  const drawTypeC = (x: number) => {
-    ctx.beginPath();
-    ctx.roundRect(x, 22, 46, 20, 10);
-    ctx.fillStyle = '#090a0d';
-    ctx.fill();
-    ctx.strokeStyle = '#475569';
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
-
-    // Center contact pin plate
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(x + 12, 28, 22, 8);
-  };
-
-  drawTypeC(140);
-  drawTypeC(230);
-
-  // MagSafe slim charge port
-  ctx.beginPath();
-  ctx.roundRect(50, 20, 56, 24, 6);
-  ctx.fillStyle = '#090a0d';
-  ctx.fill();
-  ctx.strokeStyle = '#475569';
-  ctx.stroke();
-
-  // 3.5mm Headphone Jack
-  ctx.beginPath();
-  ctx.arc(360, 32, 12, 0, Math.PI * 2);
-  ctx.fillStyle = '#090a0d';
-  ctx.fill();
-  ctx.strokeStyle = '#475569';
-  ctx.stroke();
-
-  return new THREE.CanvasTexture(canvas);
-}
-
-
 // 4-Corner Homography Projective Transform for CSS matrix3d mapping
 function getPerspectiveTransform(
   w: number, 
@@ -1079,46 +1348,50 @@ export const ThinkPadWorkstation: React.FC = () => {
       metalness: 0.04
     });
 
-    // Space Gray Anodized Aluminum Unibody Material
-    const aluminumMat = new THREE.MeshPhysicalMaterial({
-      color: 0x272a32,
-      metalness: 0.85,
-      roughness: 0.28,
-      clearcoat: 0.25,
-      clearcoatRoughness: 0.35
+    // Vintage Late-90s Matte Charcoal ABS Polymer Chassis Material
+    const retroChassisMat = new THREE.MeshStandardMaterial({
+      color: 0x24262c,
+      roughness: 0.62,
+      metalness: 0.12
     });
 
-    const outerLidTex = generateModernOuterLidTexture();
+    const outerLidTex = generateRetroOuterLidTexture();
     const outerLidMat = new THREE.MeshStandardMaterial({
       map: outerLidTex,
-      metalness: 0.82,
-      roughness: 0.30
+      roughness: 0.55,
+      metalness: 0.15
     });
 
-    const keyboardDeckTex = generateModernKeyboardDeckTexture();
+    const keyboardDeckTex = generateRetroKeyboardDeckTexture();
     const keyboardDeckMat = new THREE.MeshStandardMaterial({
       map: keyboardDeckTex,
-      roughness: 0.35,
-      metalness: 0.45
+      roughness: 0.50,
+      metalness: 0.15
     });
 
-    const bezelTex = generateModernBezelTexture();
+    const bezelTex = generateRetroBezelTexture();
     const bezelMat = new THREE.MeshStandardMaterial({
       map: bezelTex,
-      roughness: 0.25,
-      metalness: 0.1
+      roughness: 0.60,
+      metalness: 0.10
     });
 
-    const sidePortsTex = generateModernSidePortsTexture();
+    const sidePortsTex = generateRetroSidePortsTexture();
     const sidePortsMat = new THREE.MeshStandardMaterial({
       map: sidePortsTex,
-      roughness: 0.4,
-      metalness: 0.6
+      roughness: 0.55,
+      metalness: 0.15
     });
 
-    const unibodyHingeMat = new THREE.MeshStandardMaterial({
-      color: 0x181a20,
-      roughness: 0.35,
+    const retroHingeMat = new THREE.MeshStandardMaterial({
+      color: 0x1c1e24,
+      roughness: 0.45,
+      metalness: 0.35
+    });
+
+    const hingeMetalPinMat = new THREE.MeshStandardMaterial({
+      color: 0x8892a0,
+      roughness: 0.25,
       metalness: 0.85
     });
 
@@ -1215,34 +1488,34 @@ export const ThinkPadWorkstation: React.FC = () => {
     const laptopGroup = new THREE.Group();
     scene.add(laptopGroup);
 
-    // (A) Laptop Base Chassis (Ultra-thin CNC unibody: 3.60 x 2.40 x 0.08)
-    const baseW = 3.60;
-    const baseD = 2.40;
-    const baseH = 0.08;
+    // (A) Laptop Base Chassis (Authentic late-90s sturdy notebook: 3.40 x 2.45 x 0.15)
+    const baseW = 3.40;
+    const baseD = 2.45;
+    const baseH = 0.15;
 
     const baseChassisGeo = new THREE.BoxGeometry(baseW, baseH, baseD);
-    const baseChassis = new THREE.Mesh(baseChassisGeo, aluminumMat);
+    const baseChassis = new THREE.Mesh(baseChassisGeo, retroChassisMat);
     baseChassis.position.set(0, baseH / 2, 0);
     baseChassis.castShadow = true;
     baseChassis.receiveShadow = true;
     laptopGroup.add(baseChassis);
 
-    // Underside rubber feet
-    const footMat = new THREE.MeshStandardMaterial({ color: 0x14161a, roughness: 0.9 });
-    const footGeo = new THREE.CylinderGeometry(0.042, 0.042, 0.012, 16);
+    // Underside vintage rubber feet
+    const footMat = new THREE.MeshStandardMaterial({ color: 0x121418, roughness: 0.95 });
+    const footGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.015, 16);
     [
-      [-baseW / 2 + 0.24, 0.006, -baseD / 2 + 0.22],
-      [baseW / 2 - 0.24, 0.006, -baseD / 2 + 0.22],
-      [-baseW / 2 + 0.24, 0.006, baseD / 2 - 0.22],
-      [baseW / 2 - 0.24, 0.006, baseD / 2 - 0.22]
+      [-baseW / 2 + 0.22, 0.007, -baseD / 2 + 0.22],
+      [baseW / 2 - 0.22, 0.007, -baseD / 2 + 0.22],
+      [-baseW / 2 + 0.22, 0.007, baseD / 2 - 0.22],
+      [baseW / 2 - 0.22, 0.007, baseD / 2 - 0.22]
     ].forEach(([fx, fy, fz]) => {
       const foot = new THREE.Mesh(footGeo, footMat);
       foot.position.set(fx, fy, fz);
       laptopGroup.add(foot);
     });
 
-    // Left & Right Side USB-C / Thunderbolt Ports
-    const sidePortsGeo = new THREE.PlaneGeometry(baseD - 0.2, 0.06);
+    // Left & Right Side Expansion & Port Plates (PCMCIA & Floppy Drive)
+    const sidePortsGeo = new THREE.PlaneGeometry(baseD - 0.15, baseH - 0.02);
     const leftPortsMesh = new THREE.Mesh(sidePortsGeo, sidePortsMat);
     leftPortsMesh.position.set(-baseW / 2 - 0.001, baseH / 2, 0);
     leftPortsMesh.rotation.y = -Math.PI / 2;
@@ -1253,46 +1526,34 @@ export const ThinkPadWorkstation: React.FC = () => {
     rightPortsMesh.rotation.y = Math.PI / 2;
     laptopGroup.add(rightPortsMesh);
 
-    // (B) Keyboard Deck Top Plate (Includes centered chiclet keyboard & micro-drilled speakers)
-    const deckGeo = new THREE.PlaneGeometry(baseW - 0.04, baseD - 0.04);
+    // (B) Keyboard Deck Top Plate (Includes sculptured keys & status LED strip)
+    const deckGeo = new THREE.PlaneGeometry(baseW - 0.03, baseD - 0.03);
     const deckMesh = new THREE.Mesh(deckGeo, keyboardDeckMat);
     deckMesh.position.set(0, baseH + 0.002, 0);
     deckMesh.rotation.x = -Math.PI / 2;
     deckMesh.receiveShadow = true;
     laptopGroup.add(deckMesh);
 
-    // (C) Large Precision Glass Trackpad (Centered Force Touch style)
-    const padW = 1.45;
-    const padD = 0.88;
-    const padPlateGeo = new THREE.BoxGeometry(padW, 0.006, padD);
-    const padPlateMat = new THREE.MeshPhysicalMaterial({
-      color: 0x1e2128,
-      metalness: 0.15,
-      roughness: 0.22,
-      clearcoat: 0.40,
-      clearcoatRoughness: 0.25
+    // (C) Dual Heavy-Duty 90s Barrel Hinges (Left & Right cylindrical hinges with metal caps)
+    [-1.15, 1.15].forEach((hx) => {
+      const hCylGeo = new THREE.CylinderGeometry(0.046, 0.046, 0.36, 20);
+      hCylGeo.rotateZ(Math.PI / 2);
+      const hCyl = new THREE.Mesh(hCylGeo, retroHingeMat);
+      hCyl.position.set(hx, baseH + 0.012, -baseD / 2 + 0.12);
+      hCyl.castShadow = true;
+      laptopGroup.add(hCyl);
+
+      // Metal pivot endcaps
+      [-0.19, 0.19].forEach((capOffset) => {
+        const pinGeo = new THREE.CylinderGeometry(0.048, 0.048, 0.025, 20);
+        pinGeo.rotateZ(Math.PI / 2);
+        const pinMesh = new THREE.Mesh(pinGeo, hingeMetalPinMat);
+        pinMesh.position.set(hx + capOffset, baseH + 0.012, -baseD / 2 + 0.12);
+        laptopGroup.add(pinMesh);
+      });
     });
-    const padPlate = new THREE.Mesh(padPlateGeo, padPlateMat);
-    padPlate.position.set(0, baseH + 0.004, 0.65);
-    padPlate.receiveShadow = true;
-    laptopGroup.add(padPlate);
 
-    // Trackpad diamond-cut hairline border highlight
-    const padBorderGeo = new THREE.BoxGeometry(padW + 0.012, 0.002, padD + 0.012);
-    const padBorderMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.9, roughness: 0.2 });
-    const padBorder = new THREE.Mesh(padBorderGeo, padBorderMat);
-    padBorder.position.set(0, baseH + 0.003, 0.65);
-    laptopGroup.add(padBorder);
-
-    // (D) Continuous Hidden Unibody Hinge Bar
-    const hingeGeo = new THREE.CylinderGeometry(0.038, 0.038, 2.70, 24);
-    hingeGeo.rotateZ(Math.PI / 2);
-    const hinge = new THREE.Mesh(hingeGeo, unibodyHingeMat);
-    hinge.position.set(0, baseH + 0.012, -baseD / 2 + 0.12);
-    hinge.castShadow = true;
-    laptopGroup.add(hinge);
-
-    // (E) Display Lid Assembly with Hinge Pivot
+    // (D) Display Lid Assembly with Hinge Pivot
     const lidGroup = new THREE.Group();
     lidGroup.position.set(0, baseH + 0.012, -baseD / 2 + 0.12);
     laptopGroup.add(lidGroup);
@@ -1301,13 +1562,13 @@ export const ThinkPadWorkstation: React.FC = () => {
     // Starts CLOSED flat over the base! (rotation.x = Math.PI / 2)
     lidGroup.rotation.x = Math.PI / 2;
 
-    const lidW = 3.60;
+    const lidW = 3.40;
     const lidH = 2.30;
-    const lidThick = 0.036;
+    const lidThick = 0.06;
 
-    // Outer Back Cover Base Box
+    // Outer Back Cover Sturdy Base Box
     const lidBackGeo = new THREE.BoxGeometry(lidW, lidH, lidThick);
-    const lidBack = new THREE.Mesh(lidBackGeo, aluminumMat);
+    const lidBack = new THREE.Mesh(lidBackGeo, retroChassisMat);
     lidBack.position.set(0, lidH / 2, -lidThick / 2);
     lidBack.castShadow = true;
     lidGroup.add(lidBack);
@@ -1319,14 +1580,20 @@ export const ThinkPadWorkstation: React.FC = () => {
     outerLidMesh.rotation.z = Math.PI;
     lidGroup.add(outerLidMesh);
 
-    // Inner Display Bezel
+    // Front mechanical sliding latch on lid top lip
+    const latchGeo = new THREE.BoxGeometry(0.36, 0.024, 0.032);
+    const latchMesh = new THREE.Mesh(latchGeo, retroHingeMat);
+    latchMesh.position.set(0, lidH + 0.012, -lidThick / 2);
+    lidGroup.add(latchMesh);
+
+    // Inner Display Bezel (Substantial 90s matte frame)
     const bezelMesh = new THREE.Mesh(new THREE.PlaneGeometry(lidW, lidH), bezelMat);
     bezelMesh.position.set(0, lidH / 2, 0.001);
     lidGroup.add(bezelMesh);
 
     // Matte LCD Screen Backplate
-    const screenW = 3.42;
-    const screenH = 2.16;
+    const screenW = 3.02;
+    const screenH = 2.00;
     const screenGeo = new THREE.PlaneGeometry(screenW, screenH);
     const screenMat = new THREE.MeshBasicMaterial({ color: 0x05070a });
     const screenMesh = new THREE.Mesh(screenGeo, screenMat);
