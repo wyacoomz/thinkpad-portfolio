@@ -199,6 +199,76 @@ class Win98LofiEngine {
 
 const winampEngine = new Win98LofiEngine();
 
+interface Win98TitleBarProps {
+  id: string;
+  icon: string | React.ReactNode;
+  title: string;
+  isActive: boolean;
+  onStartDrag: (id: string, e: React.MouseEvent) => void;
+  onMinimize?: (id: string, e?: React.MouseEvent) => void;
+  onClose: (id: string, e?: React.MouseEvent) => void;
+  showMinimize?: boolean;
+}
+
+const Win98TitleBar: React.FC<Win98TitleBarProps> = ({
+  id,
+  icon,
+  title,
+  isActive,
+  onStartDrag,
+  onMinimize,
+  onClose,
+  showMinimize = true
+}) => {
+  return (
+    <div
+      onMouseDown={(e) => onStartDrag(id, e)}
+      className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
+        isActive
+          ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
+          : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
+      }`}
+    >
+      <div className="flex items-center space-x-1.5 truncate pointer-events-none">
+        <span className="text-xs shrink-0">{icon}</span>
+        <span className="truncate">{title}</span>
+      </div>
+      <div
+        className="flex items-center space-x-1 shrink-0 ml-2"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {showMinimize && onMinimize && (
+          <button
+            type="button"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onMinimize(id, e);
+            }}
+            aria-label="Minimize"
+            className="w-[16px] h-[14px] bg-[#c0c0c0] hover:bg-[#d8d8d8] active:bg-[#a8a8a8] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] active:border-r-[#ffffff] active:border-b-[#ffffff] text-[10px] pb-1 cursor-pointer select-none"
+          >
+            _
+          </button>
+        )}
+        <button
+          type="button"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose(id, e);
+          }}
+          aria-label="Close"
+          className="w-[16px] h-[14px] bg-[#c0c0c0] hover:bg-[#d8d8d8] active:bg-[#a8a8a8] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] active:border-r-[#ffffff] active:border-b-[#ffffff] text-[10px] cursor-pointer select-none"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // ==========================================
 // MAIN COMPONENT
 // ==========================================
@@ -472,29 +542,31 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
     });
   };
 
-  const closeWindow = (id: string) => {
-    onPlayKeyClick();
-    setWindows((wMap) => ({
-      ...wMap,
-      [id]: { ...wMap[id], isOpen: false }
-    }));
-    if (activeWindowId === id) {
-      setActiveWindowId(null);
-    }
-  };
-
-  const toggleMinimizeWindow = (id: string) => {
+  const closeWindow = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     onPlayKeyClick();
     setWindows((wMap) => {
+      if (!wMap[id]) return wMap;
+      return {
+        ...wMap,
+        [id]: { ...wMap[id], isOpen: false }
+      };
+    });
+    setActiveWindowId((prev) => (prev === id ? null : prev));
+  };
+
+  const toggleMinimizeWindow = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    onPlayKeyClick();
+    setWindows((wMap) => {
+      if (!wMap[id]) return wMap;
       const isMin = !wMap[id].isMinimized;
       return {
         ...wMap,
         [id]: { ...wMap[id], isMinimized: isMin }
       };
     });
-    if (activeWindowId === id) {
-      setActiveWindowId(null);
-    }
+    setActiveWindowId((prev) => (prev === id ? null : prev));
   };
 
   const toggleTaskbarWindow = (id: string) => {
@@ -847,23 +919,15 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
         >
           <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
             {/* Titlebar with Drag Listener */}
-            <div
-              onMouseDown={(e) => startDrag('about', e)}
-              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
-                activeWindowId === 'about'
-                  ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
-                  : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
-              }`}
-            >
-              <div className="flex items-center space-x-1.5">
-                <span className="text-xs">📝</span>
-                <span>About_Me.txt - Notepad</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <button onClick={() => toggleMinimizeWindow('about')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px] pb-1">_</button>
-                <button onClick={() => closeWindow('about')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
-              </div>
-            </div>
+            <Win98TitleBar
+              id="about"
+              icon="📝"
+              title="About_Me.txt - Notepad"
+              isActive={activeWindowId === 'about'}
+              onStartDrag={startDrag}
+              onMinimize={toggleMinimizeWindow}
+              onClose={closeWindow}
+            />
 
             {/* Menu Bar */}
             <div className="h-[20px] px-2 flex items-center space-x-3 text-[11px] text-black bg-[#c0c0c0] border-b border-[#808080]">
@@ -941,15 +1005,35 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
           {/* Winamp Titlebar with Drag Listener */}
           <div
             onMouseDown={(e) => startDrag('winamp', e)}
-            className="h-[18px] bg-gradient-to-r from-[#000080] via-[#004080] to-[#1084d0] px-1 flex items-center justify-between text-[11px] text-white font-bold cursor-move"
+            className="h-[18px] bg-gradient-to-r from-[#000080] via-[#004080] to-[#1084d0] px-1 flex items-center justify-between text-[11px] text-white font-bold cursor-move select-none"
           >
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1 pointer-events-none">
               <span>⚡</span>
               <span className="tracking-wider">WINAMP 2.8</span>
             </div>
-            <div className="flex items-center space-x-1">
-              <button onClick={() => toggleMinimizeWindow('winamp')} className="w-3.5 h-3 bg-[#c0c0c0] text-black font-bold text-[9px] flex items-center justify-center">_</button>
-              <button onClick={() => closeWindow('winamp')} className="w-3.5 h-3 bg-[#c0c0c0] text-black font-bold text-[9px] flex items-center justify-center">✕</button>
+            <div
+              className="flex items-center space-x-1 shrink-0 ml-1"
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => toggleMinimizeWindow('winamp', e)}
+                aria-label="Minimize"
+                className="w-3.5 h-3 bg-[#c0c0c0] hover:bg-[#d8d8d8] active:bg-[#a8a8a8] text-black font-bold text-[9px] flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] active:border-r-[#ffffff] active:border-b-[#ffffff] cursor-pointer"
+              >
+                _
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => closeWindow('winamp', e)}
+                aria-label="Close"
+                className="w-3.5 h-3 bg-[#c0c0c0] hover:bg-[#d8d8d8] active:bg-[#a8a8a8] text-black font-bold text-[9px] flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] active:border-r-[#ffffff] active:border-b-[#ffffff] text-[9px] cursor-pointer"
+              >
+                ✕
+              </button>
             </div>
           </div>
 
@@ -1073,23 +1157,15 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
         >
           <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
             {/* Titlebar with Drag Listener */}
-            <div
-              onMouseDown={(e) => startDrag('minesweeper', e)}
-              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
-                activeWindowId === 'minesweeper'
-                  ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
-                  : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
-              }`}
-            >
-              <div className="flex items-center space-x-1.5">
-                <span>💣</span>
-                <span>Minesweeper</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <button onClick={() => toggleMinimizeWindow('minesweeper')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px] pb-1">_</button>
-                <button onClick={() => closeWindow('minesweeper')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
-              </div>
-            </div>
+            <Win98TitleBar
+              id="minesweeper"
+              icon="💣"
+              title="Minesweeper"
+              isActive={activeWindowId === 'minesweeper'}
+              onStartDrag={startDrag}
+              onMinimize={toggleMinimizeWindow}
+              onClose={closeWindow}
+            />
 
             {/* Menu Bar */}
             <div className="h-[20px] px-2 flex items-center space-x-3 text-[11px] text-black bg-[#c0c0c0] border-b border-[#808080]">
@@ -1172,23 +1248,15 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
         >
           <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
             {/* Titlebar with Drag Listener */}
-            <div
-              onMouseDown={(e) => startDrag('projects', e)}
-              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
-                activeWindowId === 'projects'
-                  ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
-                  : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
-              }`}
-            >
-              <div className="flex items-center space-x-1.5">
-                <span>📁</span>
-                <span>C:\Projects (Abdul's Engineering Archive)</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <button onClick={() => toggleMinimizeWindow('projects')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px] pb-1">_</button>
-                <button onClick={() => closeWindow('projects')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
-              </div>
-            </div>
+            <Win98TitleBar
+              id="projects"
+              icon="📁"
+              title="C:\Projects (Abdul's Engineering Archive)"
+              isActive={activeWindowId === 'projects'}
+              onStartDrag={startDrag}
+              onMinimize={toggleMinimizeWindow}
+              onClose={closeWindow}
+            />
 
             {/* Menu Bar */}
             <div className="h-[20px] px-2 flex items-center space-x-3 text-[11px] text-black bg-[#c0c0c0] border-b border-[#808080]">
@@ -1281,23 +1349,16 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
           className="absolute bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
         >
           <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
-            <div
-              onMouseDown={(e) => startDrag('dos', e)}
-              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
-                activeWindowId === 'dos'
-                  ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
-                  : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
-              }`}
-            >
-              <div className="flex items-center space-x-1.5">
-                <span>💻</span>
-                <span>MS-DOS Prompt [wyacoomz@win98]</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <button onClick={() => toggleMinimizeWindow('dos')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px] pb-1">_</button>
-                <button onClick={() => closeWindow('dos')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
-              </div>
-            </div>
+            {/* Titlebar with Drag Listener */}
+            <Win98TitleBar
+              id="dos"
+              icon="💻"
+              title="MS-DOS Prompt [wyacoomz@win98]"
+              isActive={activeWindowId === 'dos'}
+              onStartDrag={startDrag}
+              onMinimize={toggleMinimizeWindow}
+              onClose={closeWindow}
+            />
 
             <div className="flex-1 bg-black p-3 text-white font-mono text-[12px] overflow-y-auto leading-relaxed border-t border-l border-t-black border-l-black">
               <div className="text-gray-400 mb-2">
@@ -1351,23 +1412,16 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
           className="absolute bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
         >
           <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
-            <div
-              onMouseDown={(e) => startDrag('resume', e)}
-              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
-                activeWindowId === 'resume'
-                  ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
-                  : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
-              }`}
-            >
-              <div className="flex items-center space-x-1.5">
-                <span>📄</span>
-                <span>Resume.doc - WordPad</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <button onClick={() => toggleMinimizeWindow('resume')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px] pb-1">_</button>
-                <button onClick={() => closeWindow('resume')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
-              </div>
-            </div>
+            {/* Titlebar with Drag Listener */}
+            <Win98TitleBar
+              id="resume"
+              icon="📄"
+              title="Resume.doc - WordPad"
+              isActive={activeWindowId === 'resume'}
+              onStartDrag={startDrag}
+              onMinimize={toggleMinimizeWindow}
+              onClose={closeWindow}
+            />
 
             <div className="h-[20px] px-2 flex items-center space-x-3 text-[11px] text-black bg-[#c0c0c0] border-b border-[#808080]">
               <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>F</u>ile</span>
@@ -1449,23 +1503,16 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
           className="absolute bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
         >
           <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
-            <div
-              onMouseDown={(e) => startDrag('contact', e)}
-              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
-                activeWindowId === 'contact'
-                  ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
-                  : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
-              }`}
-            >
-              <div className="flex items-center space-x-1.5">
-                <span>✉️</span>
-                <span>New Message - Outlook Express</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <button onClick={() => toggleMinimizeWindow('contact')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px] pb-1">_</button>
-                <button onClick={() => closeWindow('contact')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
-              </div>
-            </div>
+            {/* Titlebar with Drag Listener */}
+            <Win98TitleBar
+              id="contact"
+              icon="✉️"
+              title="New Message - Outlook Express"
+              isActive={activeWindowId === 'contact'}
+              onStartDrag={startDrag}
+              onMinimize={toggleMinimizeWindow}
+              onClose={closeWindow}
+            />
 
             <div className="h-[28px] px-2 flex items-center space-x-2 bg-[#c0c0c0] border-b border-[#808080]">
               <a
@@ -1536,20 +1583,16 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
           className="absolute bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
         >
           <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
-            <div
-              onMouseDown={(e) => startDrag('display', e)}
-              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none cursor-move ${
-                activeWindowId === 'display'
-                  ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
-                  : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
-              }`}
-            >
-              <div className="flex items-center space-x-1.5">
-                <span>🖥️</span>
-                <span>Display Properties</span>
-              </div>
-              <button onClick={() => closeWindow('display')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
-            </div>
+            {/* Titlebar with Drag Listener */}
+            <Win98TitleBar
+              id="display"
+              icon="🖥️"
+              title="Display Properties"
+              isActive={activeWindowId === 'display'}
+              onStartDrag={startDrag}
+              onClose={closeWindow}
+              showMinimize={false}
+            />
 
             <div className="p-3 bg-[#c0c0c0] space-y-3">
               {/* Virtual Mini CRT Monitor Preview */}

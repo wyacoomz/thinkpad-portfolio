@@ -865,14 +865,17 @@ export const ThinkPadWorkstation: React.FC = () => {
 
     setBootPhase('splash');
     setTimeout(() => {
-      audioEngine.playBootChime();
       setBootPhase('booting');
-    }, 600);
+    }, 800);
+
+    setTimeout(() => {
+      audioEngine.playBootChime();
+    }, 2000);
 
     setTimeout(() => {
       setBootPhase('ready');
       setIsFocused(true);
-    }, 1500);
+    }, 2900);
   }, []);
 
   // Close laptop handler
@@ -1687,35 +1690,126 @@ export const ThinkPadWorkstation: React.FC = () => {
       >
         {/* Boot Splash / Loading Screens */}
         {bootPhase === 'splash' && (
-          <div className="absolute inset-0 z-50 bg-[#141413] flex flex-col items-center justify-center space-y-4 font-mono">
-            <div className="w-14 h-14 rounded-xl bg-[#1f2127] border border-[#2e323b] flex items-center justify-center shadow-xl">
-              <span className="text-2xl font-serif text-[#FBFBF9] italic">W</span>
+          <div className="absolute inset-0 z-50 bg-black text-[#c0c0c0] p-8 font-mono text-[13px] leading-[20px] select-none flex flex-col justify-between">
+            <div>
+              {/* Header with EPA Energy Star Badge */}
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <div className="text-white font-bold">Award Modular BIOS v4.51PG, An Energy Star Ally</div>
+                  <div>Copyright (C) 1984-98, Award Software, Inc.</div>
+                  <div className="text-[#888888] pt-1">ASUS P2B ACPI BIOS Revision 1012</div>
+                </div>
+
+                {/* EPA Energy Star Retro Badge */}
+                <div className="border-2 border-[#00d0ff] bg-[#000080]/60 px-3 py-1.5 text-center leading-tight shadow-md">
+                  <div className="text-[#00ffff] font-bold text-sm tracking-wider">energy</div>
+                  <div className="text-[#ffff00] tracking-widest text-[8px] mt-0.5 font-bold">EPA POLLUTION PREVENTER</div>
+                </div>
+              </div>
+
+              {/* Hardware Detection List */}
+              <div className="mt-8 space-y-1">
+                <div><span className="text-white font-bold">PENTIUM-II CPU at 450MHz</span></div>
+                <div>Memory Test :  <span className="text-white font-bold">131072K OK</span></div>
+                <div className="pt-2 text-[#888888]">Award Plug and Play BIOS Extension v1.0A</div>
+                <div className="text-[#888888]">Initialize Plug and Play Cards...</div>
+                <div className="pt-2 text-white">Detecting IDE Primary Master   ... <span className="text-[#39ff14]">WDC AC34300L (4.3 GB)</span></div>
+                <div className="text-white">Detecting IDE Primary Slave    ... <span className="text-[#39ff14]">ATAPI CD-ROM 48X</span></div>
+                <div className="text-[#666666]">Detecting IDE Secondary Master ... None</div>
+                <div className="text-[#666666]">Detecting IDE Secondary Slave  ... None</div>
+              </div>
             </div>
-            <div className="text-sm font-bold tracking-widest text-[#FBFBF9]">WYAC-OS // ARCHITECTURAL KERNEL</div>
-            <div className="text-[11px] text-[#78716C] tracking-wide">INITIALIZING HARDWARE SUBSYSTEMS...</div>
+
+            {/* Bottom Status Prompt */}
+            <div className="pt-4 border-t border-[#333333] flex justify-between items-center text-xs text-[#888888]">
+              <span className="animate-pulse text-white">Press DEL to enter SETUP, ESC to skip memory test</span>
+              <span className="font-mono text-[11px]">10/25/1998-i440BX-W977-2A69KD4AC-00</span>
+            </div>
           </div>
         )}
 
         {bootPhase === 'booting' && (
-          <div className="absolute inset-0 z-50 bg-[#141413] flex flex-col items-center justify-center space-y-4 font-mono">
-            <div className="flex space-x-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#264233] animate-bounce" style={{ animationDelay: '0ms' }} />
-              <div className="w-2.5 h-2.5 rounded-full bg-[#264233] animate-bounce" style={{ animationDelay: '150ms' }} />
-              <div className="w-2.5 h-2.5 rounded-full bg-[#264233] animate-bounce" style={{ animationDelay: '300ms' }} />
+          <div className="absolute inset-0 w-full h-full z-50 bg-[#008080] flex flex-col items-center justify-between py-12 select-none overflow-hidden">
+            <style>{`
+              @keyframes win98BarSlide {
+                0% { transform: translateX(-120%); }
+                100% { transform: translateX(350%); }
+              }
+              .win98-boot-glow {
+                animation: win98BarSlide 1.4s ease-in-out infinite;
+              }
+            `}</style>
+
+            {/* Nostalgic Cloud Backdrop */}
+            <div
+              className="absolute inset-0 z-0 pointer-events-none"
+              style={{
+                background: 'radial-gradient(ellipse at 50% 35%, #468ee5 0%, #1c5ba6 45%, #0f3d75 80%, #082142 100%)'
+              }}
+            />
+
+            {/* Subtle atmospheric cloud texture overlay */}
+            <div className="absolute inset-0 z-0 opacity-20 pointer-events-none bg-[radial-gradient(circle_at_30%_30%,white_0%,transparent_60%)]" />
+
+            <div className="relative z-10 w-full" />
+
+            {/* Windows 98 Center Brand Graphic */}
+            <div className="relative z-10 flex flex-col items-center text-center space-y-4">
+              {/* Flying 4-Color Windows Flag */}
+              <div className="relative flex items-center justify-center filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.6)]">
+                <div className="grid grid-cols-2 gap-2 transform -rotate-12">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#ff6b6b] to-[#dc2626] rounded-tl-xl shadow-md border-t border-l border-white/40" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#4ade80] to-[#16a34a] rounded-tr-xl shadow-md border-t border-r border-white/40" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#38bdf8] to-[#2563eb] rounded-bl-xl shadow-md border-b border-l border-white/40" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#fde047] to-[#d97706] rounded-br-xl shadow-md border-b border-r border-white/40" />
+                </div>
+              </div>
+
+              {/* Windows 98 Typography */}
+              <div className="mt-2 flex flex-col items-center">
+                <span className="text-white/90 text-sm font-sans tracking-[0.28em] uppercase font-light">
+                  Microsoft<sup className="text-[10px]">®</sup>
+                </span>
+                <h1 className="text-5xl font-black italic tracking-wide text-white drop-shadow-[0_3px_6px_rgba(0,0,0,0.8)] font-sans">
+                  Windows<span className="text-[#38bdf8] font-normal not-italic ml-2">98</span>
+                </h1>
+                <div className="mt-1 flex items-center space-x-2 text-white/80 text-xs font-semibold tracking-widest uppercase">
+                  <span>Second Edition</span>
+                  <span>&bull;</span>
+                  <span>wyacoomz workstation</span>
+                </div>
+              </div>
             </div>
-            <div className="text-xs text-[#A8A29E]">Ubuntu 24.04 LTS (x86_64)</div>
-            <div className="text-[11px] text-[#575653]">Loading Linux kernel 6.8.0-45-generic...</div>
+
+            {/* Bottom: Animated Retro Windows 98 Gradient Progress Bar */}
+            <div className="relative z-10 w-full max-w-sm px-6 flex flex-col items-center space-y-2">
+              <div className="text-[12px] font-sans text-white/90 tracking-wide font-medium">
+                Starting Windows 98...
+              </div>
+
+              {/* Inset Beveled Progress Track */}
+              <div className="w-full h-4 bg-[#0a1828] border-t-2 border-l-2 border-t-[#000000] border-l-[#000000] border-r-2 border-b-2 border-r-[#60a0e0] border-b-[#60a0e0] p-[2px] overflow-hidden rounded-none relative">
+                <div
+                  className="win98-boot-glow h-full w-24 rounded-xs"
+                  style={{
+                    background: 'linear-gradient(90deg, transparent 0%, #00ffff 30%, #ffffff 50%, #00ffff 70%, transparent 100%)'
+                  }}
+                />
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Real Interactive Linux Desktop OS */}
-        <LinuxDesktopOS
-          onPlayKeyClick={() => audioEngine.playKeyClick()}
-          onExitFocus={() => setIsFocused(false)}
-          soundEnabled={soundEnabled}
-          onToggleSound={toggleSound}
-          isStandaloneOverlay={false}
-        />
+        {/* Real Interactive Windows 98 Desktop OS */}
+        {bootPhase === 'ready' && (
+          <LinuxDesktopOS
+            onPlayKeyClick={() => audioEngine.playKeyClick()}
+            onExitFocus={() => setIsFocused(false)}
+            soundEnabled={soundEnabled}
+            onToggleSound={toggleSound}
+            isStandaloneOverlay={false}
+          />
+        )}
 
         {/* Click to Focus Shield in Desk View */}
         {!isFocused && isLidOpen && bootPhase === 'ready' && (
