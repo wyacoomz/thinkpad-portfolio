@@ -40,9 +40,16 @@ import {
   Bomb,
   Flag,
   Smile,
-  Frown
+  Frown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  ChevronDown,
+  List,
+  Grid as GridIcon,
+  FolderOpen
 } from 'lucide-react';
-import { PERSONAL_INFO, PROJECTS, WORK_EXPERIENCES, EDUCATION_DATA, SKILL_CATEGORIES } from '../data/portfolioData';
+import { PERSONAL_INFO, PROJECTS, SECONDARY_PROJECTS, WORK_EXPERIENCES, EDUCATION_DATA, SKILL_CATEGORIES } from '../data/portfolioData';
 
 export interface WindowState {
   id: 'about' | 'projects' | 'winamp' | 'dos' | 'resume' | 'contact' | 'minesweeper' | 'display' | 'trash';
@@ -376,17 +383,17 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
     },
     projects: {
       id: 'projects',
-      title: 'C:\\Projects (Enterprise & Game Builds)',
-      shortTitle: 'C:\\Projects',
+      title: 'C:\Projects (Abdul\'s Engineering Archive)',
+      shortTitle: 'C:\Projects',
       icon: '📁',
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
       zIndex: 5,
-      x: 180,
-      y: 60,
-      w: 640,
-      h: 430
+      x: 160,
+      y: 50,
+      w: 680,
+      h: 470
     },
     winamp: {
       id: 'winamp',
@@ -818,8 +825,123 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
     setTimeout(() => dosBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
   };
 
-  // Selected project for Explorer
-  const [selectedProject, setSelectedProject] = useState<string>(PROJECTS[0]?.id || '');
+  // Unified projects list combining primary and secondary projects
+  const ALL_PROJECTS = [
+    ...PROJECTS.map((p) => ({
+      id: p.id,
+      title: p.title,
+      category: p.category,
+      folder:
+        p.category === 'Enterprise Automation' ? 'automation'
+        : p.category === 'Data & Financial' ? 'financial'
+        : p.category === 'Full-Stack Web' ? 'web'
+        : 'games',
+      shortDescription: p.shortDescription,
+      tags: p.tags,
+      role: p.role,
+      context: p.context,
+      problem: p.problem,
+      architecture: p.architecture,
+      technicalHighlights: p.technicalHighlights,
+      challengesAndSolutions: p.challengesAndSolutions,
+      outcome: p.outcome,
+      metrics: p.metrics,
+      links: p.links || []
+    })),
+    ...SECONDARY_PROJECTS.map((sp) => ({
+      id: sp.id,
+      title: sp.title,
+      category: sp.category,
+      folder:
+        sp.category.includes('Game') || sp.id.includes('game') ? 'games'
+        : sp.category.includes('Automation') || sp.id.includes('pipeline') || sp.id.includes('database') || sp.id.includes('customer') ? 'automation'
+        : sp.category.includes('Financial') || sp.id.includes('billing') ? 'financial'
+        : 'web',
+      shortDescription: sp.description,
+      tags: sp.technologies,
+      role: sp.role,
+      context: sp.description,
+      problem: sp.description,
+      architecture: { steps: [] },
+      technicalHighlights: sp.highlights,
+      challengesAndSolutions: [],
+      outcome: `Status: ${sp.status}`,
+      metrics: [],
+      links: sp.links || []
+    }))
+  ];
+
+  const PROJECT_FOLDERS = [
+    { id: 'all', name: 'C:\\Projects', path: 'C:\\Projects', label: 'All Projects', icon: '📂' },
+    { id: 'automation', name: 'Automation', path: 'C:\\Projects\\Automation', label: 'Enterprise Automation', icon: '⚙️' },
+    { id: 'games', name: 'Godot_Games', path: 'C:\\Projects\\Godot_Games', label: 'Godot Games & 3D', icon: '🎮' },
+    { id: 'web', name: 'Web_Platforms', path: 'C:\\Projects\\Web_Platforms', label: 'Web Applications', icon: '🌐' },
+    { id: 'financial', name: 'Financial_Bots', path: 'C:\\Projects\\Financial_Bots', label: 'Financial & Banking', icon: '📊' }
+  ];
+
+  // Projects Explorer state
+  const [projectFolder, setProjectFolder] = useState<string>('all');
+  const [folderHistory, setFolderHistory] = useState<string[]>(['all']);
+  const [historyIdx, setHistoryIdx] = useState<number>(0);
+  const [projectViewMode, setProjectViewMode] = useState<'icons' | 'details'>('icons');
+  const [selectedProject, setSelectedProject] = useState<string>(ALL_PROJECTS[0]?.id || '');
+  const [inspectingProjectId, setInspectingProjectId] = useState<string | null>(null);
+  const [inspectingTab, setInspectingTab] = useState<'general' | 'architecture' | 'metrics'>('general');
+  const [showAddressDropdown, setShowAddressDropdown] = useState<boolean>(false);
+
+  const navigateToProjectFolder = (folderId: string) => {
+    onPlayKeyClick();
+    setProjectFolder(folderId);
+    const nextHistory = folderHistory.slice(0, historyIdx + 1);
+    nextHistory.push(folderId);
+    setFolderHistory(nextHistory);
+    setHistoryIdx(nextHistory.length - 1);
+    setShowAddressDropdown(false);
+
+    const inFolder = ALL_PROJECTS.filter((p) => folderId === 'all' || p.folder === folderId);
+    if (inFolder.length > 0) {
+      setSelectedProject(inFolder[0].id);
+    }
+  };
+
+  const handleProjectBack = () => {
+    if (historyIdx > 0) {
+      onPlayKeyClick();
+      const prevFolder = folderHistory[historyIdx - 1];
+      setHistoryIdx(historyIdx - 1);
+      setProjectFolder(prevFolder);
+      const inFolder = ALL_PROJECTS.filter((p) => prevFolder === 'all' || p.folder === prevFolder);
+      if (inFolder.length > 0) {
+        setSelectedProject(inFolder[0].id);
+      }
+    }
+  };
+
+  const handleProjectForward = () => {
+    if (historyIdx < folderHistory.length - 1) {
+      onPlayKeyClick();
+      const nextFolder = folderHistory[historyIdx + 1];
+      setHistoryIdx(historyIdx + 1);
+      setProjectFolder(nextFolder);
+      const inFolder = ALL_PROJECTS.filter((p) => nextFolder === 'all' || p.folder === nextFolder);
+      if (inFolder.length > 0) {
+        setSelectedProject(inFolder[0].id);
+      }
+    }
+  };
+
+  const handleProjectUp = () => {
+    if (projectFolder !== 'all') {
+      navigateToProjectFolder('all');
+    }
+  };
+
+  const filteredProjects = ALL_PROJECTS.filter(
+    (p) => projectFolder === 'all' || p.folder === projectFolder
+  );
+
+  const currentSelectedProject = ALL_PROJECTS.find((p) => p.id === selectedProject) || ALL_PROJECTS[0];
+  const inspectingProject = inspectingProjectId ? ALL_PROJECTS.find((p) => p.id === inspectingProjectId) : null;
 
   // Format time mm:ss
   const formatTime = (sec: number) => {
@@ -1277,14 +1399,14 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
             width: `${windows.projects.w}px`,
             height: `${windows.projects.h}px`
           }}
-          className="absolute bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
+          className="absolute bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px] select-none"
         >
-          <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
+          <div className="relative w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
             {/* Titlebar with Drag Listener */}
             <Win98TitleBar
               id="projects"
               icon="📁"
-              title="C:\Projects (Abdul's Engineering Archive)"
+              title={`C:\Projects - [${PROJECT_FOLDERS.find(f => f.id === projectFolder)?.path || 'C:\Projects'}]`}
               isActive={activeWindowId === 'projects'}
               onStartDrag={startDrag}
               onMinimize={toggleMinimizeWindow}
@@ -1296,77 +1418,547 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
               <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>F</u>ile</span>
               <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>E</u>dit</span>
               <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>V</u>iew</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>G</u>o</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer">F<u>a</u>vorites</span>
               <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>H</u>elp</span>
             </div>
 
-            {/* Address Bar */}
-            <div className="h-[24px] px-2 flex items-center space-x-2 text-[11px] bg-[#c0c0c0] border-b border-[#808080]">
-              <span className="text-gray-700">Address:</span>
-              <div className="flex-1 bg-white px-2 py-0.5 border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] font-mono text-[11px]">
-                C:\Projects\Production_Builds
+            {/* Standard Buttons Toolbar */}
+            <div className="h-[28px] px-1 flex items-center space-x-1 text-[11px] bg-[#c0c0c0] border-b border-[#808080]">
+              {/* Back */}
+              <button
+                type="button"
+                onClick={handleProjectBack}
+                disabled={historyIdx === 0}
+                className={`h-[22px] px-2 flex items-center space-x-1 border ${
+                  historyIdx === 0
+                    ? 'opacity-40 cursor-default border-transparent text-gray-500'
+                    : 'border-t-[#ffffff] border-l-[#ffffff] border-r-[#808080] border-b-[#808080] active:border-t-[#808080] active:border-l-[#808080] active:border-r-[#ffffff] active:border-b-[#ffffff] hover:bg-gray-200 cursor-pointer text-black'
+                }`}
+                title="Back (Alt+Left Arrow)"
+              >
+                <ArrowLeft size={12} />
+                <span>Back</span>
+              </button>
+
+              {/* Forward */}
+              <button
+                type="button"
+                onClick={handleProjectForward}
+                disabled={historyIdx >= folderHistory.length - 1}
+                className={`h-[22px] px-2 flex items-center space-x-1 border ${
+                  historyIdx >= folderHistory.length - 1
+                    ? 'opacity-40 cursor-default border-transparent text-gray-500'
+                    : 'border-t-[#ffffff] border-l-[#ffffff] border-r-[#808080] border-b-[#808080] active:border-t-[#808080] active:border-l-[#808080] active:border-r-[#ffffff] active:border-b-[#ffffff] hover:bg-gray-200 cursor-pointer text-black'
+                }`}
+                title="Forward (Alt+Right Arrow)"
+              >
+                <span>Forward</span>
+                <ArrowRight size={12} />
+              </button>
+
+              {/* Up One Level */}
+              <button
+                type="button"
+                onClick={handleProjectUp}
+                disabled={projectFolder === 'all'}
+                className={`h-[22px] px-2 flex items-center space-x-1 border ${
+                  projectFolder === 'all'
+                    ? 'opacity-40 cursor-default border-transparent text-gray-500'
+                    : 'border-t-[#ffffff] border-l-[#ffffff] border-r-[#808080] border-b-[#808080] active:border-t-[#808080] active:border-l-[#808080] active:border-r-[#ffffff] active:border-b-[#ffffff] hover:bg-gray-200 cursor-pointer text-black'
+                }`}
+                title="Up One Level"
+              >
+                <ArrowUp size={12} />
+                <span>Up</span>
+              </button>
+
+              <div className="w-[1px] h-4 bg-[#808080] border-r border-[#ffffff] mx-0.5" />
+
+              {/* Properties / Specs */}
+              <button
+                type="button"
+                onClick={() => {
+                  onPlayKeyClick();
+                  setInspectingProjectId(selectedProject);
+                }}
+                className="h-[22px] px-2 flex items-center space-x-1 border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#808080] border-b-[#808080] active:border-t-[#808080] active:border-l-[#808080] active:border-r-[#ffffff] active:border-b-[#ffffff] hover:bg-gray-200 cursor-pointer text-black font-semibold"
+                title="Inspect Project Properties"
+              >
+                <span>📋</span>
+                <span>Properties</span>
+              </button>
+
+              {/* GitHub Link if available */}
+              {currentSelectedProject?.links?.find(l => l.type === 'github') && (
+                <a
+                  href={currentSelectedProject.links.find(l => l.type === 'github')?.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => onPlayKeyClick()}
+                  className="h-[22px] px-2 flex items-center space-x-1 border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#808080] border-b-[#808080] active:border-t-[#808080] active:border-l-[#808080] hover:bg-gray-200 cursor-pointer text-black no-underline"
+                  title="View GitHub Repository"
+                >
+                  <span>💻</span>
+                  <span>GitHub</span>
+                </a>
+              )}
+
+              {/* Live Link if available */}
+              {currentSelectedProject?.links?.find(l => l.type === 'live') && (
+                <a
+                  href={currentSelectedProject.links.find(l => l.type === 'live')?.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => onPlayKeyClick()}
+                  className="h-[22px] px-2 flex items-center space-x-1 border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#808080] border-b-[#808080] active:border-t-[#808080] active:border-l-[#808080] hover:bg-gray-200 cursor-pointer text-black no-underline"
+                  title="Launch Live Application"
+                >
+                  <span>🌐</span>
+                  <span>Launch</span>
+                </a>
+              )}
+
+              <div className="flex-1" />
+
+              {/* View Mode Toggle */}
+              <div className="flex items-center space-x-0.5">
+                <button
+                  type="button"
+                  onClick={() => { onPlayKeyClick(); setProjectViewMode('icons'); }}
+                  className={`h-[22px] px-1.5 flex items-center border ${
+                    projectViewMode === 'icons'
+                      ? 'bg-[#dfdfdf] border-t-[#808080] border-l-[#808080] border-r-[#ffffff] border-b-[#ffffff] font-bold'
+                      : 'border-transparent hover:bg-gray-200'
+                  }`}
+                  title="Large Icons"
+                >
+                  <GridIcon size={12} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { onPlayKeyClick(); setProjectViewMode('details'); }}
+                  className={`h-[22px] px-1.5 flex items-center border ${
+                    projectViewMode === 'details'
+                      ? 'bg-[#dfdfdf] border-t-[#808080] border-l-[#808080] border-r-[#ffffff] border-b-[#ffffff] font-bold'
+                      : 'border-transparent hover:bg-gray-200'
+                  }`}
+                  title="Details List"
+                >
+                  <List size={12} />
+                </button>
               </div>
             </div>
 
-            {/* Main Area: Split Left Tree + Right Icons */}
-            <div className="flex-1 flex overflow-hidden p-1 gap-1">
-              <div className="w-40 bg-white border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] p-2 overflow-y-auto text-[11px] space-y-1">
-                <div className="font-bold text-[#000080]">📂 C:\Projects</div>
-                <div className="pl-3 text-gray-700 cursor-pointer hover:underline">├── 📁 Automation</div>
-                <div className="pl-3 text-gray-700 cursor-pointer hover:underline">├── 📁 Godot_Games</div>
-                <div className="pl-3 text-gray-700 cursor-pointer hover:underline">├── 📁 Web_Platforms</div>
-                <div className="pl-3 text-gray-700 cursor-pointer hover:underline">└── 📁 Financial_Bots</div>
+            {/* Address Bar */}
+            <div className="relative h-[24px] px-2 flex items-center space-x-2 text-[11px] bg-[#c0c0c0] border-b border-[#808080]">
+              <span className="text-gray-700"><u>A</u>ddress:</span>
+              <div
+                onClick={() => setShowAddressDropdown(!showAddressDropdown)}
+                className="flex-1 bg-white px-2 py-0.5 border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] font-mono text-[11px] flex items-center justify-between cursor-pointer"
+              >
+                <div className="flex items-center space-x-1.5 overflow-hidden">
+                  <span>{PROJECT_FOLDERS.find(f => f.id === projectFolder)?.icon || '📁'}</span>
+                  <span className="truncate">{PROJECT_FOLDERS.find(f => f.id === projectFolder)?.path || 'C:\Projects'}</span>
+                </div>
+                <ChevronDown size={12} className="text-gray-600 shrink-0 ml-1" />
               </div>
 
-              <div className="flex-1 bg-white border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] p-3 overflow-y-auto">
-                <div className="grid grid-cols-1 gap-2.5">
-                  {PROJECTS.map((p) => {
-                    const isCur = selectedProject === p.id;
-                    return (
-                      <div
-                        key={p.id}
-                        onClick={() => setSelectedProject(p.id)}
-                        className={`p-2.5 border cursor-pointer flex flex-col justify-between ${
-                          isCur
-                            ? 'bg-[#000080]/10 border-[#000080]'
-                            : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                        }`}
-                      >
-                        <div>
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="font-bold text-[#000080] flex items-center space-x-1">
-                              <span>📁</span>
-                              <span>{p.title}</span>
-                            </span>
-                            <span className="font-mono text-gray-500 text-[10px]">{p.category}</span>
-                          </div>
-                          <p className="text-[11px] text-gray-700 mt-1 leading-snug">
-                            {p.shortDescription}
-                          </p>
-                        </div>
-                        <div className="mt-2 pt-1 border-t border-gray-200 flex flex-wrap gap-1">
-                          {p.tags.slice(0, 4).map((t, idx) => (
-                            <span key={idx} className="bg-gray-200 text-gray-800 px-1.5 py-0.2 text-[9px] font-mono">
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
+              {showAddressDropdown && (
+                <div className="absolute top-[23px] left-[65px] right-2 bg-white border-2 border-[#808080] shadow-xl z-50 text-[11px]">
+                  {PROJECT_FOLDERS.map((f) => (
+                    <div
+                      key={f.id}
+                      onClick={() => navigateToProjectFolder(f.id)}
+                      className={`px-2 py-1 flex items-center space-x-2 cursor-pointer hover:bg-[#000080] hover:text-white ${
+                        projectFolder === f.id ? 'bg-[#000080] text-white font-bold' : 'text-black'
+                      }`}
+                    >
+                      <span>{f.icon}</span>
+                      <span className="font-mono">{f.path}</span>
+                      <span className="text-[10px] opacity-75">({f.label})</span>
+                    </div>
+                  ))}
                 </div>
+              )}
+            </div>
+
+            {/* Main Area: Split Left Tree + Right File Explorer */}
+            <div className="flex-1 flex overflow-hidden p-1 gap-1">
+              {/* Left Directory Tree */}
+              <div className="w-44 bg-white border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] p-1.5 overflow-y-auto text-[11px] space-y-0.5 shrink-0">
+                <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider px-1 pb-1 border-b border-gray-200 mb-1">
+                  Folders
+                </div>
+                {PROJECT_FOLDERS.map((f) => {
+                  const isCur = projectFolder === f.id;
+                  const count = ALL_PROJECTS.filter((p) => f.id === 'all' || p.folder === f.id).length;
+                  return (
+                    <div
+                      key={f.id}
+                      onClick={() => navigateToProjectFolder(f.id)}
+                      className={`px-1.5 py-1 flex items-center justify-between cursor-pointer rounded-none transition-colors ${
+                        isCur
+                          ? 'bg-[#000080] text-white font-semibold'
+                          : 'text-gray-800 hover:bg-[#000080]/10 hover:text-[#000080]'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-1.5 truncate">
+                        <span>{f.icon}</span>
+                        <span className="truncate">{f.name}</span>
+                      </div>
+                      <span className={`text-[10px] px-1 font-mono ${isCur ? 'text-blue-100' : 'text-gray-400'}`}>
+                        {count}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Right Content Area */}
+              <div className="flex-1 bg-white border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] p-2 overflow-y-auto">
+                {projectViewMode === 'icons' ? (
+                  /* Large Icons / Cards View */
+                  <div className="grid grid-cols-1 gap-2">
+                    {filteredProjects.map((p) => {
+                      const isCur = selectedProject === p.id;
+                      return (
+                        <div
+                          key={p.id}
+                          onClick={() => {
+                            onPlayKeyClick();
+                            setSelectedProject(p.id);
+                          }}
+                          onDoubleClick={() => {
+                            onPlayKeyClick();
+                            setSelectedProject(p.id);
+                            setInspectingProjectId(p.id);
+                          }}
+                          className={`p-2 border cursor-pointer flex flex-col justify-between transition-colors ${
+                            isCur
+                              ? 'bg-[#000080]/10 border-[#000080]'
+                              : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between text-[11px]">
+                              <span className="font-bold text-[#000080] flex items-center space-x-1.5">
+                                <span>{p.folder === 'games' ? '🎮' : p.folder === 'web' ? '🌐' : p.folder === 'financial' ? '📊' : '⚙️'}</span>
+                                <span>{p.title}</span>
+                              </span>
+                              <span className="font-mono text-gray-500 text-[10px] px-1 bg-gray-200">
+                                {p.category}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-gray-700 mt-1 leading-snug">
+                              {p.shortDescription}
+                            </p>
+                          </div>
+
+                          <div className="mt-2 pt-1 border-t border-gray-200 flex items-center justify-between">
+                            <div className="flex flex-wrap gap-1">
+                              {p.tags.slice(0, 4).map((t: string, idx: number) => (
+                                <span key={idx} className="bg-gray-200 text-gray-800 px-1.5 py-0.2 text-[9px] font-mono">
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+
+                            <div className="flex items-center space-x-1 shrink-0 ml-2">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onPlayKeyClick();
+                                  setSelectedProject(p.id);
+                                  setInspectingProjectId(p.id);
+                                }}
+                                className="px-1.5 py-0.5 text-[10px] bg-[#c0c0c0] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] hover:bg-gray-200"
+                              >
+                                Specs
+                              </button>
+                              {p.links?.find(l => l.type === 'github') && (
+                                <a
+                                  href={p.links.find(l => l.type === 'github')?.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={(e) => { e.stopPropagation(); onPlayKeyClick(); }}
+                                  className="px-1.5 py-0.5 text-[10px] bg-[#c0c0c0] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] hover:bg-gray-200 no-underline text-black"
+                                >
+                                  Code
+                                </a>
+                              )}
+                              {p.links?.find(l => l.type === 'live') && (
+                                <a
+                                  href={p.links.find(l => l.type === 'live')?.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={(e) => { e.stopPropagation(); onPlayKeyClick(); }}
+                                  className="px-1.5 py-0.5 text-[10px] bg-[#000080] text-white border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] no-underline"
+                                >
+                                  Live
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* Details Table View */
+                  <table className="w-full text-left text-[11px] border-collapse font-sans">
+                    <thead>
+                      <tr className="bg-[#c0c0c0] border-b border-[#808080] text-gray-700 font-bold select-none">
+                        <th className="p-1 border-r border-[#ffffff]">Name</th>
+                        <th className="p-1 border-r border-[#ffffff]">Category</th>
+                        <th className="p-1 border-r border-[#ffffff]">Role</th>
+                        <th className="p-1 border-r border-[#ffffff]">Stack</th>
+                        <th className="p-1 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredProjects.map((p) => {
+                        const isCur = selectedProject === p.id;
+                        return (
+                          <tr
+                            key={p.id}
+                            onClick={() => {
+                              onPlayKeyClick();
+                              setSelectedProject(p.id);
+                            }}
+                            onDoubleClick={() => {
+                              onPlayKeyClick();
+                              setSelectedProject(p.id);
+                              setInspectingProjectId(p.id);
+                            }}
+                            className={`cursor-pointer border-b border-gray-100 ${
+                              isCur
+                                ? 'bg-[#000080] text-white'
+                                : 'hover:bg-blue-50 text-gray-900'
+                            }`}
+                          >
+                            <td className="p-1.5 flex items-center space-x-1.5 font-semibold">
+                              <span>{p.folder === 'games' ? '🎮' : p.folder === 'web' ? '🌐' : p.folder === 'financial' ? '📊' : '⚙️'}</span>
+                              <span className="truncate max-w-[160px]">{p.title}</span>
+                            </td>
+                            <td className="p-1.5 font-mono text-[10px]">{p.category}</td>
+                            <td className="p-1.5">{p.role}</td>
+                            <td className="p-1.5 font-mono text-[10px]">{p.tags.slice(0, 2).join(', ')}</td>
+                            <td className="p-1.5 text-center">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onPlayKeyClick();
+                                  setSelectedProject(p.id);
+                                  setInspectingProjectId(p.id);
+                                }}
+                                className={`px-1.5 py-0.5 text-[10px] border ${
+                                  isCur
+                                    ? 'bg-white text-black border-black'
+                                    : 'bg-[#c0c0c0] text-black border-t-[#ffffff] border-l-[#ffffff] border-r-[#000000] border-b-[#000000]'
+                                }`}
+                              >
+                                View
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
 
             {/* Status Bar */}
             <div className="h-[20px] px-2 flex items-center justify-between text-[11px] text-gray-600 bg-[#c0c0c0] border-t border-[#ffffff]">
-              <span>{PROJECTS.length} object(s)</span>
-              <span>Local Intranet</span>
+              <span>{filteredProjects.length} object(s) in {PROJECT_FOLDERS.find(f => f.id === projectFolder)?.path}</span>
+              <span className="truncate max-w-[280px]">
+                {currentSelectedProject ? `Selected: ${currentSelectedProject.title}` : 'Local Intranet'}
+              </span>
             </div>
+
+            {/* Windows 98 Project Properties Modal */}
+            {inspectingProject && (
+              <div
+                className="absolute inset-0 z-50 bg-black/40 flex items-center justify-center p-3 select-none"
+                onClick={(e) => { e.stopPropagation(); setInspectingProjectId(null); }}
+              >
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-[520px] max-w-full bg-[#c0c0c0] border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] shadow-2xl p-[3px] flex flex-col font-sans"
+                >
+                  {/* Modal Titlebar */}
+                  <div className="h-[20px] bg-gradient-to-r from-[#000080] via-[#0000a0] to-[#1084d0] px-2 flex items-center justify-between text-[11px] text-white font-bold">
+                    <div className="flex items-center space-x-1.5 truncate">
+                      <span>📋</span>
+                      <span className="truncate">{inspectingProject.title} Properties</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setInspectingProjectId(null)}
+                      className="w-4 h-4 bg-[#c0c0c0] text-black font-bold flex items-center justify-center text-[10px] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000]"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* Tabs Header */}
+                  <div className="flex items-end px-2 pt-2 space-x-1 text-[11px] border-b border-[#808080] bg-[#c0c0c0]">
+                    {[
+                      { id: 'general', label: 'General' },
+                      { id: 'architecture', label: 'Architecture & Pipeline' },
+                      { id: 'metrics', label: 'Metrics & Outcomes' }
+                    ].map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => { onPlayKeyClick(); setInspectingTab(t.id as any); }}
+                        className={`px-3 py-1 border-t-2 border-l-2 border-r-2 ${
+                          inspectingTab === t.id
+                            ? 'bg-[#c0c0c0] border-t-[#ffffff] border-l-[#ffffff] border-r-[#000000] -mb-[1px] font-bold z-10'
+                            : 'bg-[#b0b0b0] border-t-[#ffffff] border-l-[#ffffff] border-r-[#808080] text-gray-700'
+                        }`}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Tab Body */}
+                  <div className="p-3 bg-[#c0c0c0] border border-[#ffffff] min-h-[230px] max-h-[300px] overflow-y-auto text-[11px] text-black">
+                    {inspectingTab === 'general' && (
+                      <div className="space-y-3">
+                        <div className="flex items-start space-x-3 pb-2 border-b border-[#808080]">
+                          <div className="w-10 h-10 bg-white border border-[#808080] flex items-center justify-center text-2xl shrink-0">
+                            {inspectingProject.folder === 'games' ? '🎮' : inspectingProject.folder === 'web' ? '🌐' : inspectingProject.folder === 'financial' ? '📊' : '⚙️'}
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-bold text-sm text-[#000080]">{inspectingProject.title}</div>
+                            <div className="text-gray-600 font-mono text-[10px]">{inspectingProject.category} • Role: {inspectingProject.role}</div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="font-bold text-gray-800">Context & Problem:</div>
+                          <p className="mt-1 text-gray-700 leading-relaxed bg-white p-2 border border-[#808080] font-sans">
+                            {inspectingProject.context || inspectingProject.problem || inspectingProject.shortDescription}
+                          </p>
+                        </div>
+
+                        <div>
+                          <div className="font-bold text-gray-800">Technologies & Stack:</div>
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {inspectingProject.tags.map((tag: string, idx: number) => (
+                              <span key={idx} className="bg-white border border-[#808080] px-1.5 py-0.5 font-mono text-[10px]">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {inspectingTab === 'architecture' && (
+                      <div className="space-y-2">
+                        <div className="font-bold text-gray-800 mb-1">Architecture & Step-by-Step Flow:</div>
+                        {inspectingProject.architecture?.steps?.length > 0 ? (
+                          <div className="space-y-2">
+                            {inspectingProject.architecture.steps.map((st: any, idx: number) => (
+                              <div key={idx} className="bg-white p-2 border border-[#808080]">
+                                <div className="font-bold text-[#000080] text-[10px] uppercase">{st.phase}: {st.title}</div>
+                                <div className="text-gray-700 text-[11px] mt-0.5 leading-snug">{st.description}</div>
+                                <div className="mt-1 font-mono text-[9px] text-gray-500">Tech: {st.tech}</div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : inspectingProject.technicalHighlights?.length > 0 ? (
+                          <ul className="list-disc pl-4 space-y-1 bg-white p-2 border border-[#808080]">
+                            {inspectingProject.technicalHighlights.map((th: string, idx: number) => (
+                              <li key={idx} className="text-gray-700 leading-snug">{th}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className="bg-white p-3 border border-[#808080] text-gray-600 italic">
+                            Production release with automated error recovery.
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {inspectingTab === 'metrics' && (
+                      <div className="space-y-3">
+                        <div className="font-bold text-gray-800">Verified Impact & Metrics:</div>
+                        {Boolean(inspectingProject.metrics && inspectingProject.metrics.length > 0) ? (
+                          <div className="grid grid-cols-2 gap-2">
+                            {inspectingProject.metrics?.map((m: any, idx: number) => (
+                              <div key={idx} className="bg-white p-2 border border-[#808080]">
+                                <div className="text-[10px] text-gray-500 uppercase font-mono">{m.label}</div>
+                                <div className="text-base font-bold text-[#000080] mt-0.5">{m.value}</div>
+                                {m.subtext && <div className="text-[9px] text-gray-600 mt-0.5">{m.subtext}</div>}
+                              </div>
+                            ))}
+                          </div>
+                        ) : null}
+
+                        {inspectingProject.outcome && (
+                          <div className="bg-white p-2 border border-[#808080]">
+                            <div className="font-bold text-gray-700 text-[10px] uppercase">Outcome:</div>
+                            <div className="text-gray-800 mt-0.5 leading-snug">{inspectingProject.outcome}</div>
+                          </div>
+                        )}
+
+                        {inspectingProject.links?.length > 0 && (
+                          <div className="mt-2 pt-2 border-t border-[#808080]">
+                            <div className="font-bold text-gray-800 mb-1">External Repositories & Demos:</div>
+                            <div className="flex gap-2">
+                              {inspectingProject.links.map((link: any, idx: number) => (
+                                <a
+                                  key={idx}
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={() => onPlayKeyClick()}
+                                  className="px-2 py-1 bg-white border border-[#808080] text-[#000080] hover:underline flex items-center space-x-1"
+                                >
+                                  <span>🔗</span>
+                                  <span>{link.label}</span>
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Dialog Bottom Buttons */}
+                  <div className="mt-3 flex justify-end space-x-2 px-2 pb-1">
+                    <button
+                      type="button"
+                      onClick={() => { onPlayKeyClick(); setInspectingProjectId(null); }}
+                      className="px-4 py-1 bg-[#c0c0c0] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] font-bold text-[11px]"
+                    >
+                      OK
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { onPlayKeyClick(); setInspectingProjectId(null); }}
+                      className="px-4 py-1 bg-[#c0c0c0] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] text-[11px]"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* ========================================================= */}
+{/* ========================================================= */}
       {/* 6. WINDOW: MS-DOS PROMPT                                  */}
       {/* ========================================================= */}
       {windows.dos.isOpen && !windows.dos.isMinimized && (
