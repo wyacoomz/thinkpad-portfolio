@@ -698,6 +698,58 @@ function generateModernSidePortsTexture(): THREE.CanvasTexture {
   return new THREE.CanvasTexture(canvas);
 }
 
+
+// 4-Corner Homography Projective Transform for CSS matrix3d mapping
+function getPerspectiveTransform(
+  w: number, 
+  h: number,
+  p0: { x: number; y: number },
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+  p3: { x: number; y: number }
+): string {
+  const x0 = p0.x, y0 = p0.y;
+  const x1 = p1.x, y1 = p1.y;
+  const x2 = p2.x, y2 = p2.y;
+  const x3 = p3.x, y3 = p3.y;
+
+  const dx1 = x1 - x3;
+  const dx2 = x2 - x3;
+  const dy1 = y1 - y3;
+  const dy2 = y2 - y3;
+
+  const sx = x0 - x1 + x3 - x2;
+  const sy = y0 - y1 + y3 - y2;
+
+  let g = 0, h_val = 0;
+  const det = dx1 * dy2 - dx2 * dy1;
+
+  if (Math.abs(det) > 1e-8) {
+    g = (sx * dy2 - sy * dx2) / det;
+    h_val = (dx1 * sy - dy1 * sx) / det;
+  }
+
+  const a = x1 - x0 + g * x1;
+  const b = x2 - x0 + h_val * x2;
+  const c = x0;
+  const d = y1 - y0 + g * y1;
+  const e = y2 - y0 + h_val * y2;
+  const f = y0;
+
+  const m00 = a / w;
+  const m10 = d / w;
+  const m30 = g / w;
+
+  const m01 = b / h;
+  const m11 = e / h;
+  const m31 = h_val / h;
+
+  const m03 = c;
+  const m13 = f;
+
+  return `matrix3d(${m00}, ${m10}, 0, ${m30}, ${m01}, ${m11}, 0, ${m31}, 0, 0, 1, 0, ${m03}, ${m13}, 0, 1)`;
+}
+
 // ==========================================
 // MAIN COMPONENT
 // ==========================================
@@ -710,23 +762,66 @@ export const ThinkPadWorkstation: React.FC = () => {
   const [showInfo, setShowInfo] = useState<boolean>(false);
   const [bootPhase, setBootPhase] = useState<'off' | 'splash' | 'booting' | 'ready'>('off');
 
+  const [screenMounted, setScreenMounted] = useState<boolean>(false);
+  const screenDomRef = useRef<HTMLDivElement | null>(null);
+
   const sceneRef = useRef<{
     lidGroup: THREE.Group | null;
-    screenTexture: THREE.CanvasTexture | null;
-    screenCanvas: HTMLCanvasElement | null;
-    screenContext: CanvasRenderingContext2D | null;
+    screenMesh: THREE.Mesh | null;
     deskLampLight: THREE.SpotLight | null;
     camera: THREE.PerspectiveCamera | null;
     controls: OrbitControls | null;
   }>({
     lidGroup: null,
-    screenTexture: null,
-    screenCanvas: null,
-    screenContext: null,
+    screenMesh: null,
     deskLampLight: null,
     camera: null,
     controls: null
   });
+
+  // Balanced camera presets
+  const closedDeskCamPos = new THREE.Vector3(0, 3.25, 4.30);
+  const closedDeskCamLook = new THREE.Vector3(0, 0.10, 0);
+
+  const openDeskCamPos = new THREE.Vector3(0, 2.50, 4.15);
+  const openDeskCamLook = new THREE.Vector3(0, 0.68, -0.40);
+
+  // Directly facing the open laptop screen (perpendicular angle with subtle bezel frame)
+  const focusedCamPos = new THREE.Vector3(0, 1.95, 2.05);
+  const focusedCamLook = new THREE.Vector3(0, 1.18, -1.33);
+
+  const cameraAnimRef = useRef({
+    active: false,
+    startPos: new THREE.Vector3(),
+    startLook: new THREE.Vector3(),
+    targetPos: new THREE.Vector3(),
+    targetLook: new THREE.Vector3(),
+    progress: 1
+  });
+
+  const glideCameraTo = useCallback((targetPos: THREE.Vector3, targetLook: THREE.Vector3) => {
+    const cam = sceneRef.current.camera;
+    const ctrl = sceneRef.current.controls;
+    if (!cam || !ctrl) return;
+    const anim = cameraAnimRef.current;
+    anim.startPos.copy(cam.position);
+    anim.startLook.copy(ctrl.target);
+    anim.targetPos.copy(targetPos);
+    anim.targetLook.copy(targetLook);
+    anim.progress = 0;
+    anim.active = true;
+  }, []);
+
+  useEffect(() => {
+    if (!sceneRef.current.camera || !sceneRef.current.controls) return;
+    if (!isLidOpen) {
+      glideCameraTo(closedDeskCamPos, closedDeskCamLook);
+    } else if (isFocused) {
+      glideCameraTo(focusedCamPos, focusedCamLook);
+    } else {
+      glideCameraTo(openDeskCamPos, openDeskCamLook);
+    }
+  }, [isLidOpen, isFocused, glideCameraTo]);
 
   const stateRef = useRef({
     isLidOpen: false,
@@ -819,7 +914,15 @@ export const ThinkPadWorkstation: React.FC = () => {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.15;
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.top = '0';
+    renderer.domElement.style.left = '0';
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '100%';
+    renderer.domElement.style.zIndex = '0';
     container.appendChild(renderer.domElement);
+
+    
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -1056,27 +1159,16 @@ export const ThinkPadWorkstation: React.FC = () => {
     bezelMesh.position.set(0, lidH / 2, 0.001);
     lidGroup.add(bezelMesh);
 
-    // 2048x1280 Canvas Texture for Screen
-    const screenCanvas = document.createElement('canvas');
-    screenCanvas.width = 2048;
-    screenCanvas.height = 1280;
-    const screenContext = screenCanvas.getContext('2d')!;
-    sceneRef.current.screenCanvas = screenCanvas;
-    sceneRef.current.screenContext = screenContext;
-
-    const screenTexture = new THREE.CanvasTexture(screenCanvas);
-    screenTexture.generateMipmaps = true;
-    screenTexture.minFilter = THREE.LinearMipmapLinearFilter;
-    screenTexture.magFilter = THREE.LinearFilter;
-    sceneRef.current.screenTexture = screenTexture;
-
-    const screenMat = new THREE.MeshBasicMaterial({ map: screenTexture });
+    // Matte LCD Screen Backplate
     const screenW = 3.42;
     const screenH = 2.16;
     const screenGeo = new THREE.PlaneGeometry(screenW, screenH);
+    const screenMat = new THREE.MeshBasicMaterial({ color: 0x05070a });
     const screenMesh = new THREE.Mesh(screenGeo, screenMat);
     screenMesh.position.set(0, lidH / 2 - 0.01, 0.004);
     lidGroup.add(screenMesh);
+    sceneRef.current.screenMesh = screenMesh;
+    setScreenMounted(true);
 
     // (F) Desk Accessories
     const coasterGeo = new THREE.CylinderGeometry(0.24, 0.25, 0.015, 24);
@@ -1149,233 +1241,6 @@ export const ThinkPadWorkstation: React.FC = () => {
     renderer.domElement.addEventListener('click', handleCanvasClick);
     renderer.domElement.addEventListener('mousemove', handleCanvasMouseMove);
 
-    // 7. Dynamic Screen Rendering (Boot sequence & Modern Desktop wallpaper)
-    const drawScreen = () => {
-      const ctx = screenContext;
-      const w = screenCanvas.width;
-      const h = screenCanvas.height;
-      const phase = stateRef.current.bootPhase;
-
-      if (phase === 'off') {
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, w, h);
-      } else if (phase === 'splash') {
-        ctx.fillStyle = '#080a0f';
-        ctx.fillRect(0, 0, w, h);
-
-        // Modern developer splash
-        const cx = w / 2;
-        const cy = h / 2 - 20;
-
-        ctx.beginPath();
-        ctx.arc(cx, cy, 54, 0, Math.PI * 2);
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 3;
-        ctx.shadowColor = '#38bdf8';
-        ctx.shadowBlur = 18;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-
-        ctx.font = '600 48px "JetBrains Mono", system-ui, sans-serif';
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('λ', cx, cy - 2);
-
-        ctx.font = '600 24px system-ui, sans-serif';
-        ctx.fillStyle = '#e2e8f0';
-        ctx.fillText('WYAcOOMZ WORKSTATION', cx, cy + 90);
-
-        ctx.font = '400 16px "JetBrains Mono", monospace';
-        ctx.fillStyle = '#64748b';
-        ctx.fillText('INITIALIZING SYSTEM KERNEL...', cx, cy + 125);
-      } else if (phase === 'booting') {
-        ctx.fillStyle = '#0b0e14';
-        ctx.fillRect(0, 0, w, h);
-
-        ctx.font = 'bold 44px system-ui, sans-serif';
-        ctx.fillStyle = '#f8fafc';
-        ctx.textAlign = 'center';
-        ctx.fillText('Starting Developer Environment', w / 2, h / 2 - 30);
-
-        const t = performance.now() * 0.005;
-        for (let i = 0; i < 5; i++) {
-          const alpha = 0.2 + 0.8 * (0.5 + 0.5 * Math.sin(t - i * 0.6));
-          ctx.beginPath();
-          ctx.arc(w / 2 - 60 + i * 30, h / 2 + 40, 5.5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(56, 189, 248, ${alpha})`;
-          ctx.fill();
-        }
-      } else {
-        // Active Modern Desktop Wallpaper & GNOME/macOS-style Interface
-        const bgGrad = ctx.createLinearGradient(0, 0, w, h);
-        bgGrad.addColorStop(0, '#090d16');
-        bgGrad.addColorStop(0.4, '#171a2e');
-        bgGrad.addColorStop(0.8, '#1e1b4b');
-        bgGrad.addColorStop(1, '#0b0f19');
-        ctx.fillStyle = bgGrad;
-        ctx.fillRect(0, 0, w, h);
-
-        // Elegant geometric glow mesh
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.09)';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(w * 0.15, 0);
-        ctx.lineTo(w * 0.85, h);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(w * 0.35, 0);
-        ctx.lineTo(w * 0.98, h);
-        ctx.stroke();
-
-        // Top Status Bar
-        ctx.fillStyle = '#0b0f17e6';
-        ctx.fillRect(0, 0, w, 44);
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(0, 43, w, 1);
-
-        // Apple / System Pill
-        ctx.fillStyle = '#1e293b';
-        ctx.beginPath();
-        ctx.roundRect(14, 7, 105, 30, 15);
-        ctx.fill();
-        ctx.font = 'bold 14px system-ui, sans-serif';
-        ctx.fillStyle = '#38bdf8';
-        ctx.textAlign = 'center';
-        ctx.fillText('Workstation', 66, 26);
-
-        // Center Clock
-        const timeStr = new Date().toLocaleTimeString('en-IN', { hour12: false, timeZone: 'Asia/Kolkata' });
-        ctx.font = 'bold 14px system-ui, sans-serif';
-        ctx.fillStyle = '#e2e8f0';
-        ctx.textAlign = 'center';
-        ctx.fillText(`Sun Oct 25   ${timeStr} IST`, w / 2, 26);
-
-        // Right Tray
-        ctx.font = '14px system-ui, sans-serif';
-        ctx.fillStyle = '#94a3b8';
-        ctx.textAlign = 'right';
-        ctx.fillText('WiFi   Vol 85%   Bat 98%   Power', w - 24, 26);
-
-        // Left Dock
-        ctx.fillStyle = '#090d14cc';
-        ctx.fillRect(0, 44, 72, h - 44);
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(71, 44, 1, h - 44);
-
-        const dockApps = [
-          { icon: '📁', label: 'Projects' },
-          { icon: '⚙️', label: 'Pipeline' },
-          { icon: '📄', label: 'Resume' },
-          { icon: '💻', label: 'Terminal' },
-          { icon: '📝', label: 'Notes' },
-          { icon: 'ℹ️', label: 'Specs' }
-        ];
-
-        dockApps.forEach((app, i) => {
-          const dy = 65 + i * 65;
-          ctx.fillStyle = '#1e293b';
-          ctx.beginPath();
-          ctx.roundRect(12, dy, 48, 48, 12);
-          ctx.fill();
-
-          ctx.font = '24px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(app.icon, 36, dy + 33);
-        });
-
-        // Desktop Neofetch Terminal Window
-        const winX = 130;
-        const winY = 90;
-        const winW = 860;
-        const winH = 540;
-
-        ctx.fillStyle = '#0f172a';
-        ctx.beginPath();
-        ctx.roundRect(winX, winY, winW, winH, 10);
-        ctx.fill();
-        ctx.strokeStyle = '#334155';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        ctx.fillStyle = '#1e293b';
-        ctx.beginPath();
-        ctx.roundRect(winX, winY, winW, 38, [10, 10, 0, 0]);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(winX + 22, winY + 19, 6, 0, Math.PI * 2);
-        ctx.fillStyle = '#ef4444';
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(winX + 44, winY + 19, 6, 0, Math.PI * 2);
-        ctx.fillStyle = '#eab308';
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(winX + 66, winY + 19, 6, 0, Math.PI * 2);
-        ctx.fillStyle = '#22c55e';
-        ctx.fill();
-
-        ctx.font = '600 14px "JetBrains Mono", monospace';
-        ctx.fillStyle = '#f8fafc';
-        ctx.textAlign = 'center';
-        ctx.fillText('bash - wyacoomz@workstation: ~ (Neofetch)', winX + winW / 2, winY + 24);
-
-        ctx.textAlign = 'left';
-        ctx.font = '16px "JetBrains Mono", monospace';
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillText('wyacoomz@workstation', winX + 36, winY + 75);
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText('------------------------', winX + 36, winY + 98);
-
-        const specs = [
-          ['OS', 'Modern Developer Environment (x86_64)'],
-          ['Host', 'Studio Ultrabook Unibody 16"'],
-          ['Kernel', '6.8.0-enterprise'],
-          ['Uptime', '14 days, 6 hours'],
-          ['Shell', 'zsh 5.9 (x86_64)'],
-          ['Display', '16.0" Liquid Retina IPS (16:10)'],
-          ['CPU', 'High-Performance Multi-Core Architecture'],
-          ['Memory', '32GB Unified Memory'],
-          ['Developer', 'Abdul Samad Khan (wyacoomz)'],
-          ['Role', 'RPA & Full-Stack Developer @ Trufe'],
-          ['LeetCode', '150+ Solved (Graphs, Dynamic Programming)']
-        ];
-
-        specs.forEach(([k, v], idx) => {
-          const sy = winY + 130 + idx * 32;
-          ctx.fillStyle = '#38bdf8';
-          ctx.fillText(`${k.padEnd(12, ' ')}:`, winX + 36, sy);
-          ctx.fillStyle = '#f8fafc';
-          ctx.fillText(v, winX + 180, sy);
-        });
-
-        // Click to focus prompt on screen
-        ctx.fillStyle = '#38bdf8';
-        ctx.beginPath();
-        ctx.roundRect(winX + winW + 40, winY + 60, 460, 160, 12);
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-        ctx.fill();
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        ctx.font = 'bold 20px system-ui, sans-serif';
-        ctx.fillStyle = '#f8fafc';
-        ctx.fillText('Studio Workstation Active', winX + winW + 65, winY + 105);
-
-        ctx.font = '15px system-ui, sans-serif';
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText('Click screen to enter interactive workstation', winX + winW + 65, winY + 140);
-        ctx.fillText('or click Focus Screen in the top bar.', winX + winW + 65, winY + 165);
-      }
-
-      screenTexture.needsUpdate = true;
-    };
-
     // 8. Animation & Render Loop
     let animId: number;
 
@@ -1384,27 +1249,64 @@ export const ThinkPadWorkstation: React.FC = () => {
 
       // Smooth physical lid rotation
       const targetLidRotX = stateRef.current.isLidOpen ? -0.22 : Math.PI / 2;
-      lidGroup.rotation.x = THREE.MathUtils.lerp(lidGroup.rotation.x, targetLidRotX, 0.07);
+      lidGroup.rotation.x = THREE.MathUtils.lerp(lidGroup.rotation.x, targetLidRotX, 0.08);
 
-      // Smooth camera lerp transition
-      let targetPos = closedDeskCamPos;
-      let targetLook = closedDeskCamLook;
-
-      if (stateRef.current.isLidOpen) {
-        if (stateRef.current.isFocused) {
-          targetPos = focusedCamPos;
-          targetLook = focusedCamLook;
+      // Smooth camera glide
+      if (cameraAnimRef.current.active) {
+        const anim = cameraAnimRef.current;
+        anim.progress += 0.038;
+        if (anim.progress >= 1) {
+          anim.progress = 1;
+          anim.active = false;
+          camera.position.copy(anim.targetPos);
+          controls.target.copy(anim.targetLook);
         } else {
-          targetPos = openDeskCamPos;
-          targetLook = openDeskCamLook;
+          const t = anim.progress;
+          const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+          camera.position.lerpVectors(anim.startPos, anim.targetPos, ease);
+          controls.target.lerpVectors(anim.startLook, anim.targetLook, ease);
+        }
+      }
+      controls.update();
+
+      // Project 3D Screen to DOM in real-time
+      if (screenDomRef.current && container) {
+        if (!stateRef.current.isLidOpen) {
+          screenDomRef.current.style.display = 'none';
+        } else {
+          // Check screen normal angle
+          const screenNormal = new THREE.Vector3(0, 0, 1).applyQuaternion(screenMesh.getWorldQuaternion(new THREE.Quaternion()));
+          const screenPos = screenMesh.getWorldPosition(new THREE.Vector3());
+          const toCam = camera.position.clone().sub(screenPos).normalize();
+          const dot = screenNormal.dot(toCam);
+
+          if (dot <= 0.02) {
+            screenDomRef.current.style.display = 'none';
+          } else {
+            screenDomRef.current.style.display = 'block';
+
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+
+            const halfW = screenW / 2;
+            const halfH = screenH / 2;
+
+            // Project 4 corners
+            const p0_v = new THREE.Vector3(-halfW, halfH, 0.001).applyMatrix4(screenMesh.matrixWorld).project(camera);
+            const p1_v = new THREE.Vector3(halfW, halfH, 0.001).applyMatrix4(screenMesh.matrixWorld).project(camera);
+            const p2_v = new THREE.Vector3(-halfW, -halfH, 0.001).applyMatrix4(screenMesh.matrixWorld).project(camera);
+            const p3_v = new THREE.Vector3(halfW, -halfH, 0.001).applyMatrix4(screenMesh.matrixWorld).project(camera);
+
+            const p0 = { x: (p0_v.x * 0.5 + 0.5) * w, y: (-(p0_v.y * 0.5) + 0.5) * h };
+            const p1 = { x: (p1_v.x * 0.5 + 0.5) * w, y: (-(p1_v.y * 0.5) + 0.5) * h };
+            const p2 = { x: (p2_v.x * 0.5 + 0.5) * w, y: (-(p2_v.y * 0.5) + 0.5) * h };
+            const p3 = { x: (p3_v.x * 0.5 + 0.5) * w, y: (-(p3_v.y * 0.5) + 0.5) * h };
+
+            screenDomRef.current.style.transform = getPerspectiveTransform(1280, 808, p0, p1, p2, p3);
+          }
         }
       }
 
-      camera.position.lerp(targetPos, 0.08);
-      controls.target.lerp(targetLook, 0.08);
-      controls.update();
-
-      drawScreen();
       renderer.render(scene, camera);
     };
 
@@ -1418,7 +1320,7 @@ export const ThinkPadWorkstation: React.FC = () => {
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
-    };
+          };
 
     window.addEventListener('resize', handleResize);
 
@@ -1434,10 +1336,10 @@ export const ThinkPadWorkstation: React.FC = () => {
       keyboardDeckTex.dispose();
       bezelTex.dispose();
       sidePortsTex.dispose();
-      screenTexture.dispose();
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
+      
     };
   }, [openLaptop]);
 
@@ -1494,72 +1396,98 @@ export const ThinkPadWorkstation: React.FC = () => {
         </div>
       )}
 
-      {/* Focused Interactive OS Layer */}
-      {isLidOpen && isFocused && (
-        <div className="absolute inset-0 z-30 pointer-events-auto flex flex-col items-center justify-center bg-black/70 backdrop-blur-[2px] p-2 sm:p-4 animate-in fade-in duration-200">
-          {/* Top Bar for Focused View */}
-          <div className="w-full max-w-6xl flex items-center justify-between pb-2 text-xs font-mono select-none">
-            <div className="flex items-center space-x-2 text-[#94a3b8]">
-              <span className="w-2 h-2 rounded-full bg-[#38bdf8]" />
-              <span className="font-bold text-[#f8fafc]">STUDIO WORKSTATION</span>
-              <span>&bull;</span>
-              <span className="text-[#38bdf8]">INTERACTIVE DEVELOPER DESKTOP</span>
+      {/* 3D In-Screen Linux Desktop OS via CSS3D React Portal */}
+      {/* 3D In-Screen Linux Desktop OS (Perspective Projected onto 3D laptop screen) */}
+      <div
+        ref={screenDomRef}
+        id="css3d-laptop-screen"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '1280px',
+          height: '808px',
+          transformOrigin: '0 0',
+          display: 'none',
+          zIndex: 10,
+          pointerEvents: 'auto',
+          borderRadius: '2px',
+          overflow: 'hidden'
+        }}
+        onMouseDown={(e) => {
+          if (stateRef.current.isFocused) {
+            e.stopPropagation();
+          }
+        }}
+      >
+        {/* Boot Splash / Loading Screens */}
+        {bootPhase === 'splash' && (
+          <div className="absolute inset-0 z-50 bg-[#05070a] flex flex-col items-center justify-center space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#1e293b] to-[#38bdf8] flex items-center justify-center shadow-2xl">
+              <span className="text-3xl font-black text-white font-mono tracking-tighter">λ</span>
             </div>
+            <div className="text-xl font-bold tracking-widest text-[#f8fafc] font-sans">DEVBOOK <span className="text-[#38bdf8]">PRO</span></div>
+            <div className="text-xs font-mono text-[#64748b]">INITIALIZING HARDWARE SUBSYSTEMS...</div>
+          </div>
+        )}
 
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => {
-                  audioEngine.playKeyClick();
-                  setIsFocused(false);
-                }}
-                className="flex items-center space-x-1.5 px-3 py-1 bg-[#1e293b] hover:bg-[#334155] text-[#f8fafc] border border-[#334155] rounded-xs text-xs font-mono transition-colors shadow-md"
-                title="Return to 3D Desk View"
-              >
-                <ZoomOut className="w-3.5 h-3.5 text-[#38bdf8]" />
-                <span>Desk View</span>
-              </button>
+        {bootPhase === 'booting' && (
+          <div className="absolute inset-0 z-50 bg-[#05070a] flex flex-col items-center justify-center space-y-4">
+            <div className="flex space-x-2">
+              <div className="w-3 h-3 rounded-full bg-[#38bdf8] animate-bounce" style={{ animationDelay: '0ms' }} />
+              <div className="w-3 h-3 rounded-full bg-[#38bdf8] animate-bounce" style={{ animationDelay: '150ms' }} />
+              <div className="w-3 h-3 rounded-full bg-[#38bdf8] animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+            <div className="text-sm font-mono text-[#38bdf8]">Ubuntu 24.04 LTS (x86_64)</div>
+            <div className="text-xs font-mono text-[#64748b]">Loading Linux kernel 6.8.0-45-generic...</div>
+          </div>
+        )}
 
-              <button
-                onClick={closeLaptop}
-                className="flex items-center space-x-1.5 px-3 py-1 bg-[#450a0a] hover:bg-[#7f1d1d] text-[#fca5a5] border border-[#991b1b] rounded-xs text-xs font-mono transition-colors shadow-md"
-                title="Close Laptop Lid"
-              >
-                <Power className="w-3.5 h-3.5" />
-                <span>Close Laptop</span>
-              </button>
+        {/* Real Interactive Linux Desktop OS */}
+        <LinuxDesktopOS
+          onPlayKeyClick={() => audioEngine.playKeyClick()}
+          onExitFocus={() => setIsFocused(false)}
+          soundEnabled={soundEnabled}
+          onToggleSound={toggleSound}
+          isStandaloneOverlay={false}
+        />
+
+        {/* Click to Focus Shield in Desk View */}
+        {!isFocused && isLidOpen && bootPhase === 'ready' && (
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              audioEngine.playKeyClick();
+              setIsFocused(true);
+            }}
+            className="absolute inset-0 z-40 cursor-pointer bg-sky-500/0 hover:bg-sky-500/10 transition-colors flex items-center justify-center group"
+            title="Click to Zoom in on Screen"
+          >
+            <div className="opacity-0 group-hover:opacity-100 transition-all transform scale-95 group-hover:scale-100 px-5 py-2.5 rounded-full bg-[#090d14]/90 text-[#38bdf8] border border-[#38bdf8]/50 text-sm font-mono font-semibold shadow-2xl flex items-center space-x-2">
+              <ZoomIn className="w-4 h-4 text-[#38bdf8]" />
+              <span>Click Screen to Focus</span>
             </div>
           </div>
-
-          {/* 16:10 Laptop Screen Bezel Container */}
-          <div className="relative w-full max-w-6xl aspect-[16/10] max-h-[82vh] bg-[#0c1017] rounded-sm overflow-hidden border-[6px] border-[#18191c] shadow-2xl flex flex-col">
-            <LinuxDesktopOS
-              onPlayKeyClick={() => audioEngine.playKeyClick()}
-              onExitFocus={() => setIsFocused(false)}
-              soundEnabled={soundEnabled}
-              onToggleSound={toggleSound}
-              isStandaloneOverlay={true}
-            />
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Top Header Pill & Controls Overlay */}
       <div className="absolute top-4 left-4 z-20 pointer-events-auto flex items-center space-x-3">
         <a
           href="http://localhost:3000"
-          className="flex items-center space-x-2 px-3.5 py-1.5 bg-[#0f141f]/90 hover:bg-[#1e293b] text-[#cbd5e1] hover:text-white border border-[#1e293b] rounded-md text-xs font-mono backdrop-blur-sm transition-all shadow-lg"
+          className="flex items-center space-x-2 px-3.5 py-1.5 bg-[#F4F2EB]/95 hover:bg-[#FFFFFF] text-[#141413] border border-[#DCD9CF] rounded-xs text-xs font-mono backdrop-blur-sm transition-all shadow-sm"
           title="Return to Editorial Journal Portfolio"
         >
-          <ArrowLeft className="w-3.5 h-3.5 text-[#38bdf8]" />
-          <span>Editorial Portfolio</span>
+          <ArrowLeft className="w-3.5 h-3.5 text-[#264233]" />
+          <span className="font-semibold">Editorial Portfolio</span>
         </a>
 
         {/* Status Pill */}
-        <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-[#0f141f]/90 border border-[#1e293b] rounded-md text-xs font-mono text-[#94a3b8] backdrop-blur-sm shadow-lg">
-          <span className={`w-2 h-2 rounded-full ${isLidOpen ? 'bg-[#22c55e]' : 'bg-[#38bdf8] animate-pulse'}`} />
-          <span className="font-semibold text-[#f8fafc]">ULTRABOOK 16"</span>
+        <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-[#F4F2EB]/95 border border-[#DCD9CF] rounded-xs text-xs font-mono text-[#575653] backdrop-blur-sm shadow-sm">
+          <span className={`w-2 h-2 rounded-full ${isLidOpen ? 'bg-[#264233]' : 'bg-[#8B4513] animate-pulse'}`} />
+          <span className="font-semibold text-[#141413]">STUDIO ULTRABOOK 16"</span>
           <span>&bull;</span>
-          <span className="text-[#38bdf8]">{isLidOpen ? 'OPEN (ACTIVE)' : 'CLOSED (SLEEP)'}</span>
+          <span className="text-[#264233] font-medium">{isLidOpen ? 'OPEN (ACTIVE)' : 'CLOSED (SLEEP)'}</span>
         </div>
       </div>
 
@@ -1568,14 +1496,14 @@ export const ThinkPadWorkstation: React.FC = () => {
         {/* Open / Close Laptop Button */}
         <button
           onClick={isLidOpen ? closeLaptop : openLaptop}
-          className={`flex items-center space-x-1.5 px-3 py-1.5 border rounded-md text-xs font-mono transition-all backdrop-blur-sm shadow-lg ${
+          className={`flex items-center space-x-1.5 px-3 py-1.5 border rounded-xs text-xs font-mono transition-all backdrop-blur-sm shadow-sm ${
             isLidOpen 
-              ? 'bg-[#1e293b]/90 hover:bg-[#334155] text-[#f8fafc] border-[#334155]' 
-              : 'bg-[#38bdf8]/20 hover:bg-[#38bdf8]/30 text-[#bae6fd] border-[#38bdf8]/40'
+              ? 'bg-[#F4F2EB]/95 hover:bg-[#FFFFFF] text-[#141413] border-[#DCD9CF]' 
+              : 'bg-[#264233] hover:bg-[#1a3024] text-white border-[#1a3024]'
           }`}
           title={isLidOpen ? 'Close Laptop Lid' : 'Open Laptop Lid'}
         >
-          <Laptop className="w-3.5 h-3.5 text-[#38bdf8]" />
+          <Laptop className={`w-3.5 h-3.5 ${isLidOpen ? 'text-[#264233]' : 'text-white'}`} />
           <span>{isLidOpen ? 'Close Laptop' : 'Open Laptop'}</span>
         </button>
 
@@ -1583,10 +1511,10 @@ export const ThinkPadWorkstation: React.FC = () => {
         {isLidOpen && (
           <button
             onClick={toggleFocus}
-            className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#0f141f]/90 hover:bg-[#1e293b] text-[#cbd5e1] hover:text-white border border-[#1e293b] rounded-md text-xs font-mono backdrop-blur-sm transition-all shadow-lg"
+            className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#F4F2EB]/95 hover:bg-[#FFFFFF] text-[#141413] border border-[#DCD9CF] rounded-xs text-xs font-mono backdrop-blur-sm transition-all shadow-sm"
             title={isFocused ? 'Switch to Desk View' : 'Focus Screen'}
           >
-            {isFocused ? <ZoomOut className="w-3.5 h-3.5 text-[#38bdf8]" /> : <ZoomIn className="w-3.5 h-3.5 text-[#38bdf8]" />}
+            {isFocused ? <ZoomOut className="w-3.5 h-3.5 text-[#264233]" /> : <ZoomIn className="w-3.5 h-3.5 text-[#264233]" />}
             <span>{isFocused ? 'Desk View' : 'Focus Screen'}</span>
           </button>
         )}
@@ -1594,10 +1522,10 @@ export const ThinkPadWorkstation: React.FC = () => {
         {/* Lamp Toggle */}
         <button
           onClick={toggleLamp}
-          className={`flex items-center space-x-1.5 px-3 py-1.5 border rounded-md text-xs font-mono transition-all backdrop-blur-sm shadow-lg ${
+          className={`flex items-center space-x-1.5 px-3 py-1.5 border rounded-xs text-xs font-mono transition-all backdrop-blur-sm shadow-sm ${
             lampOn
-              ? 'bg-[#38bdf8]/15 text-[#38bdf8] border-[#38bdf8]/40'
-              : 'bg-[#0f141f]/90 text-[#64748b] border-[#1e293b]'
+              ? 'bg-[#E8EFEA] text-[#264233] border-[#C2D7CB]'
+              : 'bg-[#F4F2EB]/95 text-[#888680] border-[#DCD9CF]'
           }`}
           title={lampOn ? 'Turn Off Lamp' : 'Turn On Lamp'}
         >
@@ -1608,10 +1536,10 @@ export const ThinkPadWorkstation: React.FC = () => {
         {/* Audio Toggle */}
         <button
           onClick={toggleSound}
-          className={`p-1.5 border rounded-md text-xs font-mono transition-all backdrop-blur-sm shadow-lg ${
+          className={`p-1.5 border rounded-xs text-xs font-mono transition-all backdrop-blur-sm shadow-sm ${
             soundEnabled
-              ? 'bg-[#0f141f]/90 text-[#38bdf8] border-[#1e293b]'
-              : 'bg-[#0f141f]/90 text-[#64748b] border-[#1e293b]'
+              ? 'bg-[#F4F2EB]/95 text-[#264233] border-[#DCD9CF]'
+              : 'bg-[#F4F2EB]/95 text-[#888680] border-[#DCD9CF]'
           }`}
           title={soundEnabled ? 'Mute Sounds' : 'Enable Precision Audio'}
         >
@@ -1621,7 +1549,7 @@ export const ThinkPadWorkstation: React.FC = () => {
         {/* Info Toggle */}
         <button
           onClick={() => setShowInfo((prev) => !prev)}
-          className="p-1.5 bg-[#0f141f]/90 hover:bg-[#1e293b] text-[#94a3b8] hover:text-[#f8fafc] border border-[#1e293b] rounded-md transition-all backdrop-blur-sm shadow-lg"
+          className="p-1.5 bg-[#F4F2EB]/95 hover:bg-[#FFFFFF] text-[#575653] hover:text-[#141413] border border-[#DCD9CF] rounded-xs transition-all backdrop-blur-sm shadow-sm"
           title="Hardware Specifications"
         >
           <Info className="w-3.5 h-3.5" />
@@ -1630,21 +1558,21 @@ export const ThinkPadWorkstation: React.FC = () => {
 
       {/* Bottom Hint Banner */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-        <div className="px-4 py-1.5 bg-[#0b0e14]/90 border border-[#1e293b] rounded-full text-[11px] font-mono text-[#94a3b8] backdrop-blur-sm shadow-lg flex items-center space-x-3">
+        <div className="px-4 py-1.5 bg-[#F4F2EB]/95 border border-[#DCD9CF] rounded-full text-[11px] font-mono text-[#575653] backdrop-blur-sm shadow-sm flex items-center space-x-3">
           {!isLidOpen ? (
             <>
-              <span className="w-2 h-2 rounded-full bg-[#38bdf8] animate-pulse" />
-              <span>Click the laptop or press <kbd className="text-[#38bdf8] font-bold">SPACE</kbd> to open workstation</span>
-              <span className="text-[#475569]">&bull;</span>
+              <span className="w-2 h-2 rounded-full bg-[#264233] animate-pulse" />
+              <span>Click the laptop or press <kbd className="text-[#264233] font-bold">SPACE</kbd> to open workstation</span>
+              <span className="text-[#DCD9CF]">&bull;</span>
               <span>Drag to orbit 3D desk</span>
             </>
           ) : (
             <>
-              <span className="w-2 h-2 rounded-full bg-[#22c55e]" />
+              <span className="w-2 h-2 rounded-full bg-[#264233]" />
               <span>Click screen or apps to interact</span>
-              <span className="text-[#475569]">&bull;</span>
-              <span>Press <kbd className="text-[#38bdf8] font-bold">ESC</kbd> to return to desk</span>
-              <span className="text-[#475569]">&bull;</span>
+              <span className="text-[#DCD9CF]">&bull;</span>
+              <span>Press <kbd className="text-[#264233] font-bold">ESC</kbd> to return to desk</span>
+              <span className="text-[#DCD9CF]">&bull;</span>
               <span>Drag to orbit 3D view</span>
             </>
           )}
@@ -1653,51 +1581,51 @@ export const ThinkPadWorkstation: React.FC = () => {
 
       {/* Hardware Specifications Modal */}
       {showInfo && (
-        <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-[#0f141f] border border-[#1e293b] rounded-lg shadow-2xl p-5 text-xs font-mono">
-            <div className="flex items-center justify-between pb-3 border-b border-[#1e293b]">
+        <div className="absolute inset-0 z-40 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#FFFFFF] border border-[#DCD9CF] rounded-xs shadow-2xl p-5 text-xs font-mono text-[#141413]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E5E2D8]">
               <div className="flex items-center space-x-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#38bdf8]" />
-                <h3 className="font-bold text-sm text-[#f8fafc]">Studio Ultrabook Unibody 16"</h3>
+                <span className="w-2.5 h-2.5 rounded-full bg-[#264233]" />
+                <h3 className="font-serif font-bold text-sm text-[#141413]">Studio Ultrabook Unibody 16"</h3>
               </div>
               <button
                 onClick={() => setShowInfo(false)}
-                className="text-[#64748b] hover:text-[#f8fafc] text-sm font-bold"
+                className="text-[#888680] hover:text-[#141413] text-sm font-bold"
               >
                 &times;
               </button>
             </div>
 
-            <div className="mt-4 space-y-2 text-[#94a3b8]">
-              <div className="flex justify-between py-1 border-b border-[#1e293b]/50">
+            <div className="mt-4 space-y-2 text-[#575653]">
+              <div className="flex justify-between py-1 border-b border-[#EAE7DD]">
                 <span>Architecture:</span>
-                <span className="text-[#f8fafc] font-semibold">CNC Machined Anodized Aluminum</span>
+                <span className="text-[#141413] font-semibold">CNC Machined Anodized Aluminum</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-[#1e293b]/50">
+              <div className="flex justify-between py-1 border-b border-[#EAE7DD]">
                 <span>Display:</span>
-                <span className="text-[#f8fafc] font-semibold">16.0" Liquid Retina Edge-to-Edge (16:10)</span>
+                <span className="text-[#141413] font-semibold">16.0" Liquid Retina Edge-to-Edge (16:10)</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-[#1e293b]/50">
+              <div className="flex justify-between py-1 border-b border-[#EAE7DD]">
                 <span>Audio:</span>
-                <span className="text-[#f8fafc] font-semibold">Dual CNC Micro-Drilled Acoustic Grilles</span>
+                <span className="text-[#141413] font-semibold">Dual CNC Micro-Drilled Acoustic Grilles</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-[#1e293b]/50">
+              <div className="flex justify-between py-1 border-b border-[#EAE7DD]">
                 <span>Trackpad:</span>
-                <span className="text-[#f8fafc] font-semibold">Precision Satin Glass Surface</span>
+                <span className="text-[#141413] font-semibold">Precision Satin Glass Surface</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-[#1e293b]/50">
+              <div className="flex justify-between py-1 border-b border-[#EAE7DD]">
                 <span>Developer:</span>
-                <span className="text-[#38bdf8] font-semibold">Abdul Samad Khan (wyacoomz)</span>
+                <span className="text-[#264233] font-semibold">Abdul Samad Khan (wyacoomz)</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-[#1e293b]/50">
+              <div className="flex justify-between py-1 border-b border-[#EAE7DD]">
                 <span>Role:</span>
-                <span className="text-[#f8fafc] font-semibold">RPA & Full-Stack Developer @ Trufe</span>
+                <span className="text-[#141413] font-semibold">RPA & Full-Stack Developer @ Trufe</span>
               </div>
             </div>
 
             <button
               onClick={() => setShowInfo(false)}
-              className="mt-5 w-full py-2 bg-[#1e293b] hover:bg-[#334155] text-[#f8fafc] font-semibold rounded text-xs transition-colors"
+              className="mt-5 w-full py-2 bg-[#264233] hover:bg-[#1a3024] text-white font-semibold rounded-xs text-xs transition-colors"
             >
               Close
             </button>

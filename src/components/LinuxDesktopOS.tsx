@@ -27,12 +27,18 @@ import {
   Shield,
   Code,
   Briefcase,
-  GraduationCap
+  GraduationCap,
+  Layers,
+  FileSpreadsheet,
+  ShieldAlert,
+  UserCheck,
+  CheckCircle2,
+  ArrowRight
 } from 'lucide-react';
 import { PERSONAL_INFO, PROJECTS, WORK_EXPERIENCES, EDUCATION_DATA, SKILL_CATEGORIES } from '../data/portfolioData';
 
 export interface WindowState {
-  id: 'terminal' | 'pipeline' | 'projects' | 'resume' | 'notes' | 'about' | 'contact';
+  id: 'pipeline' | 'terminal' | 'projects' | 'resume' | 'notes' | 'about' | 'contact';
   title: string;
   icon: string;
   isOpen: boolean;
@@ -63,211 +69,260 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      setTimeStr(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' }));
-      setDateStr(now.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata' }));
+      setTimeStr(
+        now.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        })
+      );
+      setDateStr(
+        now.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric'
+        })
+      );
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // Start Menu state
+  // Start / Index Menu State
   const [startMenuOpen, setStartMenuOpen] = useState<boolean>(false);
-
-  // Selected desktop shortcut
   const [selectedShortcut, setSelectedShortcut] = useState<string | null>(null);
 
   // Window management state
   const [highestZ, setHighestZ] = useState<number>(10);
   const [windows, setWindows] = useState<Record<string, WindowState>>({
-    terminal: {
-      id: 'terminal',
-      title: 'wyacoomz@dev-laptop: ~ (bash)',
-      icon: '💻',
+    pipeline: {
+      id: 'pipeline',
+      title: '01 // D365 Invoice Automation Studio — Dynamics 365 Bulk Uploader',
+      icon: '⚙️',
       isOpen: true,
       isMinimized: false,
       isMaximized: false,
       zIndex: 5
     },
-    pipeline: {
-      id: 'pipeline',
-      title: 'D365 Invoice Automation Studio — Dynamics 365 Bulk Uploader',
-      icon: '⚙️',
+    terminal: {
+      id: 'terminal',
+      title: '02 // wyacoomz@trufe-rpa: ~ (bash)',
+      icon: '💻',
+      isOpen: false,
+      isMinimized: false,
+      isMaximized: false,
+      zIndex: 4
+    },
+    projects: {
+      id: 'projects',
+      title: '03 // Work Archive (~/work) — Production Enterprise Bots & Apps',
+      icon: '📁',
+      isOpen: false,
+      isMinimized: false,
+      isMaximized: false,
+      zIndex: 3
+    },
+    resume: {
+      id: 'resume',
+      title: '04 // Abdul_Samad_Khan_Resume.pdf — Document Viewer',
+      icon: '📄',
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
       zIndex: 2
     },
-    projects: {
-      id: 'projects',
-      title: 'Projects Explorer — ~/work (7 Production Systems)',
-      icon: '📁',
-      isOpen: false,
-      isMinimized: false,
-      isMaximized: false,
-      zIndex: 1
-    },
-    resume: {
-      id: 'resume',
-      title: 'Abdul_Samad_Khan_Resume.pdf — Document Viewer',
-      icon: '📄',
-      isOpen: false,
-      isMinimized: false,
-      isMaximized: false,
-      zIndex: 1
-    },
     notes: {
       id: 'notes',
-      title: 'field_notes.md — Gedit Editor',
+      title: '05 // Field_Notes.md — Engineering Case Studies & LeetCode Benchmarks',
       icon: '📝',
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
-      zIndex: 1
+      zIndex: 2
     },
     about: {
       id: 'about',
-      title: 'About Developer & Workstation — Neofetch',
+      title: '06 // System_Specs.nfo — DevBook Pro Hardware & Competencies',
       icon: '👤',
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
-      zIndex: 1
+      zIndex: 2
     },
     contact: {
       id: 'contact',
-      title: 'Connect & Channels — wyacoomz',
+      title: '07 // Dispatch & Communication Channels',
       icon: '🌐',
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
-      zIndex: 1
+      zIndex: 2
     }
   });
 
-  // Bring window to focus
   const focusWindow = (id: string) => {
     onPlayKeyClick();
     setHighestZ((prev) => {
       const nextZ = prev + 1;
-      setWindows((curr) => ({
-        ...curr,
-        [id]: {
-          ...curr[id],
-          isOpen: true,
-          isMinimized: false,
-          zIndex: nextZ
-        }
-      }));
+      setWindows((wMap) => {
+        if (!wMap[id]) return wMap;
+        return {
+          ...wMap,
+          [id]: {
+            ...wMap[id],
+            isOpen: true,
+            isMinimized: false,
+            zIndex: nextZ
+          }
+        };
+      });
       return nextZ;
     });
   };
 
-  // Open window from shortcut or start menu
-  const openWindow = (id: string) => {
+  const closeWindow = (id: string) => {
     onPlayKeyClick();
-    setStartMenuOpen(false);
-    focusWindow(id);
-  };
-
-  // Minimize window
-  const minimizeWindow = (id: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    onPlayKeyClick();
-    setWindows((curr) => ({
-      ...curr,
-      [id]: {
-        ...curr[id],
-        isMinimized: true
-      }
+    setWindows((wMap) => ({
+      ...wMap,
+      [id]: { ...wMap[id], isOpen: false }
     }));
   };
 
-  // Maximize / Restore window
-  const toggleMaximizeWindow = (id: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
+  const toggleMinimizeWindow = (id: string) => {
     onPlayKeyClick();
-    setWindows((curr) => ({
-      ...curr,
-      [id]: {
-        ...curr[id],
-        isMaximized: !curr[id].isMaximized
-      }
+    setWindows((wMap) => ({
+      ...wMap,
+      [id]: { ...wMap[id], isMinimized: !wMap[id].isMinimized }
     }));
   };
 
-  // Close window
-  const closeWindow = (id: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
+  const toggleMaximizeWindow = (id: string) => {
     onPlayKeyClick();
-    setWindows((curr) => ({
-      ...curr,
-      [id]: {
-        ...curr[id],
-        isOpen: false,
-        isMinimized: false
-      }
+    setWindows((wMap) => ({
+      ...wMap,
+      [id]: { ...wMap[id], isMaximized: !wMap[id].isMaximized }
     }));
   };
 
-  // Close all windows / show desktop
   const showDesktop = () => {
     onPlayKeyClick();
-    setStartMenuOpen(false);
-    setWindows((curr) => {
-      const next = { ...curr };
-      Object.keys(next).forEach((k) => {
-        next[k] = { ...next[k], isMinimized: true };
+    setWindows((wMap) => {
+      const allMin = Object.values(wMap).every((w) => w.isMinimized || !w.isOpen);
+      const nextMap = { ...wMap };
+      Object.keys(nextMap).forEach((k) => {
+        if (nextMap[k].isOpen) {
+          nextMap[k] = { ...nextMap[k], isMinimized: !allMin };
+        }
       });
-      return next;
+      return nextMap;
     });
   };
 
-  // --------------------------------------------------------------------------
-  // TERMINAL STATE & COMMAND RUNNER
-  // --------------------------------------------------------------------------
+  // Pipeline Simulator State (5 stages matching portfolio WorkflowDiagram.tsx)
+  const [pipelineStage, setPipelineStage] = useState<number>(0);
+  const [pipelineRunning, setPipelineRunning] = useState<boolean>(false);
+  const [processedInvoices, setProcessedInvoices] = useState<number>(1248);
+
+  const pipelineStages = [
+    {
+      num: "01",
+      name: "Cloud Ingestion Buffer",
+      tech: "Power Automate Cloud",
+      icon: Layers,
+      summary: "Event-driven PDF intake & binary staging queue across 5 subsidiaries",
+      metric: "Zero Polling Latency // UUID Staging"
+    },
+    {
+      num: "02",
+      name: "Document Intelligence (OCR)",
+      tech: "Microsoft AI Builder",
+      icon: Cpu,
+      summary: "Trained field mapping: PO ref, line tables, GL accounts, net/gross totals",
+      metric: "99.2% Accuracy // Matrix Ratings"
+    },
+    {
+      num: "03",
+      name: "Deterministic Integrity Gate",
+      tech: "Python / Cloud Flow",
+      icon: ShieldAlert,
+      summary: "Double-check: confidence >= 0.90 & sum(line_items) == gross_total",
+      metric: "Score >= 0.90 & Parity Check"
+    },
+    {
+      num: "04",
+      name: "Human-in-the-Loop Routing",
+      tech: "Adaptive Cards & Outlook",
+      icon: UserCheck,
+      summary: "Exception approval loop with inline PDF preview directly in reviewer inbox",
+      metric: "Audit Trail // Digital Sign-Off"
+    },
+    {
+      num: "05",
+      name: "Dynamics 365 ERP Upload",
+      tech: "Python / OpenPyXL / D365",
+      icon: FileSpreadsheet,
+      summary: "Generates 5 entity-segregated Excel workbooks for unattended D365 commit",
+      metric: "5 Subsidiaries // Automated Batch"
+    }
+  ];
+
+  const runPipelineStep = () => {
+    onPlayKeyClick();
+    if (pipelineRunning) return;
+    setPipelineRunning(true);
+    let step = 0;
+    const interval = setInterval(() => {
+      step++;
+      if (step < 5) {
+        setPipelineStage(step);
+      } else {
+        clearInterval(interval);
+        setPipelineRunning(false);
+        setPipelineStage(0);
+        setProcessedInvoices((prev) => prev + 1);
+      }
+    }, 700);
+  };
+
+  // Terminal state
   const [terminalInput, setTerminalInput] = useState<string>('');
   const [terminalHistory, setTerminalHistory] = useState<Array<{ command: string; output: string[] }>>([
     {
       command: 'whoami',
       output: [
-        'Abdul Samad Khan (wyacoomz)',
-        'RPA & Enterprise Automation Developer @ Trufe',
-        'Stack: Power Automate Cloud/Desktop, AI Builder, Dynamics 365, Python, React, SQL Server',
-        'B.Tech AI & Data Science • 150+ LeetCode Solved • Bhopal, India (IST UTC +05:30)',
-        'Type "help" or click quick commands below to explore.'
+        'Abdul Samad Khan (Handle: wyacoomz)',
+        'Role: RPA Developer @ Trufe (2025–Present)',
+        'Stack: Power Automate Cloud/Desktop, AI Builder, Dynamics 365, Python, React',
+        'Education: B.Tech in AI & Data Science (OIST, 2021–2025)',
+        'Benchmarks: 150+ LeetCode Solved (DP, Graphs, Trees, Sliding Window)'
       ]
     }
   ]);
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [terminalHistory]);
-
-  const runTerminalCommand = (rawCmd: string) => {
-    const cmd = rawCmd.trim().toLowerCase();
+  const handleTerminalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cmd = terminalInput.trim().toLowerCase();
     if (!cmd) return;
     onPlayKeyClick();
 
     let output: string[] = [];
-
     switch (cmd) {
       case 'help':
         output = [
-          'Available Shell Commands:',
-          '  • whoami     - Developer profile, role & background',
-          '  • projects   - Launch Projects Explorer window',
+          'Editorial Shell Commands:',
+          '  • whoami     - Developer profile, role & credentials',
           '  • pipeline   - Launch Dynamics 365 Automation Studio',
+          '  • projects   - Launch Projects Explorer archive',
           '  • skills     - Technical competency breakdown',
           '  • leetcode   - View LeetCode benchmarks (150+ Solved)',
           '  • resume     - Open PDF Resume Document Viewer',
           '  • contact    - Contact channels & social profiles',
-          '  • neofetch   - ASCII hardware diagnostics & system spec',
+          '  • neofetch   - Studio Workstation hardware specs',
           '  • clear      - Clear terminal history'
         ];
         break;
-
       case 'whoami':
         output = [
           'Developer Identity:',
@@ -278,173 +333,164 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
           '  • Location: Bhopal, India (IST UTC +05:30)'
         ];
         break;
-
-      case 'projects':
-        openWindow('projects');
-        output = ['Opening Projects Explorer...'];
-        break;
-
       case 'pipeline':
-        openWindow('pipeline');
-        output = ['Launching Dynamics 365 Automation Studio...'];
+        focusWindow('pipeline');
+        output = ['Launched Dynamics 365 Invoice Automation Studio window.'];
         break;
-
+      case 'projects':
+        focusWindow('projects');
+        output = ['Opened Projects Explorer (~/work).'];
+        break;
       case 'skills':
+        focusWindow('about');
         output = [
           'Core Technical Competencies:',
-          '  [Automation]  Power Automate Cloud/Desktop, AI Builder OCR, D365 ERP',
-          '  [Backend]     Python, Node.js, Express.js, REST APIs, Stored Procedures',
-          '  [Databases]   SQL Server, MongoDB, PostgreSQL',
-          '  [Frontend]    React.js, TypeScript, Tailwind CSS, Three.js WebGL',
-          '  [Systems]     Linux Bash, Git, PowerShell, Docker'
+          '  [Enterprise RPA]: Power Automate Cloud/Desktop, AI Builder, Dynamics 365 ERP',
+          '  [Programming]: Python (OpenPyXL, pandas), JavaScript/TypeScript, SQL',
+          '  [Full-Stack]: React, Node.js, Express, REST APIs, MongoDB, Tailwind CSS',
+          '  [Systems]: Linux, Git/GitHub, Docker, Windows Automation, Postman'
         ];
         break;
-
       case 'leetcode':
+        focusWindow('notes');
         output = [
-          'LeetCode Benchmark: 150+ Problems Solved',
-          'Focus: Graph algorithms (BFS/DFS), Dynamic Programming, Heaps, Trees.',
-          'Profile URL: https://leetcode.com/u/wyacoomz/'
+          'LeetCode Problem Solving Benchmarks:',
+          '  • Total Problems Solved: 150+ Verified',
+          '  • Focus Domains: Dynamic Programming, Graph Traversal (BFS/DFS), Trees, Two Pointers',
+          '  • Platform Handle: wyacoomz'
         ];
         break;
-
       case 'resume':
-        openWindow('resume');
-        output = ['Opening Abdul_Samad_Khan_Resume.pdf in Document Viewer...'];
+        focusWindow('resume');
+        output = ['Opened Abdul_Samad_Khan_Resume.pdf Document Viewer.'];
         break;
-
       case 'contact':
-        openWindow('contact');
-        output = ['Opening Contact & Channels window...'];
+        focusWindow('contact');
+        output = [
+          'Communication Channels:',
+          '  • Email: abdulischad@gmail.com',
+          '  • Phone: +91 97520 90623',
+          '  • LinkedIn: linkedin.com/in/abdul-samad-khan-b20b29237',
+          '  • GitHub: github.com/wyacoomz'
+        ];
         break;
-
       case 'neofetch':
-        openWindow('about');
-        output = ['Launching System Diagnostics...'];
+        focusWindow('about');
+        output = [
+          'DevBook Pro 16″ CNC Aluminum Studio Workstation',
+          'OS: Ubuntu 24.04 LTS (x86_64)',
+          'Kernel: Linux 6.8.0-45-generic',
+          'Host: Studio Ultrabook 16″ Unibody Aluminum',
+          'RAM: 32GB DDR4 | Display: Liquid Retina 16:10'
+        ];
         break;
-
       case 'clear':
         setTerminalHistory([]);
         setTerminalInput('');
         return;
-
       default:
-        output = [`bash: command not found: ${rawCmd}. Type "help" for a list of commands.`];
-        break;
+        output = [`Command not found: "${cmd}". Type "help" to view valid commands.`];
     }
 
-    setTerminalHistory((prev) => [...prev, { command: rawCmd, output }]);
+    setTerminalHistory((prev) => [...prev, { command: terminalInput, output }]);
     setTerminalInput('');
   };
 
-  // --------------------------------------------------------------------------
-  // D365 PIPELINE SIMULATOR STATE
-  // --------------------------------------------------------------------------
-  const [pipelineRunning, setPipelineRunning] = useState<boolean>(false);
-  const [pipelineStep, setPipelineStep] = useState<number>(0);
-  const [selectedCompany, setSelectedCompany] = useState<string>("Sisi's Eatery");
+  useEffect(() => {
+    terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [terminalHistory]);
 
-  const runPipelineSimulation = () => {
-    if (pipelineRunning) return;
-    setPipelineRunning(true);
-    setPipelineStep(1);
+  // Projects window filter
+  const [projectFilter, setProjectFilter] = useState<'all' | 'rpa' | 'web' | 'data'>('all');
+  const filteredProjects = PROJECTS.filter((p) => {
+    if (projectFilter === 'all') return true;
+    if (projectFilter === 'rpa') return p.category === 'Enterprise Automation';
+    if (projectFilter === 'web') return p.category === 'Full-Stack Web';
+    if (projectFilter === 'data') return p.category === 'Data & Financial' || p.category === 'Systems & Tooling';
+    return true;
+  });
+
+  // Copied state for contact
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const handleCopy = (key: string, val: string) => {
+    navigator.clipboard.writeText(val);
     onPlayKeyClick();
-
-    [1, 2, 3, 4, 5].forEach((step, idx) => {
-      setTimeout(() => {
-        setPipelineStep(step);
-        onPlayKeyClick();
-        if (step === 5) {
-          setTimeout(() => {
-            setPipelineRunning(false);
-          }, 1200);
-        }
-      }, (idx + 1) * 750);
-    });
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 1800);
   };
 
-  // --------------------------------------------------------------------------
-  // COPY CLIPBOARD HELPER
-  // --------------------------------------------------------------------------
-  const [copiedItem, setCopiedItem] = useState<string | null>(null);
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedItem(label);
-    onPlayKeyClick();
-    setTimeout(() => setCopiedItem(null), 2000);
-  };
-
-  // Desktop shortcuts configuration
+  // Desktop shortcuts list
   const desktopShortcuts = [
-    { id: 'projects', label: 'Projects', icon: '📁', sub: 'Portfolio Archive' },
-    { id: 'pipeline', label: 'D365 Bot', icon: '⚙️', sub: 'Invoice Automation' },
-    { id: 'terminal', label: 'Terminal', icon: '💻', sub: 'Bash Shell' },
-    { id: 'resume', label: 'Resume.pdf', icon: '📄', sub: 'Official CV' },
-    { id: 'notes', label: 'Field Notes', icon: '📝', sub: 'Engineering Log' },
-    { id: 'about', label: 'System Specs', icon: '👤', sub: 'Neofetch' },
-    { id: 'contact', label: 'Contact', icon: '🌐', sub: 'Get in Touch' }
+    { id: 'pipeline', num: '01', label: 'D365 BOT', sub: 'Invoice Automation Studio', icon: '⚙️' },
+    { id: 'terminal', num: '02', label: 'TERMINAL', sub: 'Bash Shell & Diagnostics', icon: '💻' },
+    { id: 'projects', num: '03', label: 'WORK ARCHIVE', sub: 'Enterprise RPA & Apps', icon: '📁' },
+    { id: 'resume', num: '04', label: 'RESUME.PDF', sub: 'Curriculum Vitae', icon: '📄' },
+    { id: 'notes', num: '05', label: 'FIELD NOTES', sub: 'Case Studies & LeetCode', icon: '📝' },
+    { id: 'about', num: '06', label: 'BENCHMARKS', sub: 'System Specs & Skills', icon: '👤' },
+    { id: 'contact', num: '07', label: 'DISPATCH', sub: 'Direct Contact Channels', icon: '🌐' }
   ];
 
-  // Open windows list for taskbar
   const openWindowsList = Object.values(windows).filter((w) => w.isOpen);
 
   return (
     <div 
-      className="relative w-full h-full select-none overflow-hidden bg-[#0c1017] text-[#f8fafc] font-sans flex flex-col justify-between"
+      className="relative w-full h-full select-none overflow-hidden bg-[#FBFBF9] text-[#141413] font-sans flex flex-col justify-between"
       onClick={() => {
         if (startMenuOpen) setStartMenuOpen(false);
         setSelectedShortcut(null);
       }}
     >
       {/* ==================================================================== */}
-      {/* TOP GNOME OS BAR                                                     */}
+      {/* TOP EDITORIAL OS BAR                                                 */}
       {/* ==================================================================== */}
       <div 
-        className="h-8 bg-[#090d14]/95 border-b border-[#1e293b] flex items-center justify-between px-3 text-xs z-30 select-none backdrop-blur-md"
+        className="h-8 bg-[#F4F2EB] border-b border-[#E5E2D8] flex items-center justify-between px-3 text-xs z-30 select-none flex-shrink-0"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Left: Activities button & active app label */}
-        <div className="flex items-center space-x-2">
+        {/* Left: Editorial Index Tag */}
+        <div className="flex items-center space-x-2.5">
           <button
             onClick={() => {
               onPlayKeyClick();
-              showDesktop();
+              setStartMenuOpen((prev) => !prev);
             }}
-            className="px-2.5 py-0.5 rounded-full bg-[#1e293b] hover:bg-[#334155] text-[#38bdf8] font-semibold text-[11px] transition-colors"
+            className="flex items-center space-x-1.5 px-2 py-0.5 rounded-xs bg-[#E8EFEA] hover:bg-[#d8e5dc] text-[#264233] text-[10px] font-mono font-semibold border border-[#C2D7CB] transition-colors"
           >
-            Activities
+            <span className="w-1.5 h-1.5 rounded-full bg-[#264233] animate-pulse" />
+            <span>FIELD LOG // 2025–2026</span>
           </button>
-          <span className="text-[#64748b] text-[11px]">•</span>
-          <span className="text-[#94a3b8] text-[11px] font-mono">DevBook Pro 16″</span>
+          <span className="text-[#DCD9CF]">&bull;</span>
+          <span className="text-[#575653] font-serif text-[11px] italic hidden sm:inline">RPA & Systems Engineering</span>
         </div>
 
         {/* Center: Live Date & Time Clock */}
-        <div className="text-xs font-medium text-[#e2e8f0] flex items-center space-x-2">
-          <span>{dateStr}</span>
-          <span className="text-[#38bdf8] font-bold font-mono">{timeStr} IST</span>
+        <div className="text-xs text-[#575653] flex items-center space-x-2 font-mono">
+          <span className="font-serif italic text-[#141413]">{dateStr}</span>
+          <span>&bull;</span>
+          <span className="text-[#264233] font-bold">{timeStr} IST</span>
         </div>
 
-        {/* Right: System Tray (Audio, WiFi, Battery, Power) */}
-        <div className="flex items-center space-x-3 text-[#94a3b8]">
+        {/* Right: Audio, Status, Desk View */}
+        <div className="flex items-center space-x-3 text-[#575653]">
           {onToggleSound && (
             <button
               onClick={() => {
                 onToggleSound();
                 onPlayKeyClick();
               }}
-              className="hover:text-[#ffffff] transition-colors p-0.5"
+              className="hover:text-[#141413] transition-colors p-0.5"
               title={soundEnabled ? 'Mute Audio' : 'Unmute Audio'}
             >
-              {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-[#38bdf8]" /> : <VolumeX className="w-3.5 h-3.5 text-[#ef4444]" />}
+              {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-[#264233]" /> : <VolumeX className="w-3.5 h-3.5 text-[#888680]" />}
             </button>
           )}
 
-          <div className="flex items-center space-x-1" title="WiFi Connected: trufe-5g">
-            <Wifi className="w-3.5 h-3.5 text-[#22c55e]" />
+          <div className="flex items-center space-x-1 text-[#264233]" title="Network: trufe-enterprise-5g">
+            <Wifi className="w-3.5 h-3.5" />
           </div>
 
-          <div className="flex items-center space-x-1" title="Battery: 98% (Plugged in)">
-            <Battery className="w-3.5 h-3.5 text-[#22c55e]" />
+          <div className="flex items-center space-x-1 text-[#575653]" title="Battery: 98% (Plugged in)">
+            <Battery className="w-3.5 h-3.5 text-[#264233]" />
             <span className="text-[10px] font-mono">98%</span>
           </div>
 
@@ -454,7 +500,7 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
                 onPlayKeyClick();
                 onExitFocus();
               }}
-              className="flex items-center space-x-1 px-2 py-0.5 bg-[#1e293b] hover:bg-[#334155] text-[#f8fafc] rounded-xs text-[10px] font-mono transition-colors border border-[#334155]"
+              className="flex items-center space-x-1 px-2.5 py-0.5 bg-[#264233] hover:bg-[#1a3024] text-white rounded-xs text-[10px] font-mono transition-colors shadow-xs"
               title="Return to 3D Desk View"
             >
               <span>Desk View</span>
@@ -464,21 +510,26 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
       </div>
 
       {/* ==================================================================== */}
-      {/* DESKTOP WORKSPACE (Wallpaper + Desktop Shortcuts + Windows)          */}
+      {/* DESKTOP WORKSPACE (Architectural Grid + Watermark + Windows)         */}
       {/* ==================================================================== */}
       <div className="relative flex-1 w-full h-[calc(100%-68px)] overflow-hidden">
-        {/* Linux Dark Polygon Wallpaper */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#080b11] via-[#0f172a] to-[#0a0f1d] pointer-events-none">
-          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:24px_24px]" />
-          {/* Modern Wallpaper Watermark */}
-          <div className="absolute bottom-6 right-8 text-right pointer-events-none opacity-20">
-            <div className="text-4xl font-black font-sans tracking-tight text-[#ffffff]">DEVBOOK <span className="text-[#38bdf8]">PRO</span></div>
-            <div className="text-xs font-mono text-[#94a3b8]">Ubuntu 24.04 LTS • wyacoomz</div>
+        {/* Subtle Architectural Grid Wallpaper */}
+        <div className="absolute inset-0 bg-[#FBFBF9] pointer-events-none">
+          <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#DCD9CF_1px,transparent_1px)] [background-size:24px_24px]" />
+          
+          {/* Typographic Editorial Watermark */}
+          <div className="absolute bottom-6 right-8 text-right pointer-events-none select-none">
+            <div className="text-3xl sm:text-4xl font-serif italic tracking-tight text-[#141413]/10">
+              Abdul Samad Khan
+            </div>
+            <div className="text-[11px] font-mono uppercase tracking-widest text-[#575653]/30 mt-0.5">
+              RPA & Enterprise Systems &bull; Trufe (2025–2026)
+            </div>
           </div>
         </div>
 
         {/* Desktop Icons Grid (Left Column) */}
-        <div className="relative z-10 p-4 grid grid-cols-1 gap-3 w-fit">
+        <div className="relative z-10 p-4 grid grid-cols-1 gap-2.5 w-fit">
           {desktopShortcuts.map((sc) => {
             const isSelected = selectedShortcut === sc.id;
             return (
@@ -486,24 +537,26 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
                 key={sc.id}
                 onClick={(e) => {
                   e.stopPropagation();
+                  onPlayKeyClick();
                   setSelectedShortcut(sc.id);
-                  openWindow(sc.id);
+                  focusWindow(sc.id);
                 }}
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  openWindow(sc.id);
-                }}
-                className={`group flex items-center space-x-3 p-2 rounded-sm w-48 text-left transition-all ${
-                  isSelected ? 'bg-[#0284c7]/30 border border-[#38bdf8]/60 shadow-lg' : 'hover:bg-[#1e293b]/50 border border-transparent'
+                className={`flex items-center space-x-3 px-3 py-2 rounded-xs border transition-all text-left group ${
+                  isSelected
+                    ? 'bg-[#FFFFFF] border-[#264233] shadow-md ring-1 ring-[#264233]'
+                    : 'bg-[#FFFFFF]/80 hover:bg-[#FFFFFF] border-[#E5E2D8] hover:border-[#C8C5B9] shadow-xs'
                 }`}
-                title={`Click or double click to open ${sc.label}`}
+                style={{ width: '220px' }}
               >
-                <div className="text-2xl flex-shrink-0 group-hover:scale-110 transition-transform">
+                <div className="font-mono text-[10px] font-bold text-[#264233] w-4">
+                  {sc.num}
+                </div>
+                <div className="text-xl flex-shrink-0 group-hover:scale-105 transition-transform">
                   {sc.icon}
                 </div>
                 <div className="overflow-hidden">
-                  <div className="text-xs font-semibold text-[#f8fafc] truncate">{sc.label}</div>
-                  <div className="text-[10px] text-[#94a3b8] truncate">{sc.sub}</div>
+                  <div className="text-xs font-mono font-semibold text-[#141413] truncate tracking-tight">{sc.label}</div>
+                  <div className="text-[10px] font-sans text-[#575653] truncate">{sc.sub}</div>
                 </div>
               </button>
             );
@@ -511,20 +564,20 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
         </div>
 
         {/* ================================================================== */}
-        {/* INTERACTIVE FLOATING WINDOWS (Multi-Window Manager)               */}
+        {/* INTERACTIVE FLOATING WINDOWS                                       */}
         {/* ================================================================== */}
         {Object.values(windows).map((win) => {
           if (!win.isOpen || win.isMinimized) return null;
 
           const isMax = win.isMaximized;
           const windowOffsets: Record<string, string> = {
-            terminal: 'top-6 bottom-8 left-10 right-10 sm:left-20 sm:right-20 md:left-36 md:right-36',
-            pipeline: 'top-4 bottom-10 left-8 right-12 sm:left-16 sm:right-24 md:left-28 md:right-44',
-            projects: 'top-8 bottom-6 left-14 right-8 sm:left-24 sm:right-16 md:left-44 md:right-28',
-            resume: 'top-5 bottom-9 left-12 right-12 sm:left-20 sm:right-20 md:left-32 md:right-32',
-            notes: 'top-9 bottom-5 left-16 right-10 sm:left-28 sm:right-18 md:left-48 md:right-36',
-            about: 'top-7 bottom-7 left-10 right-14 sm:left-22 sm:right-26 md:left-38 md:right-42',
-            contact: 'top-10 bottom-4 left-14 right-14 sm:left-26 sm:right-26 md:left-44 md:right-44'
+            pipeline: 'top-3 bottom-4 left-[245px] right-4',
+            terminal: 'top-4 bottom-4 left-[245px] right-4',
+            projects: 'top-3 bottom-4 left-[245px] right-4',
+            resume: 'top-3 bottom-4 left-[245px] right-4',
+            notes: 'top-4 bottom-4 left-[245px] right-4',
+            about: 'top-4 bottom-4 left-[245px] right-4',
+            contact: 'top-4 bottom-4 left-[245px] right-4'
           };
 
           return (
@@ -535,43 +588,52 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
                 focusWindow(win.id);
               }}
               style={{ zIndex: win.zIndex }}
-              className={`absolute flex flex-col bg-[#0f141f] border border-[#263447] rounded-sm shadow-2xl overflow-hidden transition-all duration-150 ${
+              className={`absolute flex flex-col bg-[#FFFFFF] border border-[#DCD9CF] rounded-xs shadow-2xl overflow-hidden transition-all duration-150 ${
                 isMax
                   ? 'inset-2'
-                  : windowOffsets[win.id] || 'top-6 bottom-6 left-12 right-12 sm:left-24 sm:right-24 md:left-40 md:right-40'
+                  : windowOffsets[win.id] || 'top-6 bottom-6 left-14 right-14'
               }`}
             >
               {/* Window Header Bar */}
               <div 
-                className="h-9 bg-[#16202e] border-b border-[#253244] flex items-center justify-between px-3 flex-shrink-0 select-none cursor-default"
+                className="h-8 bg-[#F4F2EB] border-b border-[#E5E2D8] flex items-center justify-between px-3 flex-shrink-0 select-none cursor-default"
                 onDoubleClick={() => toggleMaximizeWindow(win.id)}
               >
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm">{win.icon}</span>
-                  <span className="text-xs font-bold text-[#f8fafc] truncate">{win.title}</span>
+                  <span className="text-xs">{win.icon}</span>
+                  <span className="font-serif font-semibold text-xs text-[#141413] truncate">
+                    {win.title}
+                  </span>
                 </div>
 
-                {/* Window Controls: Minimize, Maximize, Close */}
-                <div className="flex items-center space-x-2">
+                {/* Window Action Controls */}
+                <div className="flex items-center space-x-1">
                   <button
-                    onClick={(e) => minimizeWindow(win.id, e)}
-                    className="w-5 h-5 rounded-xs bg-[#223044] hover:bg-[#334155] text-[#94a3b8] hover:text-[#ffffff] flex items-center justify-center transition-colors text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleMinimizeWindow(win.id);
+                    }}
+                    className="w-5 h-5 flex items-center justify-center rounded-xs text-[#575653] hover:bg-[#EAE7DD] hover:text-[#141413] transition-colors"
                     title="Minimize"
                   >
                     <Minus className="w-3 h-3" />
                   </button>
-
                   <button
-                    onClick={(e) => toggleMaximizeWindow(win.id, e)}
-                    className="w-5 h-5 rounded-xs bg-[#223044] hover:bg-[#334155] text-[#94a3b8] hover:text-[#ffffff] flex items-center justify-center transition-colors text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleMaximizeWindow(win.id);
+                    }}
+                    className="w-5 h-5 flex items-center justify-center rounded-xs text-[#575653] hover:bg-[#EAE7DD] hover:text-[#141413] transition-colors"
                     title={isMax ? 'Restore' : 'Maximize'}
                   >
-                    {isMax ? <Minimize2 className="w-3 h-3" /> : <Square className="w-2.5 h-2.5" />}
+                    {isMax ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
                   </button>
-
                   <button
-                    onClick={(e) => closeWindow(win.id, e)}
-                    className="w-5 h-5 rounded-xs bg-[#ef4444] hover:bg-[#dc2626] text-[#ffffff] flex items-center justify-center transition-colors text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeWindow(win.id);
+                    }}
+                    className="w-5 h-5 flex items-center justify-center rounded-xs text-[#575653] hover:bg-[#FEE2E2] hover:text-[#DC2626] transition-colors"
                     title="Close"
                   >
                     <X className="w-3 h-3" />
@@ -580,27 +642,116 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
               </div>
 
               {/* Window Content Body */}
-              <div className="flex-1 overflow-auto bg-[#0a0e17] p-4 text-xs">
-                {/* 1. TERMINAL WINDOW */}
-                {win.id === 'terminal' && (
-                  <div className="h-full flex flex-col font-mono text-xs">
-                    <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-                      <div className="text-[#38bdf8]">
-                        Ubuntu 24.04 LTS (GNU/Linux 6.8.0-45-generic x86_64) • DevBook Pro
+              <div className="flex-1 overflow-auto bg-[#FFFFFF] p-4 text-[#141413]">
+                {/* 1. DYNAMICS 365 INVOICE AUTOMATION STUDIO WINDOW */}
+                {win.id === 'pipeline' && (
+                  <div className="space-y-4">
+                    {/* Header Banner */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-[#F4F2EB] border border-[#E5E2D8] rounded-xs">
+                      <div>
+                        <div className="font-mono text-[10px] uppercase tracking-wider text-[#264233] font-semibold flex items-center space-x-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#264233]" />
+                          <span>Enterprise Workflow Visualizer // Trufe Production</span>
+                        </div>
+                        <h4 className="font-serif text-base font-semibold text-[#141413]">
+                          AI-Powered Invoice Processing & Dynamics 365 Bulk Upload Engine
+                        </h4>
                       </div>
-                      <div className="text-[#64748b]">
-                        Type 'help' to see commands, or click quick buttons below.
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={runPipelineStep}
+                          disabled={pipelineRunning}
+                          className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#264233] hover:bg-[#1a3024] disabled:bg-[#888680] text-white text-xs font-mono font-medium rounded-xs shadow-xs transition-colors"
+                        >
+                          <Play className="w-3 h-3" />
+                          <span>{pipelineRunning ? 'Executing Pipeline...' : 'Run Simulation'}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 5-Stage Stepper Buttons */}
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {pipelineStages.map((stg, sIdx) => {
+                        const isCurrent = pipelineStage === sIdx;
+                        return (
+                          <button
+                            key={stg.num}
+                            onClick={() => {
+                              onPlayKeyClick();
+                              setPipelineStage(sIdx);
+                            }}
+                            className={`p-2 rounded-xs border text-left transition-all ${
+                              isCurrent
+                                ? 'bg-[#E8EFEA] border-[#264233] shadow-xs'
+                                : 'bg-[#FFFFFF] hover:bg-[#F4F2EB] border-[#E5E2D8]'
+                            }`}
+                          >
+                            <div className="font-mono text-[10px] font-bold text-[#264233]">{stg.num}</div>
+                            <div className="font-serif text-xs font-medium text-[#141413] truncate">{stg.name}</div>
+                            <div className="font-mono text-[9px] text-[#575653] truncate">{stg.tech}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Stage Detail Card */}
+                    <div className="p-4 bg-[#FBFBF9] border border-[#E5E2D8] rounded-xs space-y-3">
+                      <div className="flex items-center justify-between border-b border-[#EAE7DD] pb-2">
+                        <div className="flex items-center space-x-2">
+                          <span className="px-2 py-0.5 bg-[#264233] text-white font-mono text-xs font-bold rounded-xs">
+                            STAGE {pipelineStages[pipelineStage].num}
+                          </span>
+                          <span className="font-serif font-semibold text-sm text-[#141413]">
+                            {pipelineStages[pipelineStage].name}
+                          </span>
+                        </div>
+                        <span className="font-mono text-xs text-[#264233] bg-[#E8EFEA] border border-[#C2D7CB] px-2 py-0.5 rounded-xs font-medium">
+                          {pipelineStages[pipelineStage].metric}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-[#575653] leading-relaxed">
+                        {pipelineStages[pipelineStage].summary}
+                      </p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 font-mono text-[11px]">
+                        <div className="p-2 bg-[#FFFFFF] border border-[#E5E2D8] rounded-xs">
+                          <div className="text-[10px] text-[#888680]">MONTHLY THROUGHPUT</div>
+                          <div className="font-bold text-[#141413]">1,200+ Invoices</div>
+                        </div>
+                        <div className="p-2 bg-[#FFFFFF] border border-[#E5E2D8] rounded-xs">
+                          <div className="text-[10px] text-[#888680]">ACCURACY GATE</div>
+                          <div className="font-bold text-[#264233]">&ge; 0.90 Floating Point</div>
+                        </div>
+                        <div className="p-2 bg-[#FFFFFF] border border-[#E5E2D8] rounded-xs">
+                          <div className="text-[10px] text-[#888680]">SUBSIDIARIES</div>
+                          <div className="font-bold text-[#141413]">5 Operating Entities</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. TERMINAL (BASH SHELL) WINDOW */}
+                {win.id === 'terminal' && (
+                  <div className="h-full flex flex-col font-mono text-xs bg-[#141413] text-[#EAE7DD] rounded-xs p-3 -m-4">
+                    <div className="flex-1 overflow-y-auto space-y-2 pr-2">
+                      <div className="text-[#86efac]">
+                        Ubuntu 24.04 LTS (x86_64) // Studio Workstation Shell
+                      </div>
+                      <div className="text-[#888680] text-[11px]">
+                        Type 'help' to inspect commands, or click quick actions below.
                       </div>
 
                       {terminalHistory.map((item, idx) => (
                         <div key={idx} className="space-y-1">
                           <div className="flex items-center space-x-2">
-                            <span className="text-[#22c55e] font-bold">wyacoomz@dev-laptop:~$</span>
-                            <span className="text-[#f8fafc]">{item.command}</span>
+                            <span className="text-[#86efac] font-bold">wyacoomz@trufe-rpa:~$</span>
+                            <span className="text-white">{item.command}</span>
                           </div>
-                          <div className="space-y-0.5 text-[#cbd5e1] pl-2 border-l border-[#1e293b]">
+                          <div className="space-y-0.5 text-[#DCD9CF] pl-3 border-l border-[#333]">
                             {item.output.map((line, lIdx) => (
-                              <div key={lIdx} className={line.startsWith('  •') || line.startsWith('  [') ? 'text-[#f1f5f9]' : 'text-[#94a3b8]'}>
+                              <div key={lIdx} className={line.startsWith('  •') || line.startsWith('  [') ? 'text-white' : 'text-[#A8A29E]'}>
                                 {line}
                               </div>
                             ))}
@@ -611,125 +762,39 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
                     </div>
 
                     {/* Active Input Line */}
-                    <div className="pt-3 border-t border-[#1e293b] flex items-center space-x-2">
-                      <span className="text-[#22c55e] font-bold flex-shrink-0">wyacoomz@dev-laptop:~$</span>
+                    <form onSubmit={handleTerminalSubmit} className="pt-2 border-t border-[#2a2926] flex items-center space-x-2">
+                      <span className="text-[#86efac] font-bold flex-shrink-0">wyacoomz@trufe-rpa:~$</span>
                       <input
                         type="text"
                         value={terminalInput}
                         onChange={(e) => setTerminalInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') runTerminalCommand(terminalInput);
-                        }}
+                        placeholder="Type a command (whoami, pipeline, projects, skills, resume)..."
+                        className="flex-1 bg-transparent text-white focus:outline-none text-xs font-mono"
                         autoFocus
-                        placeholder="Type a command (whoami, projects, pipeline, skills, leetcode, resume)..."
-                        className="flex-1 bg-transparent text-[#f8fafc] focus:outline-none placeholder-[#475569]"
                       />
                       <button
-                        onClick={() => runTerminalCommand(terminalInput)}
-                        className="px-3 py-1 bg-[#0284c7] hover:bg-[#0369a1] text-[#ffffff] rounded-xs text-[11px] font-mono transition-colors flex-shrink-0"
+                        type="submit"
+                        className="px-2.5 py-0.5 bg-[#264233] hover:bg-[#345c46] text-white rounded-xs text-[10px] font-mono font-semibold"
                       >
                         Run
                       </button>
-                    </div>
+                    </form>
 
-                    {/* Quick Command Pills */}
-                    <div className="pt-2 flex flex-wrap gap-1.5 text-[11px]">
-                      {['whoami', 'projects', 'pipeline', 'skills', 'leetcode', 'resume', 'contact', 'clear'].map((cmd) => (
+                    {/* Quick Command Bar */}
+                    <div className="pt-2 flex flex-wrap gap-1.5 text-[10px] text-[#A8A29E]">
+                      {['whoami', 'pipeline', 'projects', 'skills', 'leetcode', 'resume', 'contact', 'clear'].map((c) => (
                         <button
-                          key={cmd}
-                          onClick={() => runTerminalCommand(cmd)}
-                          className="px-2 py-0.5 bg-[#16202e] hover:bg-[#1e2d42] text-[#38bdf8] border border-[#253244] rounded-xs transition-colors"
+                          key={c}
+                          type="button"
+                          onClick={() => {
+                            setTerminalInput(c);
+                            onPlayKeyClick();
+                          }}
+                          className="px-2 py-0.5 bg-[#22211e] hover:bg-[#33312c] text-[#DCD9CF] border border-[#3f3e3a] rounded-xs font-mono transition-colors"
                         >
-                          ${cmd}
+                          ${c}
                         </button>
                       ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. D365 PIPELINE SIMULATOR WINDOW */}
-                {win.id === 'pipeline' && (
-                  <div className="space-y-4">
-                    {/* Header Controls */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-[#16202e] border border-[#253244] rounded-xs">
-                      <div>
-                        <div className="font-bold text-[#f8fafc] text-sm">Enterprise Invoice Ingestion & Dynamics 365 Uploader</div>
-                        <div className="text-[#94a3b8] text-[11px]">Unattended AI OCR extraction & General Journal batch posting across 5 business subsidiaries</div>
-                      </div>
-
-                      <button
-                        onClick={runPipelineSimulation}
-                        disabled={pipelineRunning}
-                        className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-[#ffffff] font-bold rounded-xs transition-colors shadow-sm"
-                      >
-                        <Play className="w-3.5 h-3.5" />
-                        <span>{pipelineRunning ? `Stage 0${pipelineStep} Running...` : '▶ Run Live Simulation'}</span>
-                      </button>
-                    </div>
-
-                    {/* Subsidiary Company Badges */}
-                    <div className="space-y-1.5">
-                      <div className="text-[#38bdf8] font-bold uppercase tracking-wider text-[10px]">Select Target Subsidiary:</div>
-                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                        {["Sisi's Eatery", "Maristo Interior Design", "Ring Gelene", "Maristo Hospitality", "Al Yasat Catering LLC"].map((c) => (
-                          <button
-                            key={c}
-                            onClick={() => {
-                              onPlayKeyClick();
-                              setSelectedCompany(c);
-                            }}
-                            className={`p-2 rounded-xs border text-left transition-all ${
-                              selectedCompany === c ? 'bg-[#0284c7]/20 border-[#38bdf8] text-[#f8fafc] font-bold' : 'bg-[#141c28] border-[#253244] text-[#94a3b8] hover:text-[#f8fafc]'
-                            }`}
-                          >
-                            <div className="text-[10px] text-[#38bdf8]">🏢 Subsidiary</div>
-                            <div className="truncate text-xs">{c}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 5 Pipeline Stages */}
-                    <div className="space-y-2">
-                      {[
-                        { id: 1, name: '01. SharePoint Intake', desc: 'Monitors entity inbox & ingests PDF attachments without human intervention.', tech: 'Power Automate Cloud' },
-                        { id: 2, name: '02. AI Builder OCR', desc: 'Neural extraction of PO#, invoice totals, line items, and vendor tax registration.', tech: 'AI Builder' },
-                        { id: 3, name: '03. Validation Checks', desc: 'Strict confidence gate (>85%) and mandatory field verification.', tech: 'Custom Business Logic' },
-                        { id: 4, name: '04. Excel Preparation', desc: 'Formats extracted line items into entity-specific General Journal schemas.', tech: 'Excel Online Scripts' },
-                        { id: 5, name: '05. Dynamics 365 Upload', desc: 'Power Automate Desktop enters journals via UI/API with zero error rate.', tech: 'Power Automate Desktop' }
-                      ].map((stg) => {
-                        const isDone = pipelineStep >= stg.id;
-                        const isCurr = pipelineStep === stg.id && pipelineRunning;
-                        return (
-                          <div
-                            key={stg.id}
-                            className={`p-3 rounded-xs border flex items-center justify-between transition-colors ${
-                              isCurr ? 'bg-[#0284c7]/20 border-[#38bdf8]' : isDone ? 'bg-[#14281f] border-[#22c55e]' : 'bg-[#131b26] border-[#253244]'
-                            }`}
-                          >
-                            <div className="flex items-center space-x-3">
-                              <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                                isDone ? 'bg-[#22c55e] text-[#0f172a]' : isCurr ? 'bg-[#38bdf8] text-[#0f172a]' : 'bg-[#253244] text-[#94a3b8]'
-                              }`}>
-                                {isDone ? '✓' : stg.id}
-                              </div>
-                              <div>
-                                <div className="font-bold text-[#f8fafc]">{stg.name}</div>
-                                <div className="text-[#94a3b8] text-[11px]">{stg.desc}</div>
-                              </div>
-                            </div>
-
-                            <div className="text-right flex-shrink-0">
-                              <span className="px-2 py-0.5 bg-[#1e293b] text-[#38bdf8] rounded-xs font-mono text-[10px]">
-                                {stg.tech}
-                              </span>
-                              <div className="text-[10px] font-mono mt-1 font-bold">
-                                {isCurr ? <span className="text-[#38bdf8] animate-pulse">PROCESSING...</span> : isDone ? <span className="text-[#22c55e]">VERIFIED ✓</span> : <span className="text-[#64748b]">STANDBY</span>}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
                     </div>
                   </div>
                 )}
@@ -737,28 +802,53 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
                 {/* 3. PROJECTS EXPLORER WINDOW */}
                 {win.id === 'projects' && (
                   <div className="space-y-4">
-                    <div className="text-[#94a3b8]">
-                      Production systems engineered across Enterprise Business Process Automation (Power Automate, D365) and Full-Stack Web Development.
+                    {/* Category Filter Tabs */}
+                    <div className="flex items-center space-x-2 pb-2 border-b border-[#E5E2D8] text-xs font-mono">
+                      {[
+                        { id: 'all', label: 'All Projects (7)' },
+                        { id: 'rpa', label: 'Enterprise RPA' },
+                        { id: 'web', label: 'Full-Stack Web' },
+                        { id: 'data', label: 'Financial & Systems' }
+                      ].map((tab) => (
+                        <button
+                          key={tab.id}
+                          onClick={() => {
+                            onPlayKeyClick();
+                            setProjectFilter(tab.id as any);
+                          }}
+                          className={`px-2.5 py-1 rounded-xs transition-colors ${
+                            projectFilter === tab.id
+                              ? 'bg-[#264233] text-white font-semibold'
+                              : 'bg-[#F4F2EB] hover:bg-[#EAE7DD] text-[#575653]'
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {PROJECTS.map((proj) => (
-                        <div key={proj.id} className="p-3.5 bg-[#141c28] border border-[#253244] rounded-xs space-y-2 hover:border-[#38bdf8] transition-colors">
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <span className="px-2 py-0.5 bg-[#0284c7]/20 border border-[#0284c7] text-[#38bdf8] text-[10px] rounded-xs font-semibold uppercase">
-                                {proj.category}
-                              </span>
-                              <h3 className="font-bold text-[#f8fafc] text-sm mt-1">{proj.title}</h3>
-                            </div>
-                            <span className="text-xs font-mono text-[#64748b]">#{proj.index}</span>
+                    {/* Projects Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {filteredProjects.map((p) => (
+                        <div
+                          key={p.id}
+                          className="p-3 bg-[#FBFBF9] border border-[#E5E2D8] hover:border-[#264233] rounded-xs space-y-2 transition-all shadow-xs"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 bg-[#E8EFEA] text-[#264233] border border-[#C2D7CB] rounded-xs font-semibold">
+                              {p.category}
+                            </span>
+                            <span className="font-mono text-[10px] text-[#888680]">{p.index}</span>
                           </div>
-
-                          <p className="text-[#94a3b8] text-xs leading-relaxed">{proj.shortDescription}</p>
-
-                          <div className="flex flex-wrap gap-1 pt-1">
-                            {proj.tags.slice(0, 4).map((t, idx) => (
-                              <span key={idx} className="px-1.5 py-0.5 bg-[#1e293b] text-[#cbd5e1] rounded-xs text-[10px] font-mono">
+                          <h4 className="font-serif font-semibold text-sm text-[#141413] leading-snug">
+                            {p.title}
+                          </h4>
+                          <p className="text-[11px] text-[#575653] leading-relaxed line-clamp-2">
+                            {p.shortDescription}
+                          </p>
+                          <div className="flex flex-wrap gap-1 pt-1 font-mono text-[9px] text-[#575653]">
+                            {p.tags.slice(0, 4).map((t: string, idx: number) => (
+                              <span key={idx} className="px-1.5 py-0.5 bg-[#FFFFFF] border border-[#E5E2D8] rounded-xs">
                                 {t}
                               </span>
                             ))}
@@ -771,178 +861,183 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
 
                 {/* 4. RESUME VIEWER WINDOW */}
                 {win.id === 'resume' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-2.5 bg-[#16202e] border border-[#253244] rounded-xs">
-                      <div className="text-xs font-mono text-[#cbd5e1]">Abdul_Samad_Khan_Resume.pdf • Verified Local Source</div>
+                  <div className="space-y-4 max-w-2xl mx-auto">
+                    {/* Document Header */}
+                    <div className="flex items-center justify-between pb-3 border-b border-[#E5E2D8]">
+                      <div>
+                        <h3 className="font-serif text-lg font-semibold text-[#141413]">Abdul Samad Khan</h3>
+                        <p className="font-mono text-xs text-[#575653]">RPA & Enterprise Systems Engineer &bull; Bhopal, India</p>
+                      </div>
                       <a
                         href="/Abdul_Samad_Khan_Resume.pdf"
                         download="Abdul_Samad_Khan_Resume.pdf"
-                        className="flex items-center space-x-1.5 px-3 py-1 bg-[#0284c7] hover:bg-[#0369a1] text-[#ffffff] font-bold rounded-xs transition-colors"
+                        className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#264233] hover:bg-[#1a3024] text-white text-xs font-mono font-medium rounded-xs shadow-xs transition-colors"
                       >
                         <Download className="w-3.5 h-3.5" />
                         <span>Download PDF</span>
                       </a>
                     </div>
 
-                    {/* Paper Sheet Preview */}
-                    <div className="max-w-2xl mx-auto bg-[#fbfbf9] text-[#0f172a] p-6 rounded-xs shadow-xl space-y-4 font-sans">
-                      <div className="border-b border-[#cbd5e1] pb-3">
-                        <h1 className="text-2xl font-black font-serif tracking-tight">ABDUL SAMAD KHAN</h1>
-                        <p className="text-xs font-medium text-[#475569]">RPA Developer • Enterprise Systems Automation • B.Tech AI & Data Science</p>
-                        <p className="text-[11px] text-[#64748b]">abdulischad@gmail.com • Bhopal, India (IST UTC +05:30) • github.com/wyacoomz</p>
-                      </div>
+                    {/* Summary */}
+                    <div className="text-xs text-[#575653] leading-relaxed">
+                      {PERSONAL_INFO.shortBio}
+                    </div>
 
-                      <div className="space-y-2">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-[#0284c7]">Work Experience</h2>
-                        <div className="space-y-1 text-xs">
-                          <div className="flex justify-between font-bold">
-                            <span>Trufe — RPA Developer</span>
-                            <span className="text-[#64748b]">2025 – Present</span>
+                    {/* Employment History */}
+                    <div className="space-y-3">
+                      <div className="font-mono text-xs uppercase tracking-wider text-[#264233] font-semibold border-b border-[#EAE7DD] pb-1">
+                        Work Experience
+                      </div>
+                      {WORK_EXPERIENCES.map((exp) => (
+                        <div key={exp.id} className="p-3 bg-[#FBFBF9] border border-[#E5E2D8] rounded-xs space-y-1">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-serif font-semibold text-xs text-[#141413]">{exp.role} @ {exp.company}</h4>
+                            <span className="font-mono text-[10px] text-[#888680]">{exp.period}</span>
                           </div>
-                          <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-[#334155]">
-                            <li>Architected end-to-end multi-entity AI invoice processing bot across 5 subsidiaries into Dynamics 365.</li>
-                            <li>Engineered multi-bank reconciliation workflows (SNB & Al Rajhi) with calendar discrepancy routing.</li>
-                            <li>Built Keyloop customer creation and STD mapping flows reducing manual data entry by 100%.</li>
-                          </ul>
+                          <p className="text-[11px] text-[#575653] leading-snug">{exp.summary}</p>
                         </div>
-                      </div>
+                      ))}
+                    </div>
 
-                      <div className="space-y-2 border-t border-[#cbd5e1] pt-3">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-[#0284c7]">Education</h2>
-                        <div className="text-xs">
-                          <div className="font-bold">B.Tech in Artificial Intelligence & Data Science</div>
-                          <div className="text-[#64748b] text-[11px]">Oriental Institute of Science & Technology (OIST) • 2021 – 2025</div>
+                    {/* Education */}
+                    <div className="space-y-2">
+                      <div className="font-mono text-xs uppercase tracking-wider text-[#264233] font-semibold border-b border-[#EAE7DD] pb-1">
+                        Education
+                      </div>
+                      {EDUCATION_DATA.map((edu, idx) => (
+                        <div key={idx} className="p-2.5 bg-[#FBFBF9] border border-[#E5E2D8] rounded-xs">
+                          <div className="font-serif font-semibold text-xs text-[#141413]">{edu.degree}</div>
+                          <div className="font-mono text-[10px] text-[#575653]">{edu.institution} &bull; {edu.period}</div>
                         </div>
-                      </div>
-
-                      <div className="space-y-2 border-t border-[#cbd5e1] pt-3">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-[#0284c7]">LeetCode Benchmark</h2>
-                        <p className="text-[11px] text-[#334155]">150+ Problems Solved focusing on Graph algorithms, Dynamic Programming, and Tree traversals.</p>
-                      </div>
+                      ))}
                     </div>
                   </div>
                 )}
 
-                {/* 5. FIELD NOTES WINDOW */}
+                {/* 5. FIELD NOTES & BENCHMARKS WINDOW */}
                 {win.id === 'notes' && (
-                  <div className="space-y-3 font-mono">
-                    <div className="flex space-x-2 border-b border-[#253244] pb-2">
-                      <span className="px-2.5 py-1 bg-[#1e293b] text-[#38bdf8] font-bold rounded-xs text-[11px]">01_bot_resilience.md</span>
-                      <span className="px-2.5 py-1 text-[#64748b] text-[11px]">02_bank_calendar.md</span>
-                      <span className="px-2.5 py-1 text-[#64748b] text-[11px]">03_leetcode_opt.md</span>
+                  <div className="space-y-4">
+                    <div className="p-3 bg-[#F4F2EB] border border-[#E5E2D8] rounded-xs">
+                      <div className="font-mono text-[10px] uppercase text-[#264233] font-semibold">Engineering Philosophy</div>
+                      <h4 className="font-serif text-sm font-semibold text-[#141413]">Deterministic Error Handling in Unattended Workflows</h4>
+                      <p className="text-xs text-[#575653] mt-1 leading-relaxed">
+                        In enterprise RPA, a bot that fails silently or commits bad data is far worse than no bot at all. 
+                        Every automated flow must implement strict integrity gates (confidence thresholds &ge; 0.90, arithmetic reconciliations, and isolated exception queues with Adaptive Card alerts).
+                      </p>
                     </div>
 
-                    <div className="p-3 bg-[#080c14] border border-[#1e293b] rounded-xs space-y-2 text-[#cbd5e1] text-xs leading-relaxed">
-                      <div className="text-[#38bdf8] font-bold"># Practical Engineering Decisions in Production RPA & Systems</div>
-                      <div>
-                        In the Maristo AI Invoice Bot, AI Builder extracts values with varying confidence scores.
-                        Rather than allowing uncertain OCR outputs to directly hit Dynamics 365, a strict validation gate is enforced (&gt;85% confidence score).
-                      </div>
-                      <div>
-                        Uncertain or missing fields are routed to a structured human-in-the-loop exception queue, completely eliminating poisoned database states and manual reconciliation rollbacks.
-                      </div>
-                      <div className="text-[#22c55e]">
-                        ✓ Outcome: 100% data fidelity in Dynamics 365 General Journals across all 5 subsidiaries.
+                    <div className="p-3 bg-[#FFFFFF] border border-[#E5E2D8] rounded-xs space-y-2">
+                      <div className="font-mono text-[10px] uppercase text-[#264233] font-semibold">LeetCode Benchmark (150+ Solved)</div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-xs">
+                        <div className="p-2 bg-[#FBFBF9] border border-[#EAE7DD] rounded-xs">
+                          <div className="text-[10px] text-[#888680]">DYNAMIC PROG.</div>
+                          <div className="font-bold text-[#141413]">45+ Solved</div>
+                        </div>
+                        <div className="p-2 bg-[#FBFBF9] border border-[#EAE7DD] rounded-xs">
+                          <div className="text-[10px] text-[#888680]">GRAPH THEORY</div>
+                          <div className="font-bold text-[#141413]">35+ Solved</div>
+                        </div>
+                        <div className="p-2 bg-[#FBFBF9] border border-[#EAE7DD] rounded-xs">
+                          <div className="text-[10px] text-[#888680]">TREES & BST</div>
+                          <div className="font-bold text-[#141413]">40+ Solved</div>
+                        </div>
+                        <div className="p-2 bg-[#FBFBF9] border border-[#EAE7DD] rounded-xs">
+                          <div className="text-[10px] text-[#888680]">ARRAYS & SLIDING</div>
+                          <div className="font-bold text-[#141413]">30+ Solved</div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* 6. ABOUT / NEOFETCH WINDOW */}
+                {/* 6. SYSTEM SPECS & HARDWARE WINDOW */}
                 {win.id === 'about' && (
-                  <div className="flex flex-col sm:flex-row gap-6 p-2 font-mono">
-                    {/* ASCII Tux / Modern System */}
-                    <div className="text-[#38bdf8] text-xs font-bold leading-none select-none flex-shrink-0">
-                      <pre>{`
-         .---.
-        /     \\
-       | () () |
-        \\  -  /
-        .-'---'-.
-       /  DEV    \\
-      | | BOOK  | |
-      | \\     / |
-     (_/ '---' \\_)
-                      `}</pre>
+                  <div className="space-y-4 font-mono text-xs">
+                    <div className="p-3 bg-[#F4F2EB] border border-[#E5E2D8] rounded-xs space-y-2">
+                      <div className="text-[#264233] font-bold pb-2 border-b border-[#EAE7DD]">
+                        DevBook Pro 16″ CNC Aluminum Studio Workstation
+                      </div>
+                      <div className="grid grid-cols-2 gap-y-1.5 text-[11px]">
+                        <div><span className="text-[#888680]">OS:</span> Ubuntu 24.04 LTS x86_64</div>
+                        <div><span className="text-[#888680]">Kernel:</span> Linux 6.8.0-45-generic</div>
+                        <div><span className="text-[#888680]">Chassis:</span> Anodized Space Gray CNC Unibody</div>
+                        <div><span className="text-[#888680]">Display:</span> 16.0″ Liquid Retina (16:10, 94% StB)</div>
+                        <div><span className="text-[#888680]">Audio:</span> Dual Micro-Drilled Acoustic Grilles</div>
+                        <div><span className="text-[#888680]">Trackpad:</span> Precision Satin Glass Surface</div>
+                        <div><span className="text-[#888680]">Engineer:</span> Abdul Samad Khan (wyacoomz)</div>
+                        <div><span className="text-[#888680]">Role:</span> RPA Developer @ Trufe</div>
+                      </div>
                     </div>
 
-                    {/* Hardware & Profile Specs */}
-                    <div className="space-y-1 text-xs">
-                      <div className="text-[#38bdf8] font-bold pb-2 border-b border-[#253244]">wyacoomz@dev-laptop</div>
-                      <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">OS:</span><span className="text-[#f8fafc]">Ubuntu 24.04 LTS x86_64</span></div>
-                      <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">Host:</span><span className="text-[#f8fafc]">DevBook Pro 16″ CNC Aluminum</span></div>
-                      <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">Kernel:</span><span className="text-[#f8fafc]">6.8.0-45-generic</span></div>
-                      <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">Shell:</span><span className="text-[#f8fafc]">bash 5.2.21</span></div>
-                      <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">CPU:</span><span className="text-[#f8fafc]">12th Gen Intel Core i7-1260P (16) @ 4.70GHz</span></div>
-                      <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">Memory:</span><span className="text-[#f8fafc]">32GB DDR4 3200 MT/s</span></div>
-                      <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">Developer:</span><span className="text-[#f8fafc]">Abdul Samad Khan</span></div>
-                      <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">Role:</span><span className="text-[#f8fafc]">RPA Developer @ Trufe</span></div>
-                      <div className="flex space-x-4"><span className="text-[#38bdf8] w-24">LeetCode:</span><span className="text-[#f8fafc]">150+ Solved</span></div>
+                    <div className="space-y-2">
+                      <div className="font-mono text-xs uppercase text-[#264233] font-semibold">Core Competencies</div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                        {SKILL_CATEGORIES.map((cat, idx) => (
+                          <div key={idx} className="p-2 bg-[#FBFBF9] border border-[#E5E2D8] rounded-xs">
+                            <div className="font-bold text-[#141413]">{cat.category}</div>
+                            <div className="text-[#575653] text-[10px] mt-0.5">{cat.skills.map((s) => s.name).join(', ')}</div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
 
-                {/* 7. CONTACT CHANNELS WINDOW */}
+                {/* 7. DISPATCH / CONTACT WINDOW */}
                 {win.id === 'contact' && (
-                  <div className="space-y-3">
-                    <div className="text-[#94a3b8] text-xs">Reach out for enterprise automation roles, full-stack contracting, or system architecture inquiries.</div>
+                  <div className="space-y-4 max-w-lg mx-auto">
+                    <div className="text-center pb-2 border-b border-[#E5E2D8]">
+                      <h3 className="font-serif text-base font-semibold text-[#141413]">Dispatch & Inquiries</h3>
+                      <p className="font-mono text-xs text-[#575653]">Direct communication channels for engineering collaborations</p>
+                    </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      <div className="p-3 bg-[#16202e] border border-[#253244] rounded-xs flex items-center justify-between">
+                    <div className="space-y-2 font-mono text-xs">
+                      <div className="p-3 bg-[#FBFBF9] border border-[#E5E2D8] rounded-xs flex items-center justify-between">
                         <div>
-                          <div className="text-[10px] text-[#38bdf8] font-mono">Email Channel</div>
-                          <div className="text-xs font-bold text-[#f8fafc]">abdulischad@gmail.com</div>
+                          <div className="text-[10px] text-[#888680]">EMAIL ADDRESS</div>
+                          <div className="font-bold text-[#141413]">abdulischad@gmail.com</div>
                         </div>
                         <button
-                          onClick={() => copyToClipboard('abdulischad@gmail.com', 'email')}
-                          className="px-2.5 py-1 bg-[#223044] hover:bg-[#334155] text-[#38bdf8] rounded-xs text-[10px] font-mono"
+                          onClick={() => handleCopy('email', 'abdulischad@gmail.com')}
+                          className="px-2.5 py-1 bg-[#264233] hover:bg-[#1a3024] text-white rounded-xs text-[10px] font-semibold flex items-center space-x-1"
                         >
-                          {copiedItem === 'email' ? 'Copied ✓' : 'Copy'}
+                          {copiedKey === 'email' ? <Check className="w-3 h-3 text-[#86efac]" /> : <Copy className="w-3 h-3" />}
+                          <span>{copiedKey === 'email' ? 'Copied' : 'Copy'}</span>
                         </button>
                       </div>
 
-                      <div className="p-3 bg-[#16202e] border border-[#253244] rounded-xs flex items-center justify-between">
+                      <div className="p-3 bg-[#FBFBF9] border border-[#E5E2D8] rounded-xs flex items-center justify-between">
                         <div>
-                          <div className="text-[10px] text-[#38bdf8] font-mono">GitHub Profile</div>
-                          <div className="text-xs font-bold text-[#f8fafc]">github.com/wyacoomz</div>
+                          <div className="text-[10px] text-[#888680]">PHONE NUMBER</div>
+                          <div className="font-bold text-[#141413]">+91 97520 90623</div>
                         </div>
+                        <button
+                          onClick={() => handleCopy('phone', '+919752090623')}
+                          className="px-2.5 py-1 bg-[#264233] hover:bg-[#1a3024] text-white rounded-xs text-[10px] font-semibold flex items-center space-x-1"
+                        >
+                          {copiedKey === 'phone' ? <Check className="w-3 h-3 text-[#86efac]" /> : <Copy className="w-3 h-3" />}
+                          <span>{copiedKey === 'phone' ? 'Copied' : 'Copy'}</span>
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <a
+                          href="https://linkedin.com/in/abdul-samad-khan-b20b29237"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-3 bg-[#FFFFFF] hover:bg-[#F4F2EB] border border-[#E5E2D8] rounded-xs flex items-center justify-between transition-colors"
+                        >
+                          <span className="font-bold text-[#141413]">LinkedIn Profile</span>
+                          <ExternalLink className="w-3.5 h-3.5 text-[#575653]" />
+                        </a>
                         <a
                           href="https://github.com/wyacoomz"
                           target="_blank"
                           rel="noreferrer"
-                          className="px-2.5 py-1 bg-[#0284c7] hover:bg-[#0369a1] text-[#ffffff] rounded-xs text-[10px] font-mono"
+                          className="p-3 bg-[#FFFFFF] hover:bg-[#F4F2EB] border border-[#E5E2D8] rounded-xs flex items-center justify-between transition-colors"
                         >
-                          Launch ↗
-                        </a>
-                      </div>
-
-                      <div className="p-3 bg-[#16202e] border border-[#253244] rounded-xs flex items-center justify-between">
-                        <div>
-                          <div className="text-[10px] text-[#38bdf8] font-mono">LinkedIn Profile</div>
-                          <div className="text-xs font-bold text-[#f8fafc]">Abdul Samad Khan</div>
-                        </div>
-                        <a
-                          href="https://linkedin.com/in/abdul-samad-khan-b22346268"
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-2.5 py-1 bg-[#0284c7] hover:bg-[#0369a1] text-[#ffffff] rounded-xs text-[10px] font-mono"
-                        >
-                          Launch ↗
-                        </a>
-                      </div>
-
-                      <div className="p-3 bg-[#16202e] border border-[#253244] rounded-xs flex items-center justify-between">
-                        <div>
-                          <div className="text-[10px] text-[#38bdf8] font-mono">LeetCode Profile</div>
-                          <div className="text-xs font-bold text-[#f8fafc]">wyacoomz (150+ Solved)</div>
-                        </div>
-                        <a
-                          href="https://leetcode.com/u/wyacoomz/"
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-2.5 py-1 bg-[#0284c7] hover:bg-[#0369a1] text-[#ffffff] rounded-xs text-[10px] font-mono"
-                        >
-                          Launch ↗
+                          <span className="font-bold text-[#141413]">GitHub Archive</span>
+                          <ExternalLink className="w-3.5 h-3.5 text-[#575653]" />
                         </a>
                       </div>
                     </div>
@@ -953,71 +1048,56 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
           );
         })}
 
-        {/* ================================================================== */}
-        {/* START MENU POPUP (Henry Heffernan style)                           */}
-        {/* ================================================================== */}
+        {/* Start / Index Flyout Menu */}
         {startMenuOpen && (
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute bottom-2 left-2 w-80 bg-[#121926]/98 border border-[#334155] rounded-xs shadow-2xl z-50 overflow-hidden flex flex-col font-sans backdrop-blur-xl animate-in fade-in slide-in-from-bottom-2 duration-150"
+            className="absolute bottom-2 left-3 z-50 w-72 bg-[#FFFFFF] border border-[#DCD9CF] rounded-xs shadow-2xl p-3 text-xs font-sans animate-in slide-in-from-bottom-2 duration-150"
           >
-            {/* User Profile Header */}
-            <div className="p-3.5 bg-[#1a2332] border-b border-[#283548] flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0284c7] to-[#38bdf8] flex items-center justify-center font-bold text-[#ffffff] text-sm shadow-md">
+            {/* Header */}
+            <div className="flex items-center space-x-2.5 pb-2.5 mb-2.5 border-b border-[#E5E2D8]">
+              <div className="w-8 h-8 rounded-xs bg-[#264233] text-white font-serif italic text-base flex items-center justify-center font-bold">
                 AK
               </div>
-              <div className="overflow-hidden">
-                <div className="font-bold text-sm text-[#f8fafc] truncate">Abdul Samad Khan</div>
-                <div className="text-[11px] text-[#38bdf8] truncate font-mono">wyacoomz • Trufe RPA Developer</div>
+              <div>
+                <div className="font-serif font-semibold text-xs text-[#141413]">Abdul Samad Khan</div>
+                <div className="font-mono text-[9px] text-[#575653]">wyacoomz // RPA Developer @ Trufe</div>
               </div>
             </div>
 
-            {/* Pinned Applications */}
-            <div className="p-2 space-y-1 max-h-72 overflow-y-auto">
-              <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#64748b]">Pinned Applications</div>
-              {[
-                { id: 'terminal', label: 'Terminal (Bash Shell)', icon: '💻', desc: 'Command prompt & diagnostics' },
-                { id: 'pipeline', label: 'D365 Invoice Studio', icon: '⚙️', desc: 'Live automated RPA simulator' },
-                { id: 'projects', label: 'Projects Explorer', icon: '📁', desc: '7 production system case studies' },
-                { id: 'resume', label: 'Resume.pdf Viewer', icon: '📄', desc: 'Official credentials & PDF export' },
-                { id: 'notes', label: 'Field Notes Editor', icon: '📝', desc: 'Bot exception recovery log' },
-                { id: 'about', label: 'System Information', icon: '👤', desc: 'Neofetch & hardware specs' },
-                { id: 'contact', label: 'Connect & Channels', icon: '🌐', desc: 'Direct contact details' }
-              ].map((app) => (
+            {/* Launchers */}
+            <div className="space-y-1 font-mono text-[11px]">
+              {desktopShortcuts.map((sc) => (
                 <button
-                  key={app.id}
-                  onClick={() => openWindow(app.id)}
-                  className="w-full flex items-center space-x-2.5 p-2 rounded-xs hover:bg-[#1e293b] text-left transition-colors group"
+                  key={sc.id}
+                  onClick={() => {
+                    focusWindow(sc.id);
+                    setStartMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xs hover:bg-[#F4F2EB] text-left transition-colors"
                 >
-                  <span className="text-xl flex-shrink-0 group-hover:scale-110 transition-transform">{app.icon}</span>
-                  <div className="overflow-hidden">
-                    <div className="text-xs font-semibold text-[#f8fafc] group-hover:text-[#38bdf8] transition-colors">{app.label}</div>
-                    <div className="text-[10px] text-[#94a3b8] truncate">{app.desc}</div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs">{sc.icon}</span>
+                    <span className="text-[#141413]">{sc.label}</span>
                   </div>
+                  <ChevronRight className="w-3 h-3 text-[#888680]" />
                 </button>
               ))}
             </div>
 
-            {/* Bottom Actions Bar */}
-            <div className="p-2.5 bg-[#0f141f] border-t border-[#283548] flex items-center justify-between text-xs">
+            {/* Footer */}
+            <div className="pt-2 mt-2 border-t border-[#E5E2D8] flex items-center justify-between font-mono text-[10px] text-[#575653]">
               <a
                 href="http://localhost:3000"
-                className="text-[#38bdf8] hover:underline text-[11px] font-mono flex items-center space-x-1"
+                className="text-[#264233] hover:underline font-semibold"
               >
-                <span>← Editorial Journal</span>
+                &larr; Editorial Journal
               </a>
-
               <button
-                onClick={() => {
-                  onPlayKeyClick();
-                  setStartMenuOpen(false);
-                  showDesktop();
-                }}
-                className="flex items-center space-x-1 px-2 py-1 bg-[#1e293b] hover:bg-[#334155] rounded-xs text-[11px] text-[#cbd5e1]"
-                title="Minimize all windows to desktop"
+                onClick={showDesktop}
+                className="hover:text-[#141413]"
               >
-                <Power className="w-3 h-3 text-[#ef4444]" />
-                <span>Show Desktop</span>
+                [Show Desktop]
               </button>
             </div>
           </div>
@@ -1025,67 +1105,59 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
       </div>
 
       {/* ==================================================================== */}
-      {/* BOTTOM TASKBAR (Start Menu + Open Apps + Clock)                      */}
+      {/* BOTTOM EDITORIAL TASKBAR                                             */}
       {/* ==================================================================== */}
       <div 
-        className="h-10 bg-[#0c121d]/98 border-t border-[#1e293b] flex items-center justify-between px-2.5 z-40 select-none backdrop-blur-md"
+        className="h-9 bg-[#F4F2EB] border-t border-[#E5E2D8] flex items-center justify-between px-3 text-xs z-30 select-none flex-shrink-0"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Left: Start Button */}
-        <div className="flex items-center space-x-2">
+        {/* Left: Start / Index Button + Running App Tabs */}
+        <div className="flex items-center space-x-2 overflow-x-auto pr-2">
           <button
             onClick={() => {
               onPlayKeyClick();
-              setStartMenuOpen(!startMenuOpen);
+              setStartMenuOpen((prev) => !prev);
             }}
-            className={`flex items-center space-x-2 px-3 py-1.5 rounded-xs font-bold text-xs transition-all ${
-              startMenuOpen
-                ? 'bg-[#0284c7] text-[#ffffff] shadow-md shadow-[#0284c7]/40'
-                : 'bg-[#1e293b] hover:bg-[#283548] text-[#f8fafc]'
-            }`}
+            className="flex items-center space-x-1.5 px-3 py-1 bg-[#264233] hover:bg-[#1a3024] text-white rounded-xs font-mono font-bold text-[11px] shadow-xs transition-colors"
           >
-            <div className="w-2.5 h-2.5 rounded-full bg-[#ef4444] animate-pulse" />
-            <span className="font-mono uppercase tracking-wider">Start</span>
+            <span>INDEX</span>
           </button>
 
-          {/* Active Application Windows List */}
-          <div className="hidden sm:flex items-center space-x-1.5 overflow-x-auto max-w-xl">
-            {openWindowsList.map((win) => {
-              const isActive = win.isOpen && !win.isMinimized && win.zIndex === highestZ;
-              return (
-                <button
-                  key={win.id}
-                  onClick={() => {
-                    if (isActive) {
-                      minimizeWindow(win.id);
-                    } else {
-                      focusWindow(win.id);
-                    }
-                  }}
-                  className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-xs text-xs transition-all max-w-[160px] truncate ${
-                    isActive
-                      ? 'bg-[#1e293b] border-b-2 border-[#38bdf8] text-[#ffffff] font-semibold'
-                      : win.isMinimized
-                      ? 'bg-[#141b26]/50 text-[#64748b] hover:text-[#cbd5e1]'
-                      : 'bg-[#141b26] text-[#cbd5e1] hover:bg-[#1e293b]'
-                  }`}
-                  title={win.title}
-                >
-                  <span className="text-sm">{win.icon}</span>
-                  <span className="truncate text-[11px]">{win.title.split('—')[0]}</span>
-                </button>
-              );
-            })}
-          </div>
+          {/* Running Windows Tabs */}
+          {openWindowsList.map((win) => {
+            const isActive = !win.isMinimized;
+            return (
+              <button
+                key={win.id}
+                onClick={() => {
+                  if (isActive) {
+                    toggleMinimizeWindow(win.id);
+                  } else {
+                    focusWindow(win.id);
+                  }
+                }}
+                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-xs border text-[11px] font-mono transition-all ${
+                  isActive
+                    ? 'bg-[#FFFFFF] border-[#264233] text-[#264233] font-semibold shadow-xs'
+                    : 'bg-[#FBFBF9] hover:bg-[#FFFFFF] border-[#E5E2D8] text-[#575653]'
+                }`}
+              >
+                <span>{win.icon}</span>
+                <span className="truncate max-w-[120px]">{win.title.split('//')[1] || win.title}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Right: Quick Show Desktop Button */}
+        {/* Right: Quick Show Desktop */}
         <div className="flex items-center space-x-2">
           <button
             onClick={showDesktop}
-            className="w-4 h-7 hover:bg-[#38bdf8]/40 border-l border-[#334155] transition-colors"
-            title="Show Desktop (Minimize all windows)"
-          />
+            className="px-2 py-0.5 bg-[#FFFFFF] hover:bg-[#F4F2EB] border border-[#E5E2D8] text-[#575653] hover:text-[#141413] rounded-xs font-mono text-[10px] transition-colors"
+            title="Minimize all windows and show desktop"
+          >
+            Desktop
+          </button>
         </div>
       </div>
     </div>
