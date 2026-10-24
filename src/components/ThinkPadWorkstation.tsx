@@ -7,6 +7,7 @@ import {
   LayoutGrid, FileText, CheckCircle2, ChevronRight, Download
 } from 'lucide-react';
 import { PERSONAL_INFO, PROJECTS, WORK_EXPERIENCES, EDUCATION_DATA, SKILL_CATEGORIES } from '../data/portfolioData';
+import { LinuxDesktopOS } from './LinuxDesktopOS';
 
 interface ThinkPadWorkstationProps {
   onNavigateToSection?: (sectionId: string) => void;
@@ -2200,6 +2201,60 @@ export const ThinkPadWorkstation: React.FC<ThinkPadWorkstationProps> = ({ onNavi
     <div className="relative w-full h-full select-none overflow-hidden bg-[#0a0d12]">
       {/* 3D WebGL Canvas Container */}
       <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
+
+      {/* Henry Heffernan-Style Focused Interactive OS Layer */}
+      {isFocused && (
+        <div className="absolute inset-0 z-30 pointer-events-auto flex flex-col items-center justify-center bg-black/75 backdrop-blur-[2px] p-2 sm:p-4 animate-in fade-in duration-200">
+          {/* Top Bar for Focused View */}
+          <div className="w-full max-w-6xl flex items-center justify-between pb-2 text-xs font-mono select-none">
+            <div className="flex items-center space-x-2 text-[#94a3b8]">
+              <span className="w-2 h-2 rounded-full bg-[#ef4444]" />
+              <span className="font-bold text-[#f8fafc]">THINKPAD T14 WORKSTATION</span>
+              <span>&bull;</span>
+              <span className="text-[#38bdf8]">UBUNTU LINUX DESKTOP (HENRY HEFFERNAN STYLE)</span>
+            </div>
+
+            <button
+              onClick={() => {
+                audioEngine.playKeyClick();
+                setIsFocused(false);
+              }}
+              className="flex items-center space-x-1.5 px-3 py-1 bg-[#1e293b] hover:bg-[#334155] text-[#f8fafc] border border-[#334155] rounded-xs text-xs font-mono transition-colors shadow-md"
+              title="Return to 3D Desk View"
+            >
+              <ZoomOut className="w-3.5 h-3.5 text-[#38bdf8]" />
+              <span>← Return to 3D Desk</span>
+            </button>
+          </div>
+
+          {/* Authentic ThinkPad Display Frame (16:10 Aspect Ratio) */}
+          <div className="relative w-full max-w-6xl aspect-[16/10] max-h-[88vh] bg-[#121316] p-2 sm:p-3 rounded-sm border-2 border-[#22242a] shadow-2xl flex flex-col overflow-hidden">
+            {/* Top Bezel: Centered Camera & ThinkShutter Dot */}
+            <div className="h-4 w-full flex items-center justify-center relative flex-shrink-0 select-none pb-1">
+              <div className="w-2 h-2 rounded-full bg-[#050608] border border-[#1e293b] flex items-center justify-center">
+                <div className="w-1 h-1 rounded-full bg-[#ef4444]" />
+              </div>
+            </div>
+
+            {/* Interactive Linux Desktop OS Screen */}
+            <div className="flex-1 w-full h-full overflow-hidden rounded-xs border border-[#1e293b]">
+              <LinuxDesktopOS
+                onPlayKeyClick={() => audioEngine.playKeyClick()}
+                onExitFocus={() => setIsFocused(false)}
+                soundEnabled={soundEnabled}
+                onToggleSound={toggleSound}
+                isStandaloneOverlay={true}
+              />
+            </div>
+
+            {/* Bottom Bezel: Lenovo (Left) & T14 (Right) */}
+            <div className="h-4 w-full flex items-center justify-between px-2 pt-1 flex-shrink-0 select-none text-[10px] font-sans font-bold text-[#64748b]">
+              <span>Lenovo</span>
+              <span>T14</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Top Floating Tactical Control Bar */}
       <div className="absolute top-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2.5 pointer-events-none z-20">
