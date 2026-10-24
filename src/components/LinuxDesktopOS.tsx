@@ -15,8 +15,6 @@ import {
   RotateCcw,
   Volume2,
   VolumeX,
-  Wifi,
-  Battery,
   Download,
   Copy,
   Check,
@@ -28,20 +26,20 @@ import {
   Briefcase,
   GraduationCap,
   Layers,
-  CheckCircle2,
   Sparkles,
   Radio,
   Coffee,
-  Heart,
-  Compass,
-  Cpu,
-  User,
-  Music
+  HelpCircle,
+  HardDrive,
+  Trash2,
+  Disc,
+  Sliders,
+  Send
 } from 'lucide-react';
 import { PERSONAL_INFO, PROJECTS, WORK_EXPERIENCES, EDUCATION_DATA, SKILL_CATEGORIES } from '../data/portfolioData';
 
 export interface WindowState {
-  id: 'about' | 'projects' | 'lofi' | 'terminal' | 'resume' | 'contact' | 'pipeline';
+  id: 'about' | 'projects' | 'winamp' | 'dos' | 'resume' | 'contact' | 'd365';
   title: string;
   shortTitle: string;
   icon: string;
@@ -51,7 +49,7 @@ export interface WindowState {
   zIndex: number;
 }
 
-interface LinuxDesktopOSProps {
+interface Win98DesktopProps {
   onPlayKeyClick?: () => void;
   onExitFocus?: () => void;
   soundEnabled?: boolean;
@@ -60,30 +58,30 @@ interface LinuxDesktopOSProps {
 }
 
 // ==========================================
-// PROCEDURAL LO-FI CHORD AUDIO ENGINE
+// PROCEDURAL LO-FI AUDIO ENGINE (WINAMP CHILL)
 // ==========================================
-class LofiAudioEngine {
+class Win98LofiEngine {
   private ctx: AudioContext | null = null;
   private isPlaying: boolean = false;
   private intervalId: any = null;
-  private currentTrack: number = 0;
-  private volume: number = 0.45;
+  public currentTrack: number = 0;
+  private volume: number = 0.5;
   private masterGain: GainNode | null = null;
 
   public tracks = [
-    { title: 'Midnight Tea', artist: 'Abdul & Tape Loops', mood: 'Calm Rhodes & Vinyl Dust', chords: [
+    { title: '01. Abdul - Midnight Tea.mp3', name: 'Midnight Tea', artist: 'Abdul Samad Khan', chords: [
       [261.63, 329.63, 392.00, 493.88, 587.33], // Cmaj9
       [220.00, 261.63, 329.63, 392.00, 493.88], // Am9
       [174.61, 261.63, 329.63, 392.00],         // Fmaj7
       [196.00, 261.63, 293.66, 392.00]          // G7sus4
     ]},
-    { title: 'Rain on Window', artist: 'Studio Session', mood: 'Warm Minor 9ths', chords: [
+    { title: '02. Abdul - 90s Rain Session.mp3', name: '90s Rain Session', artist: 'Abdul Samad Khan', chords: [
       [146.83, 220.00, 261.63, 311.13, 369.99], // Dm9
       [196.00, 246.94, 329.63, 392.00],         // G13
       [130.81, 196.00, 246.94, 329.63],         // Cmaj7
       [220.00, 277.18, 349.23, 415.30]          // A7alt
     ]},
-    { title: 'Quiet Studio', artist: 'Late Night Keys', mood: 'Dreamy Ambient', chords: [
+    { title: '03. Abdul - Windows 98 Chill.mp3', name: 'Windows 98 Chill', artist: 'Abdul Samad Khan', chords: [
       [174.61, 220.00, 261.63, 329.63, 392.00], // Fmaj9
       [164.81, 196.00, 246.94, 293.66],         // Em7
       [146.83, 174.61, 220.00, 261.63],         // Dm7
@@ -111,11 +109,10 @@ class LofiAudioEngine {
     const now = this.ctx.currentTime;
     const dur = 3.6;
 
-    // Filter to give warm tape/Rhodes sound
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(680, now);
-    filter.frequency.exponentialRampToValueAtTime(450, now + dur);
+    filter.frequency.setValueAtTime(640, now);
+    filter.frequency.exponentialRampToValueAtTime(420, now + dur);
     filter.connect(this.masterGain);
 
     freqs.forEach((freq, i) => {
@@ -123,10 +120,10 @@ class LofiAudioEngine {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = i % 2 === 0 ? 'sine' : 'triangle';
-      osc.frequency.setValueAtTime(freq + (Math.random() - 0.5) * 1.5, now);
+      osc.frequency.setValueAtTime(freq + (Math.random() - 0.5) * 1.2, now);
 
       gain.gain.setValueAtTime(0.001, now);
-      gain.gain.linearRampToValueAtTime(0.065 / freqs.length, now + 0.25);
+      gain.gain.linearRampToValueAtTime(0.06 / freqs.length, now + 0.22);
       gain.gain.exponentialRampToValueAtTime(0.001, now + dur - 0.1);
 
       osc.connect(gain);
@@ -184,34 +181,26 @@ class LofiAudioEngine {
   }
 }
 
-const lofiEngine = new LofiAudioEngine();
+const winampEngine = new Win98LofiEngine();
 
-export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
+export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
   onPlayKeyClick = () => {},
   onExitFocus,
   soundEnabled = true,
   onToggleSound,
   isStandaloneOverlay = false
 }) => {
-  // Clock state
+  // Clock state (Win98 12-hour AM/PM format)
   const [timeStr, setTimeStr] = useState<string>('');
-  const [dateStr, setDateStr] = useState<string>('');
 
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
       setTimeStr(
         now.toLocaleTimeString('en-US', {
-          hour: '2-digit',
+          hour: 'numeric',
           minute: '2-digit',
-          hour12: false
-        })
-      );
-      setDateStr(
-        now.toLocaleDateString('en-US', {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric'
+          hour12: true
         })
       );
     };
@@ -220,88 +209,106 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
     return () => clearInterval(interval);
   }, []);
 
-  // Lo-Fi State
-  const [lofiPlaying, setLofiPlaying] = useState<boolean>(false);
-  const [lofiTrack, setLofiTrack] = useState<number>(0);
-  const [lofiProgress, setLofiProgress] = useState<number>(24);
-  const [lofiVolume, setLofiVolume] = useState<number>(0.45);
+  // Start Menu State
+  const [startOpen, setStartOpen] = useState<boolean>(false);
+  const startMenuRef = useRef<HTMLDivElement>(null);
 
-  const toggleLofiPlay = () => {
+  // Close start menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (startMenuRef.current && !startMenuRef.current.contains(e.target as Node)) {
+        setStartOpen(false);
+      }
+    };
+    if (startOpen) {
+      window.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => window.removeEventListener('mousedown', handleClickOutside);
+  }, [startOpen]);
+
+  // Selected desktop icon
+  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
+
+  // Winamp State
+  const [winampPlaying, setWinampPlaying] = useState<boolean>(false);
+  const [winampTrack, setWinampTrack] = useState<number>(0);
+  const [trackSeconds, setTrackSeconds] = useState<number>(45);
+
+  const toggleWinampPlay = () => {
     onPlayKeyClick();
-    if (lofiPlaying) {
-      lofiEngine.pause();
-      setLofiPlaying(false);
+    if (winampPlaying) {
+      winampEngine.pause();
+      setWinampPlaying(false);
     } else {
-      lofiEngine.play();
-      setLofiPlaying(true);
+      winampEngine.play();
+      setWinampPlaying(true);
     }
   };
 
-  const handleNextLofi = () => {
+  const nextWinampTrack = () => {
     onPlayKeyClick();
-    const nextIdx = lofiEngine.nextTrack();
-    setLofiTrack(nextIdx);
-    setLofiProgress(0);
+    const nextIdx = winampEngine.nextTrack();
+    setWinampTrack(nextIdx);
+    setTrackSeconds(0);
   };
 
   useEffect(() => {
-    if (!lofiPlaying) return;
-    const pInterval = setInterval(() => {
-      setLofiProgress((prev) => (prev >= 100 ? 0 : prev + 1));
-    }, 800);
-    return () => clearInterval(pInterval);
-  }, [lofiPlaying]);
+    if (!winampPlaying) return;
+    const interval = setInterval(() => {
+      setTrackSeconds((prev) => (prev >= 210 ? 0 : prev + 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [winampPlaying]);
 
-  // Welcome banner state
-  const [showWelcome, setShowWelcome] = useState<boolean>(true);
-
-  // Window management state (Starts CLEAN with desktop wallpaper!)
+  // Window Management (Classic Windows 98)
   const [highestZ, setHighestZ] = useState<number>(10);
+  const [activeWindowId, setActiveWindowId] = useState<string | null>('about');
+
   const [windows, setWindows] = useState<Record<string, WindowState>>({
     about: {
       id: 'about',
-      title: 'About Me — Abdul Samad Khan (wyacoomz)',
-      shortTitle: 'About Me',
-      icon: '🌿',
-      isOpen: false,
+      title: 'About_Me.txt - Notepad',
+      shortTitle: 'About_Me.txt',
+      icon: '📝',
+      isOpen: true,
       isMinimized: false,
       isMaximized: false,
-      zIndex: 2
+      zIndex: 6
     },
     projects: {
       id: 'projects',
-      title: 'Projects Archive (~/projects) — Selected Engineering Works',
-      shortTitle: 'Projects',
+      title: 'C:\\Projects (Enterprise & Game Builds)',
+      shortTitle: 'C:\\Projects',
       icon: '📁',
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
-      zIndex: 3
+      zIndex: 5
     },
-    lofi: {
-      id: 'lofi',
-      title: 'Lo-Fi Ambient Player — Relaxing Studio Audio',
-      shortTitle: 'Lo-Fi Radio',
-      icon: '📻',
+    winamp: {
+      id: 'winamp',
+      title: 'WINAMP - [Lo-Fi Studio Playlist]',
+      shortTitle: 'Winamp',
+      icon: '⚡',
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
       zIndex: 4
     },
-    terminal: {
-      id: 'terminal',
-      title: 'Bash Shell — wyacoomz@studio:~$',
-      shortTitle: 'Terminal',
+    dos: {
+      id: 'dos',
+      title: 'MS-DOS Prompt [wyacoomz@win98]',
+      shortTitle: 'MS-DOS Prompt',
       icon: '💻',
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
-      zIndex: 2
+      zIndex: 3
     },
     resume: {
       id: 'resume',
-      title: 'Resume — Abdul Samad Khan (RPA & Full-Stack)',
-      shortTitle: 'Resume.pdf',
+      title: 'Resume.doc - WordPad',
+      shortTitle: 'Resume.doc',
       icon: '📄',
       isOpen: false,
       isMinimized: false,
@@ -310,18 +317,18 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
     },
     contact: {
       id: 'contact',
-      title: 'Get In Touch — Direct Dispatch',
-      shortTitle: 'Contact',
+      title: 'New Message - Outlook Express',
+      shortTitle: 'Outlook Express',
       icon: '✉️',
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
       zIndex: 2
     },
-    pipeline: {
-      id: 'pipeline',
-      title: 'Enterprise Workflow Bot — Dynamics 365 Automation',
-      shortTitle: 'Automation Bot',
+    d365: {
+      id: 'd365',
+      title: 'D365_Bot.exe - Automation Diagnostics',
+      shortTitle: 'D365_Bot.exe',
       icon: '⚙️',
       isOpen: false,
       isMinimized: false,
@@ -332,6 +339,7 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
 
   const focusWindow = (id: string) => {
     onPlayKeyClick();
+    setActiveWindowId(id);
     setHighestZ((prev) => {
       const nextZ = prev + 1;
       setWindows((wMap) => {
@@ -356,400 +364,248 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
       ...wMap,
       [id]: { ...wMap[id], isOpen: false }
     }));
+    if (activeWindowId === id) {
+      setActiveWindowId(null);
+    }
   };
 
   const toggleMinimizeWindow = (id: string) => {
     onPlayKeyClick();
-    setWindows((wMap) => ({
-      ...wMap,
-      [id]: { ...wMap[id], isMinimized: !wMap[id].isMinimized }
-    }));
-  };
-
-  const showDesktop = () => {
-    onPlayKeyClick();
     setWindows((wMap) => {
-      const allMin = Object.values(wMap).every((w) => w.isMinimized || !w.isOpen);
-      const nextMap = { ...wMap };
-      Object.keys(nextMap).forEach((k) => {
-        if (nextMap[k].isOpen) {
-          nextMap[k] = { ...nextMap[k], isMinimized: !allMin };
-        }
-      });
-      return nextMap;
+      const isMin = !wMap[id].isMinimized;
+      return {
+        ...wMap,
+        [id]: { ...wMap[id], isMinimized: isMin }
+      };
     });
+    if (activeWindowId === id) {
+      setActiveWindowId(null);
+    }
   };
 
-  // Terminal state
-  const [terminalHistory, setTerminalHistory] = useState<Array<{ command: string; output: string }>>([
-    {
-      command: 'whoami',
-      output: 'Abdul Samad Khan (@wyacoomz) — RPA Developer at Trufe | Game Dev & Creative Technologist'
-    },
-    {
-      command: 'quote',
-      output: '"Simplicity and calming focus are the ultimate sign of mastery."'
-    }
-  ]);
-  const [terminalInput, setTerminalInput] = useState<string>('');
-  const terminalEndRef = useRef<HTMLDivElement>(null);
-
-  const handleTerminalSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!terminalInput.trim()) return;
+  const toggleTaskbarWindow = (id: string) => {
     onPlayKeyClick();
-    const cmd = terminalInput.trim().toLowerCase();
-    let output = '';
+    if (windows[id].isMinimized) {
+      focusWindow(id);
+    } else if (activeWindowId === id) {
+      toggleMinimizeWindow(id);
+    } else {
+      focusWindow(id);
+    }
+  };
 
-    if (cmd === 'help') {
-      output = 'Available commands: whoami, projects, lofi, contact, skills, quote, clear';
+  // MS-DOS Prompt State
+  const [dosHistory, setDosHistory] = useState<Array<{ cmd: string; res: string }>>([
+    { cmd: 'ver', res: 'Windows 98 [Version 4.10.1998]' },
+    { cmd: 'whoami', res: 'Abdul Samad Khan (@wyacoomz)\nRole: RPA Developer @ Trufe | Game Dev (Godot)\nLocation: India (IST, UTC+05:30)' }
+  ]);
+  const [dosInput, setDosInput] = useState<string>('');
+  const dosBottomRef = useRef<HTMLDivElement>(null);
+
+  const handleDosSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dosInput.trim()) return;
+    onPlayKeyClick();
+    const cmd = dosInput.trim().toLowerCase();
+    let res = '';
+
+    if (cmd === 'help' || cmd === '/?') {
+      res = 'Available commands: DIR, WHOAMI, PROJECTS, WINAMP, CLS, VER, EXIT, HELP';
+    } else if (cmd === 'ver') {
+      res = 'Microsoft(R) Windows 98 [Version 4.10.1998]';
+    } else if (cmd === 'dir') {
+      res = ' Volume in drive C has no label.\n Volume Serial Number is 1998-2026\n Directory of C:\\WINDOWS\n\nABOUT    TXT         1,248 10-25-98  12:00a\nPROJECTS DIR             0 10-25-98  12:00a\nWINAMP   EXE       245,760 10-25-98  12:00a\nRESUME   DOC        48,128 10-25-98  12:00a\n        4 file(s)        295,136 bytes\n        1 dir(s)   4,294,967,296 bytes free';
     } else if (cmd === 'whoami') {
-      output = `${PERSONAL_INFO.name} (${PERSONAL_INFO.handle})\n${PERSONAL_INFO.title}\nLocation: ${PERSONAL_INFO.location}\nBio: ${PERSONAL_INFO.shortBio}`;
+      res = `${PERSONAL_INFO.name} (${PERSONAL_INFO.handle})\n${PERSONAL_INFO.title}\n${PERSONAL_INFO.location}\nBio: ${PERSONAL_INFO.shortBio}`;
     } else if (cmd === 'projects') {
-      output = PROJECTS.map((p) => `• ${p.title} (${p.category})`).join('\n');
-    } else if (cmd === 'lofi') {
-      toggleLofiPlay();
-      output = lofiPlaying ? 'Lo-Fi ambient music paused.' : 'Now playing soothing lo-fi chords...';
-    } else if (cmd === 'contact') {
-      output = `Email: ${PERSONAL_INFO.email}\nGitHub: ${PERSONAL_INFO.github}\nLocation: ${PERSONAL_INFO.location}`;
-    } else if (cmd === 'skills') {
-      output = SKILL_CATEGORIES.map((c) => `${c.category}: ${c.skills.map(s => s.name).join(', ')}`).join('\n');
-    } else if (cmd === 'quote') {
-      const quotes = [
-        '"Code is poetry written for machines to execute and humans to understand."',
-        '"Keep things quiet, calming, and deeply intentional."',
-        '"The secret to good systems is eliminating unnecessary friction."'
-      ];
-      output = quotes[Math.floor(Math.random() * quotes.length)];
-    } else if (cmd === 'clear') {
-      setTerminalHistory([]);
-      setTerminalInput('');
+      res = PROJECTS.map((p) => `${p.title} [${p.category}]`).join('\n');
+    } else if (cmd === 'winamp') {
+      focusWindow('winamp');
+      toggleWinampPlay();
+      res = 'Starting Winamp audio subsystem...';
+    } else if (cmd === 'cls') {
+      setDosHistory([]);
+      setDosInput('');
+      return;
+    } else if (cmd === 'exit') {
+      closeWindow('dos');
+      setDosInput('');
       return;
     } else {
-      output = `zsh: command not found: ${cmd}. Type 'help' for options.`;
+      res = `Bad command or file name: "${cmd}". Type HELP for command list.`;
     }
 
-    setTerminalHistory((prev) => [...prev, { command: cmd, output }]);
-    setTerminalInput('');
-    setTimeout(() => terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+    setDosHistory((prev) => [...prev, { cmd, res }]);
+    setDosInput('');
+    setTimeout(() => dosBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
   };
 
-  // Project Category Filter
-  const [projectFilter, setProjectFilter] = useState<string>('All');
-  const filteredProjects = projectFilter === 'All' 
-    ? PROJECTS 
-    : PROJECTS.filter(p => p.category.toLowerCase().includes(projectFilter.toLowerCase()));
+  // Selected project for Explorer
+  const [selectedProject, setSelectedProject] = useState<string>(PROJECTS[0]?.id || '');
 
-  // Active track info
-  const currentTrackInfo = lofiEngine.tracks[lofiTrack];
+  // Format time mm:ss
+  const formatTime = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+  const currentTrack = winampEngine.tracks[winampTrack];
 
   return (
-    <div className="relative w-full h-full overflow-hidden select-none font-sans bg-[#12141c]">
+    <div
+      onClick={() => setSelectedIcon(null)}
+      className="relative w-full h-full overflow-hidden select-none bg-[#008080] font-sans text-xs"
+      style={{
+        fontFamily: "'MS Sans Serif', Tahoma, 'Segoe UI', sans-serif"
+      }}
+    >
       {/* ========================================================= */}
-      {/* 1. CALMING PROCEDURAL AESTHETIC WALLPAPER (TWILIGHT RIDGE) */}
+      {/* 1. DESKTOP ICONS (CLASSIC WINDOWS 98 PIXEL STYLE)         */}
       {/* ========================================================= */}
-      <div className="absolute inset-0 pointer-events-none">
-        <svg
-          className="w-full h-full object-cover"
-          viewBox="0 0 1280 808"
-          preserveAspectRatio="xMidYMid slice"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            {/* Sky gradient: Dusky violet down to warm amber sunset */}
-            <linearGradient id="twilightSky" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#1a1d2e" />
-              <stop offset="38%" stopColor="#322842" />
-              <stop offset="68%" stopColor="#7a4658" />
-              <stop offset="88%" stopColor="#d97760" />
-              <stop offset="100%" stopColor="#f7b084" />
-            </linearGradient>
-
-            {/* Glowing moon gradient */}
-            <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#fff8e7" stopOpacity="1" />
-              <stop offset="60%" stopColor="#fde0b2" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#fde0b2" stopOpacity="0" />
-            </radialGradient>
-
-            <linearGradient id="mistGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#d97760" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#1a1d2e" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-
-          {/* Sky background */}
-          <rect width="1280" height="808" fill="url(#twilightSky)" />
-
-          {/* Calming Glowing Moon */}
-          <circle cx="980" cy="210" r="48" fill="url(#moonGlow)" />
-          <circle cx="976" cy="208" r="32" fill="#fffaf0" />
-          <circle cx="988" cy="204" r="28" fill="#322842" opacity="0.94" />
-
-          {/* Tiny gentle stars */}
-          {[
-            [120, 90], [240, 140], [380, 80], [520, 160], [680, 95],
-            [840, 120], [1120, 85], [1180, 145], [160, 220], [430, 260],
-            [740, 200], [890, 280], [1050, 170]
-          ].map(([sx, sy], i) => (
-            <circle key={i} cx={sx} cy={sy} r={i % 3 === 0 ? 1.6 : 1.1} fill="#fff" opacity={0.65 + (i % 4) * 0.1} />
-          ))}
-
-          {/* Layer 1: Distant soft mountain ridge */}
-          <path
-            d="M0 520 Q 220 440 460 480 T 920 450 Q 1120 420 1280 470 L 1280 808 L 0 808 Z"
-            fill="#4a3148"
-            opacity="0.80"
-          />
-
-          {/* Soft valley mist */}
-          <rect y="460" width="1280" height="90" fill="url(#mistGrad)" />
-
-          {/* Layer 2: Midground mountain peaks */}
-          <path
-            d="M0 580 Q 180 510 380 540 T 780 500 Q 1020 490 1280 560 L 1280 808 L 0 808 Z"
-            fill="#2c2239"
-          />
-
-          {/* Layer 3: Foreground deep mountain silhouette */}
-          <path
-            d="M0 660 Q 260 590 540 640 T 1060 610 Q 1180 630 1280 670 L 1280 808 L 0 808 Z"
-            fill="#181724"
-          />
-
-          {/* Subtle pine tree silhouettes along foreground ridge */}
-          {[60, 110, 170, 290, 360, 480, 620, 710, 830, 940, 1070, 1190].map((tx, idx) => (
-            <polygon
-              key={idx}
-              points={`${tx},${635 + (idx % 4) * 12} ${tx - 10},${670 + (idx % 4) * 12} ${tx + 10},${670 + (idx % 4) * 12}`}
-              fill="#12111d"
-            />
-          ))}
-        </svg>
-
-        {/* Ambient Subtle Vignette & Grid */}
-        <div className="absolute inset-0 bg-radial-vignette opacity-25" />
-      </div>
-
-      {/* ========================================================= */}
-      {/* 2. TOP STATUS BAR (MINIMAL GLASS DOCK)                     */}
-      {/* ========================================================= */}
-      <div className="absolute top-0 left-0 right-0 h-9 z-30 bg-[#0d0f17]/75 backdrop-blur-md border-b border-white/10 px-4 flex items-center justify-between text-xs text-[#d1d5db]">
-        <div className="flex items-center space-x-3">
-          {/* Logo / Apple-style monogram */}
-          <button 
-            onClick={showDesktop}
-            className="flex items-center space-x-2 text-[#f3f4f6] font-medium hover:text-white transition-colors"
-            title="Abdul Samad Khan Studio"
-          >
-            <span className="font-serif italic font-bold text-sm tracking-tight text-[#fcd5a0]">λ</span>
-            <span className="font-medium tracking-wide text-xs">studio-os</span>
-          </button>
-
-          <span className="text-white/20">|</span>
-
-          {/* Lo-Fi Now Playing Pill in Top Bar */}
-          <button
-            onClick={() => focusWindow('lofi')}
-            className={`flex items-center space-x-2 px-2.5 py-0.5 rounded-full text-[11px] transition-all ${
-              lofiPlaying 
-                ? 'bg-[#3b2d42] text-[#fcd5a0] border border-[#fcd5a0]/30 shadow-xs' 
-                : 'text-[#9ca3af] hover:text-white hover:bg-white/5'
-            }`}
-            title="Open Lo-Fi Ambient Player"
-          >
-            <Radio className={`w-3 h-3 ${lofiPlaying ? 'animate-pulse text-[#fcd5a0]' : ''}`} />
-            <span className="font-mono">{lofiPlaying ? `Now Playing: ${currentTrackInfo.title}` : 'Lo-Fi Radio'}</span>
-          </button>
-        </div>
-
-        {/* System Tray: Sound, Time, Battery */}
-        <div className="flex items-center space-x-3 text-xs font-mono">
-          {/* Audio toggle */}
-          {onToggleSound && (
-            <button
-              onClick={onToggleSound}
-              className="p-1 hover:text-white transition-colors"
-              title={soundEnabled ? 'Mute Interface Sounds' : 'Unmute Interface Sounds'}
-            >
-              {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-[#fcd5a0]" /> : <VolumeX className="w-3.5 h-3.5 text-[#9ca3af]" />}
-            </button>
-          )}
-
-          <div className="flex items-center space-x-1.5 text-white/80">
-            <Wifi className="w-3.5 h-3.5" />
-            <Battery className="w-3.5 h-3.5" />
-          </div>
-
-          <span className="text-white/30">&bull;</span>
-          <span className="text-[#f3f4f6] font-medium">{timeStr || '12:00'} IST</span>
-          
-          {onExitFocus && (
-            <button
-              onClick={onExitFocus}
-              className="ml-2 px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-[#f3f4f6] text-[10px] font-sans font-medium transition-all"
-              title="Return to 3D Desk Camera"
-            >
-              Desk View
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* ========================================================= */}
-      {/* 3. DESKTOP SHORTCUTS (CALMING & HUMAN)                    */}
-      {/* ========================================================= */}
-      <div className="absolute top-12 left-5 z-10 flex flex-col space-y-3">
+      <div className="absolute top-4 left-4 z-10 flex flex-col space-y-4">
         {[
-          { id: 'about', label: 'About Me', icon: User, color: 'bg-emerald-950/70 border-emerald-500/30 text-emerald-200' },
-          { id: 'projects', label: 'Projects', icon: Folder, color: 'bg-sky-950/70 border-sky-500/30 text-sky-200' },
-          { id: 'lofi', label: 'Lo-Fi Radio', icon: Music, color: 'bg-amber-950/70 border-amber-500/30 text-amber-200' },
-          { id: 'terminal', label: 'Terminal', icon: TerminalIcon, color: 'bg-stone-900/80 border-stone-500/30 text-stone-200' },
-          { id: 'resume', label: 'Resume.pdf', icon: FileText, color: 'bg-indigo-950/70 border-indigo-500/30 text-indigo-200' },
-          { id: 'contact', label: 'Contact', icon: Mail, color: 'bg-rose-950/70 border-rose-500/30 text-rose-200' },
-          { id: 'pipeline', label: 'Automation Bot', icon: Settings, color: 'bg-zinc-900/70 border-zinc-500/30 text-zinc-300' }
+          { id: 'about', label: 'About_Me.txt', icon: '📝', action: () => focusWindow('about') },
+          { id: 'projects', label: 'My Projects', icon: '📁', action: () => focusWindow('projects') },
+          { id: 'winamp', label: 'Winamp (Lo-Fi)', icon: '⚡', action: () => focusWindow('winamp') },
+          { id: 'dos', label: 'MS-DOS Prompt', icon: '💻', action: () => focusWindow('dos') },
+          { id: 'resume', label: 'Resume.doc', icon: '📄', action: () => focusWindow('resume') },
+          { id: 'contact', label: 'Outlook Express', icon: '✉️', action: () => focusWindow('contact') },
+          { id: 'd365', label: 'D365_Bot.exe', icon: '⚙️', action: () => focusWindow('d365') },
+          { id: 'trash', label: 'Recycle Bin', icon: '🗑️', action: () => focusWindow('about') }
         ].map((item) => {
-          const Icon = item.icon;
+          const isSelected = selectedIcon === item.id;
           return (
-            <button
+            <div
               key={item.id}
-              onClick={() => focusWindow(item.id)}
-              className="group flex items-center space-x-3 px-3 py-2 rounded-xl bg-black/30 hover:bg-black/50 border border-white/5 hover:border-white/20 backdrop-blur-sm transition-all duration-200 text-left w-48 shadow-sm hover:scale-[1.02]"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedIcon(item.id);
+                item.action();
+              }}
+              className="flex flex-col items-center w-20 cursor-pointer group"
             >
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center border shadow-xs ${item.color}`}>
-                <Icon className="w-4 h-4" />
+              <div
+                className={`w-11 h-11 flex items-center justify-center text-2xl transition-transform ${
+                  isSelected ? 'bg-[#000080]/30 outline-1 outline-dotted outline-[#ffffff]' : ''
+                }`}
+              >
+                <span>{item.icon}</span>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-medium text-white/95 group-hover:text-white tracking-wide">
-                  {item.label}
-                </span>
-                <span className="text-[10px] text-white/50 font-mono">
-                  {item.id === 'lofi' ? (lofiPlaying ? 'Playing' : 'Audio') : 'Open'}
-                </span>
-              </div>
-            </button>
+              <span
+                className={`mt-1 text-center text-[11px] leading-tight px-1 py-0.5 rounded-none text-white ${
+                  isSelected ? 'bg-[#000080]' : 'text-shadow-win98'
+                }`}
+              >
+                {item.label}
+              </span>
+            </div>
           );
         })}
       </div>
 
-      {/* ========================================================= */}
-      {/* 4. CALM WELCOME CARD (FADES / DISMISSABLE)                */}
-      {/* ========================================================= */}
-      {showWelcome && (
-        <div className="absolute top-14 right-6 z-20 w-80 p-4 rounded-2xl bg-[#161822]/85 border border-white/10 shadow-2xl backdrop-blur-md text-white/90">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <h4 className="text-xs font-semibold tracking-wide font-sans text-white">Quiet Sanctuary</h4>
-            </div>
-            <button
-              onClick={() => setShowWelcome(false)}
-              className="text-white/40 hover:text-white text-xs transition-colors p-0.5"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <p className="mt-2 text-xs text-white/70 leading-relaxed font-sans">
-            Welcome to Abdul Samad Khan's interactive studio. A calm space to explore engineering works, game prototypes, and ambient sounds.
-          </p>
-          <div className="mt-3.5 pt-3 border-t border-white/10 flex items-center justify-between">
-            <button
-              onClick={toggleLofiPlay}
-              className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#fcd5a0]/15 hover:bg-[#fcd5a0]/25 text-[#fcd5a0] text-xs font-medium transition-colors"
-            >
-              {lofiPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-              <span>{lofiPlaying ? 'Pause Lo-Fi' : 'Play Lo-Fi Music'}</span>
-            </button>
-            <span className="text-[10px] font-mono text-white/40">press space or click</span>
-          </div>
+      {/* Subtle Windows 98 Center Watermark */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
+        <div className="text-center font-bold tracking-widest text-white text-6xl font-serif">
+          Microsoft Windows 98
         </div>
-      )}
+      </div>
 
       {/* ========================================================= */}
-      {/* 5. WINDOW: ABOUT ME (PERSONAL & AUTHENTIC)                */}
+      {/* 2. WINDOW: ABOUT_ME.TXT (NOTEPAD)                         */}
       {/* ========================================================= */}
       {windows.about.isOpen && !windows.about.isMinimized && (
         <div
           onClick={() => focusWindow('about')}
           style={{ zIndex: windows.about.zIndex }}
-          className="absolute top-14 left-56 right-12 bottom-16 rounded-2xl bg-[#181a24]/95 border border-white/15 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden text-white font-sans transition-all duration-150"
+          className="absolute top-8 left-28 w-[560px] h-[410px] bg-[#c0c0c0] shadow-2xl flex flex-col"
+          style-win98-window="true"
         >
-          {/* Header */}
-          <div className="h-11 px-4 border-b border-white/10 bg-white/5 flex items-center justify-between select-none">
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1.5 mr-2">
-                <button onClick={() => closeWindow('about')} className="w-3 h-3 rounded-full bg-rose-500/80 hover:bg-rose-500" />
-                <button onClick={() => toggleMinimizeWindow('about')} className="w-3 h-3 rounded-full bg-amber-500/80 hover:bg-amber-500" />
-                <button className="w-3 h-3 rounded-full bg-emerald-500/80" />
-              </div>
-              <User className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-xs font-medium text-white/90">About Me — Abdul Samad Khan</span>
-            </div>
-            <button onClick={() => closeWindow('about')} className="text-white/40 hover:text-white">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm text-white/80 leading-relaxed">
-            <div className="flex items-center space-x-5 pb-6 border-b border-white/10">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white text-2xl font-serif font-bold shadow-lg">
-                A
-              </div>
-              <div>
-                <h2 className="text-xl font-serif font-bold text-white tracking-tight">Abdul Samad Khan</h2>
-                <p className="text-xs text-emerald-400 font-mono mt-0.5">RPA Developer & Systems Engineer @ Trufe &bull; @wyacoomz</p>
-                <p className="text-xs text-white/50 mt-1">Bhopal / India (IST, UTC+05:30) &bull; abdulischad@gmail.com</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-emerald-300 font-mono">Who I Am</h3>
-                <p className="text-xs text-white/70 leading-relaxed">
-                  I am a software engineer focused on building resilient automation engines, high-throughput cloud pipelines, and tactile game experiences. Currently, I engineer end-to-end invoice automation and ERP synchronization at Trufe.
-                </p>
-                <p className="text-xs text-white/70 leading-relaxed">
-                  Outside enterprise automation, I craft stylized games in Godot Engine (<em className="text-white">KOKE</em> and <em className="text-white">Faceless Shooter</em>) and build interactive 3D web experiences with Three.js.
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-emerald-300 font-mono">Philosophy</h3>
-                <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 space-y-2">
-                  <div className="flex items-center space-x-2 text-xs text-white font-medium">
-                    <Heart className="w-3.5 h-3.5 text-rose-400" />
-                    <span>Tactile & Calming Software</span>
-                  </div>
-                  <p className="text-[11px] text-white/60">
-                    Software should feel quiet, responsive, and delightful. No unnecessary clutter, no cold robotic buzzwords — just clean craft and reliability.
-                  </p>
+          {/* Win98 3D Outer Raised Border */}
+          <div className="w-full h-full flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]">
+            {/* Inner Border */}
+            <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
+              {/* Titlebar */}
+              <div
+                className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none ${
+                  activeWindowId === 'about'
+                    ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
+                    : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
+                }`}
+              >
+                <div className="flex items-center space-x-1.5">
+                  <span className="text-xs">📝</span>
+                  <span>About_Me.txt - Notepad</span>
                 </div>
-
-                <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 space-y-2">
-                  <div className="flex items-center space-x-2 text-xs text-white font-medium">
-                    <Cpu className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Cross-Platform Parity</span>
-                  </div>
-                  <p className="text-[11px] text-white/60">
-                    Building unified architectures that maintain strict Windows PC and Android mobile parity without sacrificing aesthetic fidelity.
-                  </p>
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={() => toggleMinimizeWindow('about')}
+                    className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] active:border-r-[#ffffff] active:border-b-[#ffffff] text-[10px] pb-1"
+                  >
+                    _
+                  </button>
+                  <button
+                    onClick={() => closeWindow('about')}
+                    className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] active:border-r-[#ffffff] active:border-b-[#ffffff] text-[10px]"
+                  >
+                    ✕
+                  </button>
                 </div>
               </div>
-            </div>
 
-            {/* Quick Skills Pills */}
-            <div className="pt-4 border-t border-white/10">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-white/60 font-mono mb-3">Core Toolchain</h3>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  'Power Automate Cloud', 'Microsoft AI Builder', 'Python', 'React', 'Three.js',
-                  'Godot 4 Engine', 'Dynamics 365 ERP', 'SQL Server', 'TypeScript', 'Node.js', 'Tailwind CSS'
-                ].map((s, i) => (
-                  <span key={i} className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-white/80 font-mono">
-                    {s}
-                  </span>
-                ))}
+              {/* Menu Bar */}
+              <div className="h-[20px] px-2 flex items-center space-x-3 text-[11px] text-black bg-[#c0c0c0] border-b border-[#808080]">
+                <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>F</u>ile</span>
+                <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>E</u>dit</span>
+                <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>S</u>earch</span>
+                <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>H</u>elp</span>
+              </div>
+
+              {/* Text Area (White with inset border) */}
+              <div className="flex-1 bg-white p-3 overflow-y-auto font-mono text-[12px] text-black leading-relaxed border-t-2 border-l-2 border-t-[#808080] border-l-[#808080] border-r-2 border-b-2 border-r-[#ffffff] border-b-[#ffffff] m-1">
+                <div className="pb-3 border-b border-dashed border-gray-400">
+                  <strong>====================================================</strong><br />
+                  <strong>ABDUL SAMAD KHAN (wyacoomz) - PERSONAL LOG</strong><br />
+                  <strong>====================================================</strong><br />
+                  Role: RPA Developer & Systems Engineer @ Trufe<br />
+                  Location: Bhopal, India (IST, UTC+05:30)<br />
+                  Email: abdulischad@gmail.com<br />
+                  GitHub: github.com/wyacoomz<br />
+                </div>
+
+                <div className="mt-3 space-y-2">
+                  <p><strong>[1. WHO I AM]</strong></p>
+                  <p>
+                    I build dependable software, enterprise automation bots, and stylized indie games.
+                    My day-to-day focus is architecting unattended high-throughput invoice processing
+                    and Dynamics 365 ERP synchronization that eliminates hundreds of hours of manual toil.
+                  </p>
+
+                  <p><strong>[2. GAME DEVELOPMENT PASSION]</strong></p>
+                  <p>
+                    Outside enterprise systems, I create games in Godot 4:
+                    <br />• <em>KOKE</em>: Atmospheric low-poly adventure with stylized faceless characters and volumetric fog.
+                    <br />• <em>Faceless Shooter</em>: High-velocity tactical shooter.
+                  </p>
+
+                  <p><strong>[3. PHILOSOPHY]</strong></p>
+                  <p>
+                    • Keep systems calm, resilient, and tactile.<br />
+                    • Eliminate friction without adding bloated AI gimmicks.<br />
+                    • Respect cross-platform parity between Windows PC and Android.
+                  </p>
+
+                  <p><strong>[4. QUICK LAUNCH TIP]</strong></p>
+                  <p>
+                    Double-click <strong>Winamp (Lo-Fi)</strong> on the desktop to play calming ambient Rhodes chords while you browse!
+                  </p>
+                </div>
+              </div>
+
+              {/* Status Bar */}
+              <div className="h-[20px] px-2 flex items-center justify-between text-[11px] text-[#404040] bg-[#c0c0c0] border-t border-[#ffffff]">
+                <span>Status: Ready</span>
+                <span>Ln 32, Col 1</span>
               </div>
             </div>
           </div>
@@ -757,452 +613,705 @@ export const LinuxDesktopOS: React.FC<LinuxDesktopOSProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* 6. WINDOW: PROJECTS (CURATED, HUMAN-CENTERED)             */}
+      {/* 3. WINDOW: WINAMP (LO-FI AMBIENT AUDIO PLAYER)            */}
+      {/* ========================================================= */}
+      {windows.winamp.isOpen && !windows.winamp.isMinimized && (
+        <div
+          onClick={() => focusWindow('winamp')}
+          style={{ zIndex: windows.winamp.zIndex }}
+          className="absolute top-16 right-16 w-[340px] bg-[#292929] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-1 font-mono select-none"
+        >
+          {/* Winamp Titlebar */}
+          <div className="h-[18px] bg-gradient-to-r from-[#000080] via-[#004080] to-[#1084d0] px-1 flex items-center justify-between text-[11px] text-white font-bold">
+            <div className="flex items-center space-x-1">
+              <span>⚡</span>
+              <span className="tracking-wider">WINAMP</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <button onClick={() => toggleMinimizeWindow('winamp')} className="w-3.5 h-3 bg-[#c0c0c0] text-black font-bold text-[9px] flex items-center justify-center">_</button>
+              <button onClick={() => closeWindow('winamp')} className="w-3.5 h-3 bg-[#c0c0c0] text-black font-bold text-[9px] flex items-center justify-center">✕</button>
+            </div>
+          </div>
+
+          {/* Winamp LCD Display Area */}
+          <div className="bg-[#0f1a0f] p-2 mt-1 border-t-2 border-l-2 border-t-[#000000] border-l-[#000000] border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] text-[#00ff00]">
+            <div className="flex justify-between items-center text-[10px] tracking-widest text-[#00aa00]">
+              <span>WINAMP 2.8</span>
+              <span>128 KBPS / 44 KHZ</span>
+            </div>
+
+            {/* Glowing Green LCD Marquee */}
+            <div className="my-1.5 overflow-hidden whitespace-nowrap bg-black/60 px-1 py-0.5 border border-[#005500]">
+              <span className="text-[12px] font-bold text-[#39ff14] tracking-wide animate-pulse">
+                {winampPlaying ? `▶ ${currentTrack.title}` : `❚❚ PAUSED: ${currentTrack.name}`}
+              </span>
+            </div>
+
+            {/* Time & Spectrum Visualizer */}
+            <div className="flex items-center justify-between pt-1">
+              <div className="text-xl font-bold font-mono tracking-wider text-[#39ff14]">
+                {formatTime(trackSeconds)}
+              </div>
+
+              {/* Pseudo-Spectrum EQ Bars */}
+              <div className="flex items-end space-x-1 h-5">
+                {[18, 12, 16, 20, 14, 19, 10, 15, 17].map((h, i) => (
+                  <div
+                    key={i}
+                    className="w-1.5 bg-[#00ff00] transition-all duration-150"
+                    style={{
+                      height: winampPlaying ? `${Math.max(4, (h * (i % 2 === 0 ? 1 : 0.8)))}px` : '4px',
+                      opacity: winampPlaying ? 1 : 0.4
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Winamp Transport Control Buttons */}
+          <div className="bg-[#383838] p-1.5 mt-1 border border-[#202020] flex items-center justify-between">
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={toggleWinampPlay}
+                className="px-2.5 py-1 bg-[#c0c0c0] hover:bg-[#d0d0d0] text-black font-bold text-[11px] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000]"
+                title={winampPlaying ? 'Pause' : 'Play'}
+              >
+                {winampPlaying ? 'PAUSE' : 'PLAY'}
+              </button>
+
+              <button
+                onClick={() => {
+                  winampEngine.pause();
+                  setWinampPlaying(false);
+                  setTrackSeconds(0);
+                }}
+                className="px-2 py-1 bg-[#c0c0c0] hover:bg-[#d0d0d0] text-black font-bold text-[11px] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000]"
+              >
+                STOP
+              </button>
+
+              <button
+                onClick={nextWinampTrack}
+                className="px-2 py-1 bg-[#c0c0c0] hover:bg-[#d0d0d0] text-black font-bold text-[11px] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000]"
+                title="Next Track"
+              >
+                NEXT »
+              </button>
+            </div>
+
+            <div className="flex items-center space-x-1 text-[10px] text-white">
+              <span>VOL</span>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                defaultValue="0.5"
+                onChange={(e) => winampEngine.setVolume(parseFloat(e.target.value))}
+                className="w-16 accent-[#00ff00] cursor-pointer"
+              />
+            </div>
+          </div>
+
+          {/* Playlist Summary */}
+          <div className="bg-[#121212] p-1 mt-1 text-[10px] text-white/80 border border-[#404040]">
+            <div className="text-[#00ff00] font-bold pb-0.5 border-b border-white/20">PLAYLIST:</div>
+            {winampEngine.tracks.map((t, idx) => (
+              <div
+                key={idx}
+                onClick={() => {
+                  winampEngine.currentTrack = idx;
+                  setWinampTrack(idx);
+                  setTrackSeconds(0);
+                  if (winampPlaying) winampEngine.play();
+                }}
+                className={`cursor-pointer px-1 py-0.5 ${
+                  winampTrack === idx ? 'bg-[#000080] text-white' : 'hover:bg-white/10'
+                }`}
+              >
+                {t.title}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 4. WINDOW: C:\PROJECTS (WINDOWS EXPLORER)                 */}
       {/* ========================================================= */}
       {windows.projects.isOpen && !windows.projects.isMinimized && (
         <div
           onClick={() => focusWindow('projects')}
           style={{ zIndex: windows.projects.zIndex }}
-          className="absolute top-14 left-56 right-12 bottom-16 rounded-2xl bg-[#181a24]/95 border border-white/15 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden text-white font-sans transition-all duration-150"
+          className="absolute top-12 left-36 w-[640px] h-[430px] bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
         >
-          {/* Header */}
-          <div className="h-11 px-4 border-b border-white/10 bg-white/5 flex items-center justify-between select-none">
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1.5 mr-2">
-                <button onClick={() => closeWindow('projects')} className="w-3 h-3 rounded-full bg-rose-500/80 hover:bg-rose-500" />
-                <button onClick={() => toggleMinimizeWindow('projects')} className="w-3 h-3 rounded-full bg-amber-500/80 hover:bg-amber-500" />
-                <button className="w-3 h-3 rounded-full bg-emerald-500/80" />
+          {/* Inner Border */}
+          <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
+            {/* Titlebar */}
+            <div
+              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none ${
+                activeWindowId === 'projects'
+                  ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
+                  : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
+              }`}
+            >
+              <div className="flex items-center space-x-1.5">
+                <span>📁</span>
+                <span>C:\Projects (Abdul's Engineering Archive)</span>
               </div>
-              <Folder className="w-3.5 h-3.5 text-sky-400" />
-              <span className="text-xs font-medium text-white/90">Projects Archive (~/projects)</span>
+              <div className="flex items-center space-x-1">
+                <button onClick={() => toggleMinimizeWindow('projects')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px] pb-1">_</button>
+                <button onClick={() => closeWindow('projects')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
+              </div>
             </div>
-            <button onClick={() => closeWindow('projects')} className="text-white/40 hover:text-white">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
 
-          {/* Filters */}
-          <div className="px-6 py-2.5 border-b border-white/10 flex items-center space-x-2 text-xs font-mono">
-            {['All', 'Automation', 'Web', 'Financial'].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setProjectFilter(cat)}
-                className={`px-3 py-1 rounded-full transition-all ${
-                  projectFilter === cat 
-                    ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40' 
-                    : 'text-white/50 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+            {/* Menu Bar */}
+            <div className="h-[20px] px-2 flex items-center space-x-3 text-[11px] text-black bg-[#c0c0c0] border-b border-[#808080]">
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>F</u>ile</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>E</u>dit</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>V</u>iew</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>H</u>elp</span>
+            </div>
 
-          {/* Grid */}
-          <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredProjects.map((p) => (
-              <div
-                key={p.id}
-                className="p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between group"
-              >
-                <div>
-                  <div className="flex items-center justify-between text-[11px] font-mono text-white/40 mb-2">
-                    <span className="text-sky-400">{p.category}</span>
-                    <span>{p.index}</span>
+            {/* Explorer Address Bar */}
+            <div className="h-[24px] px-2 flex items-center space-x-2 text-[11px] bg-[#c0c0c0] border-b border-[#808080]">
+              <span className="text-gray-700">Address:</span>
+              <div className="flex-1 bg-white px-2 py-0.5 border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] font-mono text-[11px]">
+                C:\Projects\Production_Builds
+              </div>
+            </div>
+
+            {/* Main Area: Split Left Tree + Right Icons */}
+            <div className="flex-1 flex overflow-hidden p-1 gap-1">
+              {/* Left Explorer Tree */}
+              <div className="w-40 bg-white border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] p-2 overflow-y-auto text-[11px] space-y-1">
+                <div className="font-bold text-[#000080]">📂 C:\Projects</div>
+                <div className="pl-3 text-gray-700 cursor-pointer hover:underline">├── 📁 Automation</div>
+                <div className="pl-3 text-gray-700 cursor-pointer hover:underline">├── 📁 Godot_Games</div>
+                <div className="pl-3 text-gray-700 cursor-pointer hover:underline">├── 📁 Web_Platforms</div>
+                <div className="pl-3 text-gray-700 cursor-pointer hover:underline">└── 📁 Financial_Bots</div>
+              </div>
+
+              {/* Right File List & Details Pane */}
+              <div className="flex-1 bg-white border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] p-3 overflow-y-auto">
+                <div className="grid grid-cols-1 gap-2.5">
+                  {PROJECTS.map((p) => {
+                    const isCur = selectedProject === p.id;
+                    return (
+                      <div
+                        key={p.id}
+                        onClick={() => setSelectedProject(p.id)}
+                        className={`p-2.5 border cursor-pointer flex flex-col justify-between ${
+                          isCur
+                            ? 'bg-[#000080]/10 border-[#000080]'
+                            : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="font-bold text-[#000080] flex items-center space-x-1">
+                              <span>📁</span>
+                              <span>{p.title}</span>
+                            </span>
+                            <span className="font-mono text-gray-500 text-[10px]">{p.category}</span>
+                          </div>
+                          <p className="text-[11px] text-gray-700 mt-1 leading-snug">
+                            {p.shortDescription}
+                          </p>
+                        </div>
+                        <div className="mt-2 pt-1 border-t border-gray-200 flex flex-wrap gap-1">
+                          {p.tags.slice(0, 4).map((t, idx) => (
+                            <span key={idx} className="bg-gray-200 text-gray-800 px-1.5 py-0.2 text-[9px] font-mono">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Status Bar */}
+            <div className="h-[20px] px-2 flex items-center justify-between text-[11px] text-gray-600 bg-[#c0c0c0] border-t border-[#ffffff]">
+              <span>{PROJECTS.length} object(s)</span>
+              <span>Local Intranet</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 5. WINDOW: MS-DOS PROMPT                                  */}
+      {/* ========================================================= */}
+      {windows.dos.isOpen && !windows.dos.isMinimized && (
+        <div
+          onClick={() => focusWindow('dos')}
+          style={{ zIndex: windows.dos.zIndex }}
+          className="absolute top-20 left-48 w-[580px] h-[360px] bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
+        >
+          {/* Inner Border */}
+          <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
+            {/* Titlebar */}
+            <div
+              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none ${
+                activeWindowId === 'dos'
+                  ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
+                  : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
+              }`}
+            >
+              <div className="flex items-center space-x-1.5">
+                <span>💻</span>
+                <span>MS-DOS Prompt [wyacoomz@win98]</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <button onClick={() => toggleMinimizeWindow('dos')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px] pb-1">_</button>
+                <button onClick={() => closeWindow('dos')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
+              </div>
+            </div>
+
+            {/* Black DOS Terminal Area */}
+            <div className="flex-1 bg-black p-3 text-white font-mono text-[12px] overflow-y-auto leading-relaxed border-t border-l border-t-black border-l-black">
+              <div className="text-gray-400 mb-2">
+                Microsoft(R) Windows 98<br />
+                (C)Copyright Microsoft Corp 1981-1998.<br />
+                Type 'HELP' for command list.
+              </div>
+
+              {dosHistory.map((item, idx) => (
+                <div key={idx} className="mb-2">
+                  <div className="text-[#39ff14]">
+                    <span>C:\WINDOWS&gt; </span>
+                    <span className="text-white">{item.cmd}</span>
                   </div>
-                  <h4 className="text-sm font-semibold text-white group-hover:text-sky-200 transition-colors">
-                    {p.title}
-                  </h4>
-                  <p className="text-xs text-white/60 mt-1.5 line-clamp-3 leading-relaxed">
-                    {p.shortDescription}
-                  </p>
+                  <div className="text-gray-300 whitespace-pre-wrap pl-2">
+                    {item.res}
+                  </div>
                 </div>
-                <div className="mt-4 pt-3 border-t border-white/10 flex flex-wrap gap-1.5">
-                  {p.tags.slice(0, 4).map((t, idx) => (
-                    <span key={idx} className="px-2 py-0.5 rounded bg-black/40 text-[10px] text-white/70 font-mono">
-                      {t}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
+              ))}
+              <div ref={dosBottomRef} />
+            </div>
+
+            {/* DOS Prompt Input */}
+            <form onSubmit={handleDosSubmit} className="bg-black px-3 py-1 flex items-center text-white font-mono text-[12px] border-t border-gray-800">
+              <span className="text-[#39ff14] mr-2">C:\WINDOWS&gt;</span>
+              <input
+                type="text"
+                value={dosInput}
+                onChange={(e) => setDosInput(e.target.value)}
+                className="flex-1 bg-transparent text-white outline-none font-mono"
+                autoFocus
+                placeholder="type dir, whoami, winamp, projects..."
+              />
+            </form>
           </div>
         </div>
       )}
 
       {/* ========================================================= */}
-      {/* 7. WINDOW: LO-FI AMBIENT RADIO                            */}
-      {/* ========================================================= */}
-      {windows.lofi.isOpen && !windows.lofi.isMinimized && (
-        <div
-          onClick={() => focusWindow('lofi')}
-          style={{ zIndex: windows.lofi.zIndex }}
-          className="absolute top-20 left-72 w-[420px] rounded-2xl bg-[#1c1926]/95 border border-[#fcd5a0]/25 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden text-white font-sans transition-all duration-150"
-        >
-          {/* Header */}
-          <div className="h-10 px-4 border-b border-white/10 bg-white/5 flex items-center justify-between select-none">
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1.5 mr-2">
-                <button onClick={() => closeWindow('lofi')} className="w-3 h-3 rounded-full bg-rose-500/80 hover:bg-rose-500" />
-                <button onClick={() => toggleMinimizeWindow('lofi')} className="w-3 h-3 rounded-full bg-amber-500/80 hover:bg-amber-500" />
-                <button className="w-3 h-3 rounded-full bg-emerald-500/80" />
-              </div>
-              <Radio className="w-3.5 h-3.5 text-[#fcd5a0]" />
-              <span className="text-xs font-medium text-white/90">Lo-Fi Ambient Player</span>
-            </div>
-            <button onClick={() => closeWindow('lofi')} className="text-white/40 hover:text-white">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Player Body */}
-          <div className="p-6 flex flex-col items-center text-center space-y-4">
-            {/* Spinning Tape Cassette Art */}
-            <div className="relative w-32 h-32 rounded-full bg-gradient-to-tr from-[#322842] to-[#7a4658] border-4 border-[#fcd5a0]/30 flex items-center justify-center shadow-inner">
-              <div className={`w-24 h-24 rounded-full border-2 border-dashed border-white/30 flex items-center justify-center ${lofiPlaying ? 'animate-spin' : ''}`} style={{ animationDuration: '8s' }}>
-                <div className="w-10 h-10 rounded-full bg-[#181a24] border border-[#fcd5a0]/50 flex items-center justify-center">
-                  <Music className="w-4 h-4 text-[#fcd5a0]" />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-base font-serif font-bold text-[#fcd5a0]">{currentTrackInfo.title}</h3>
-              <p className="text-xs text-white/60 font-mono mt-0.5">{currentTrackInfo.artist}</p>
-              <p className="text-[11px] text-[#fcd5a0]/70 mt-1 italic">{currentTrackInfo.mood}</p>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="w-full space-y-1">
-              <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
-                <div className="h-full bg-[#fcd5a0] transition-all duration-300" style={{ width: `${lofiProgress}%` }} />
-              </div>
-              <div className="flex justify-between text-[10px] font-mono text-white/40">
-                <span>0:{lofiProgress < 10 ? `0${lofiProgress}` : lofiProgress}</span>
-                <span>3:30</span>
-              </div>
-            </div>
-
-            {/* Playback Controls */}
-            <div className="flex items-center space-x-4 pt-2">
-              <button
-                onClick={handleNextLofi}
-                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors"
-                title="Next Track"
-              >
-                <SkipForward className="w-4 h-4" />
-              </button>
-
-              <button
-                onClick={toggleLofiPlay}
-                className="w-12 h-12 rounded-full bg-[#fcd5a0] hover:bg-[#ffe3be] text-[#1c1926] flex items-center justify-center shadow-lg transition-transform hover:scale-105"
-                title={lofiPlaying ? 'Pause' : 'Play'}
-              >
-                {lofiPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current ml-0.5" />}
-              </button>
-
-              <button
-                onClick={() => {
-                  const nextVol = lofiVolume > 0 ? 0 : 0.45;
-                  setLofiVolume(nextVol);
-                  lofiEngine.setVolume(nextVol);
-                }}
-                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors"
-                title="Toggle Mute"
-              >
-                {lofiVolume > 0 ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* 8. WINDOW: TERMINAL (CLEAN & INTERACTIVE)                 */}
-      {/* ========================================================= */}
-      {windows.terminal.isOpen && !windows.terminal.isMinimized && (
-        <div
-          onClick={() => focusWindow('terminal')}
-          style={{ zIndex: windows.terminal.zIndex }}
-          className="absolute top-16 left-64 w-[580px] h-[380px] rounded-xl bg-[#111218]/95 border border-white/15 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden text-white font-mono transition-all duration-150"
-        >
-          {/* Header */}
-          <div className="h-9 px-4 border-b border-white/10 bg-white/5 flex items-center justify-between select-none">
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1.5 mr-2">
-                <button onClick={() => closeWindow('terminal')} className="w-3 h-3 rounded-full bg-rose-500/80 hover:bg-rose-500" />
-                <button onClick={() => toggleMinimizeWindow('terminal')} className="w-3 h-3 rounded-full bg-amber-500/80 hover:bg-amber-500" />
-                <button className="w-3 h-3 rounded-full bg-emerald-500/80" />
-              </div>
-              <TerminalIcon className="w-3.5 h-3.5 text-stone-400" />
-              <span className="text-xs font-medium text-white/90">wyacoomz@studio: ~ (bash)</span>
-            </div>
-            <button onClick={() => closeWindow('terminal')} className="text-white/40 hover:text-white">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Console output */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-3 text-xs text-white/80">
-            <div className="text-white/40 pb-2 border-b border-white/5">
-              Welcome to Studio Shell v2.4. Type <span className="text-emerald-400">help</span> for commands.
-            </div>
-
-            {terminalHistory.map((item, idx) => (
-              <div key={idx} className="space-y-1">
-                <div className="flex items-center space-x-2">
-                  <span className="text-emerald-400 font-bold">wyacoomz@studio:~$</span>
-                  <span className="text-white">{item.command}</span>
-                </div>
-                <div className="text-white/70 whitespace-pre-wrap pl-4 leading-relaxed font-sans text-xs">
-                  {item.output}
-                </div>
-              </div>
-            ))}
-            <div ref={terminalEndRef} />
-          </div>
-
-          {/* Console prompt input */}
-          <form onSubmit={handleTerminalSubmit} className="p-3 border-t border-white/10 bg-black/40 flex items-center space-x-2">
-            <span className="text-emerald-400 text-xs font-bold">wyacoomz@studio:~$</span>
-            <input
-              type="text"
-              value={terminalInput}
-              onChange={(e) => setTerminalInput(e.target.value)}
-              placeholder="type 'help', 'whoami', 'projects', 'lofi'..."
-              className="flex-1 bg-transparent text-xs text-white outline-none font-mono placeholder:text-white/30"
-              autoFocus
-            />
-          </form>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* 9. WINDOW: RESUME (DOCUMENT VIEWER)                       */}
+      {/* 6. WINDOW: RESUME.DOC (WORDPAD)                           */}
       {/* ========================================================= */}
       {windows.resume.isOpen && !windows.resume.isMinimized && (
         <div
           onClick={() => focusWindow('resume')}
           style={{ zIndex: windows.resume.zIndex }}
-          className="absolute top-14 left-56 right-16 bottom-16 rounded-2xl bg-[#181a24]/95 border border-white/15 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden text-white font-sans transition-all duration-150"
+          className="absolute top-10 left-32 w-[600px] h-[420px] bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
         >
-          {/* Header */}
-          <div className="h-11 px-4 border-b border-white/10 bg-white/5 flex items-center justify-between select-none">
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1.5 mr-2">
-                <button onClick={() => closeWindow('resume')} className="w-3 h-3 rounded-full bg-rose-500/80 hover:bg-rose-500" />
-                <button onClick={() => toggleMinimizeWindow('resume')} className="w-3 h-3 rounded-full bg-amber-500/80 hover:bg-amber-500" />
-                <button className="w-3 h-3 rounded-full bg-emerald-500/80" />
+          <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
+            {/* Titlebar */}
+            <div
+              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none ${
+                activeWindowId === 'resume'
+                  ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
+                  : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
+              }`}
+            >
+              <div className="flex items-center space-x-1.5">
+                <span>📄</span>
+                <span>Resume.doc - WordPad</span>
               </div>
-              <FileText className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="text-xs font-medium text-white/90">Abdul_Samad_Khan_Resume.pdf</span>
+              <div className="flex items-center space-x-1">
+                <button onClick={() => toggleMinimizeWindow('resume')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px] pb-1">_</button>
+                <button onClick={() => closeWindow('resume')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
+              </div>
             </div>
-            <div className="flex items-center space-x-3">
+
+            {/* Menu Bar & WordPad Toolbar */}
+            <div className="h-[20px] px-2 flex items-center space-x-3 text-[11px] text-black bg-[#c0c0c0] border-b border-[#808080]">
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>F</u>ile</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>E</u>dit</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>F</u>ormat</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1 cursor-pointer"><u>H</u>elp</span>
+            </div>
+
+            <div className="h-[26px] px-2 flex items-center justify-between bg-[#c0c0c0] border-b border-[#808080] text-[11px]">
+              <div className="flex items-center space-x-1">
+                <button className="px-1.5 py-0.5 border border-gray-400 bg-gray-100 font-bold">B</button>
+                <button className="px-1.5 py-0.5 border border-gray-400 bg-gray-100 italic">I</button>
+                <button className="px-1.5 py-0.5 border border-gray-400 bg-gray-100 underline">U</button>
+              </div>
               <a
                 href={PERSONAL_INFO.resumePath}
                 download
-                className="flex items-center space-x-1 px-2.5 py-1 rounded bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 text-xs font-mono transition-colors"
+                className="px-2 py-0.5 bg-[#c0c0c0] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-black font-bold text-[10px] flex items-center space-x-1"
               >
                 <Download className="w-3 h-3" />
-                <span>Download PDF</span>
+                <span>Save to Disk (.pdf)</span>
               </a>
-              <button onClick={() => closeWindow('resume')} className="text-white/40 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Document Content */}
-          <div className="flex-1 overflow-y-auto p-8 space-y-6 text-xs text-white/80 max-w-3xl mx-auto">
-            <div className="border-b border-white/10 pb-4">
-              <h2 className="text-xl font-serif font-bold text-white">Abdul Samad Khan</h2>
-              <p className="text-indigo-400 font-mono mt-0.5">{PERSONAL_INFO.title} &bull; {PERSONAL_INFO.email}</p>
             </div>
 
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-300 font-mono mb-2">Professional Experience</h3>
-              {WORK_EXPERIENCES.map((w, idx) => (
-                <div key={idx} className="p-3.5 rounded-xl bg-white/5 mb-3 border border-white/5">
-                  <div className="flex justify-between text-xs font-semibold text-white">
-                    <span>{w.role} &bull; {w.company}</span>
-                    <span className="font-mono text-white/50">{w.period}</span>
-                  </div>
-                  <ul className="mt-2 space-y-1 list-disc list-inside text-white/70">
-                    {w.achievements.map((a, i) => (
-                      <li key={i}>{a}</li>
-                    ))}
-                  </ul>
+            {/* WordPad Paper Area */}
+            <div className="flex-1 bg-white p-6 overflow-y-auto text-black font-serif text-[12px] leading-relaxed border-t-2 border-l-2 border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] m-1">
+              <div className="text-center pb-4 border-b border-gray-300">
+                <h2 className="text-xl font-bold font-sans">{PERSONAL_INFO.name}</h2>
+                <p className="text-[11px] text-gray-600 font-sans mt-0.5">{PERSONAL_INFO.title} &bull; {PERSONAL_INFO.email}</p>
+              </div>
+
+              <div className="mt-4 space-y-4 font-sans text-xs">
+                <div>
+                  <h3 className="font-bold text-[#000080] uppercase tracking-wide border-b border-gray-300 pb-0.5">Experience</h3>
+                  {WORK_EXPERIENCES.map((w, i) => (
+                    <div key={i} className="mt-2">
+                      <div className="flex justify-between font-bold">
+                        <span>{w.role} - {w.company}</span>
+                        <span className="font-mono text-gray-500">{w.period}</span>
+                      </div>
+                      <ul className="list-disc list-inside mt-1 text-gray-700 space-y-0.5">
+                        {w.achievements.map((a, idx) => (
+                          <li key={idx}>{a}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-300 font-mono mb-2">Education</h3>
-              {EDUCATION_DATA.map((ed, idx) => (
-                <div key={idx} className="p-3.5 rounded-xl bg-white/5 border border-white/5">
-                  <div className="flex justify-between text-xs font-semibold text-white">
-                    <span>{ed.degree}</span>
-                    <span className="font-mono text-white/50">{ed.period}</span>
-                  </div>
-                  <p className="text-white/60 mt-1">{ed.institution}</p>
+                <div>
+                  <h3 className="font-bold text-[#000080] uppercase tracking-wide border-b border-gray-300 pb-0.5">Education</h3>
+                  {EDUCATION_DATA.map((ed, i) => (
+                    <div key={i} className="mt-2 flex justify-between">
+                      <div>
+                        <span className="font-bold">{ed.degree}</span>
+                        <div className="text-gray-600 text-[11px]">{ed.institution}</div>
+                      </div>
+                      <span className="font-mono text-gray-500">{ed.period}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {/* ========================================================= */}
-      {/* 10. WINDOW: CONTACT (FRIENDLY DISPATCH)                   */}
+      {/* 7. WINDOW: OUTLOOK EXPRESS (CONTACT DISPATCH)             */}
       {/* ========================================================= */}
       {windows.contact.isOpen && !windows.contact.isMinimized && (
         <div
           onClick={() => focusWindow('contact')}
           style={{ zIndex: windows.contact.zIndex }}
-          className="absolute top-20 left-72 w-[460px] rounded-2xl bg-[#1c1926]/95 border border-rose-500/25 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden text-white font-sans transition-all duration-150"
+          className="absolute top-14 left-44 w-[480px] bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
         >
-          {/* Header */}
-          <div className="h-10 px-4 border-b border-white/10 bg-white/5 flex items-center justify-between select-none">
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1.5 mr-2">
-                <button onClick={() => closeWindow('contact')} className="w-3 h-3 rounded-full bg-rose-500/80 hover:bg-rose-500" />
-                <button onClick={() => toggleMinimizeWindow('contact')} className="w-3 h-3 rounded-full bg-amber-500/80 hover:bg-amber-500" />
-                <button className="w-3 h-3 rounded-full bg-emerald-500/80" />
+          <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
+            {/* Titlebar */}
+            <div
+              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none ${
+                activeWindowId === 'contact'
+                  ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
+                  : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
+              }`}
+            >
+              <div className="flex items-center space-x-1.5">
+                <span>✉️</span>
+                <span>New Message - Outlook Express</span>
               </div>
-              <Mail className="w-3.5 h-3.5 text-rose-400" />
-              <span className="text-xs font-medium text-white/90">Get In Touch</span>
+              <div className="flex items-center space-x-1">
+                <button onClick={() => toggleMinimizeWindow('contact')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px] pb-1">_</button>
+                <button onClick={() => closeWindow('contact')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
+              </div>
             </div>
-            <button onClick={() => closeWindow('contact')} className="text-white/40 hover:text-white">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
 
-          <div className="p-6 space-y-4">
-            <p className="text-xs text-white/70 leading-relaxed">
-              Always glad to connect with fellow engineers, game developers, or discuss opportunities.
-            </p>
-
-            <div className="space-y-2">
+            {/* Outlook Toolbar */}
+            <div className="h-[28px] px-2 flex items-center space-x-2 bg-[#c0c0c0] border-b border-[#808080]">
               <a
                 href={`mailto:${PERSONAL_INFO.email}`}
-                className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+                className="px-2.5 py-0.5 bg-[#c0c0c0] border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] text-black font-bold text-[11px] flex items-center space-x-1"
               >
-                <div className="flex items-center space-x-3">
-                  <Mail className="w-4 h-4 text-rose-400" />
-                  <span className="text-xs font-medium text-white">{PERSONAL_INFO.email}</span>
-                </div>
-                <ExternalLink className="w-3.5 h-3.5 text-white/40" />
+                <Send className="w-3 h-3" />
+                <span>Send</span>
               </a>
-
-              <a
-                href={`https://${PERSONAL_INFO.github}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
-              >
-                <div className="flex items-center space-x-3">
-                  <Code className="w-4 h-4 text-sky-400" />
-                  <span className="text-xs font-medium text-white">{PERSONAL_INFO.github}</span>
-                </div>
-                <ExternalLink className="w-3.5 h-3.5 text-white/40" />
-              </a>
+              <span className="text-gray-400">|</span>
+              <span className="text-gray-600 text-[11px]">Dial-Up Connection Ready</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-black/30 border border-white/5 text-[11px] text-white/50 font-mono">
-              Based in India (IST, UTC+05:30) &bull; Typically responds within 24 hours.
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* 11. WINDOW: AUTOMATION BOT (OPTIONAL / ON-DEMAND)         */}
-      {/* ========================================================= */}
-      {windows.pipeline.isOpen && !windows.pipeline.isMinimized && (
-        <div
-          onClick={() => focusWindow('pipeline')}
-          style={{ zIndex: windows.pipeline.zIndex }}
-          className="absolute top-14 left-56 right-12 bottom-16 rounded-2xl bg-[#181a24]/95 border border-white/15 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden text-white font-sans transition-all duration-150"
-        >
-          {/* Header */}
-          <div className="h-11 px-4 border-b border-white/10 bg-white/5 flex items-center justify-between select-none">
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1.5 mr-2">
-                <button onClick={() => closeWindow('pipeline')} className="w-3 h-3 rounded-full bg-rose-500/80 hover:bg-rose-500" />
-                <button onClick={() => toggleMinimizeWindow('pipeline')} className="w-3 h-3 rounded-full bg-amber-500/80 hover:bg-amber-500" />
-                <button className="w-3 h-3 rounded-full bg-emerald-500/80" />
+            {/* Email Header Fields */}
+            <div className="p-3 bg-[#c0c0c0] space-y-2 border-b border-[#808080] text-[11px]">
+              <div className="flex items-center space-x-2">
+                <span className="w-12 font-bold text-gray-700"><u>T</u>o:</span>
+                <input
+                  type="text"
+                  readOnly
+                  value={PERSONAL_INFO.email}
+                  className="flex-1 bg-white px-2 py-0.5 border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] font-mono text-[11px]"
+                />
               </div>
-              <Settings className="w-3.5 h-3.5 text-zinc-300" />
-              <span className="text-xs font-medium text-white/90">Dynamics 365 Automation Studio</span>
-            </div>
-            <button onClick={() => closeWindow('pipeline')} className="text-white/40 hover:text-white">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
 
-          <div className="flex-1 overflow-y-auto p-6 space-y-4 text-xs text-white/80">
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-              <h3 className="text-sm font-semibold text-white">Production Invoice Automation Pipeline</h3>
-              <p className="text-xs text-white/60 mt-1">
-                Automated multi-subsidiary invoice ingestion and verification pipeline deployed at Trufe.
-              </p>
+              <div className="flex items-center space-x-2">
+                <span className="w-12 font-bold text-gray-700"><u>C</u>c:</span>
+                <input
+                  type="text"
+                  readOnly
+                  value="github.com/wyacoomz"
+                  className="flex-1 bg-white px-2 py-0.5 border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] font-mono text-[11px]"
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <span className="w-12 font-bold text-gray-700"><u>S</u>ubject:</span>
+                <input
+                  type="text"
+                  defaultValue="Hello Abdul! Saw your Windows 98 Workstation"
+                  className="flex-1 bg-white px-2 py-0.5 border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] text-[11px]"
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-              {[
-                { step: '01', title: 'Intake', tech: 'Power Automate', desc: 'PDF file listener' },
-                { step: '02', title: 'OCR', tech: 'AI Builder', desc: 'Data extraction' },
-                { step: '03', title: 'Validation', tech: 'Python Engine', desc: 'Rules & checksum' },
-                { step: '04', title: 'Review', tech: 'Adaptive Cards', desc: 'Human-in-the-loop' },
-                { step: '05', title: 'ERP Commit', tech: 'Dynamics 365', desc: 'Automated journal entry' }
-              ].map((s, idx) => (
-                <div key={idx} className="p-3 rounded-lg bg-white/5 border border-white/5">
-                  <span className="text-[10px] font-mono text-emerald-400">{s.step}</span>
-                  <h4 className="text-xs font-semibold text-white mt-1">{s.title}</h4>
-                  <p className="text-[10px] text-white/50 font-mono mt-0.5">{s.tech}</p>
-                  <p className="text-[11px] text-white/60 mt-1">{s.desc}</p>
-                </div>
-              ))}
+            {/* Message Body */}
+            <div className="p-2 bg-[#c0c0c0]">
+              <textarea
+                rows={5}
+                defaultValue={`Hi Abdul,\n\nI was testing your 3D developer workstation. Really love the nostalgic Windows 98 aesthetic and the relaxing Winamp lo-fi audio!\n\nBest regards,`}
+                className="w-full bg-white p-2 border-t-2 border-l-2 border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] text-xs font-sans outline-none resize-none"
+              />
             </div>
           </div>
         </div>
       )}
 
       {/* ========================================================= */}
-      {/* 12. BOTTOM TASKBAR / DOCK                                 */}
+      {/* 8. WINDOW: D365_BOT.EXE                                   */}
       {/* ========================================================= */}
-      <div className="absolute bottom-0 left-0 right-0 h-10 z-30 bg-[#0d0f17]/85 backdrop-blur-md border-t border-white/10 px-4 flex items-center justify-between text-xs font-mono">
-        <div className="flex items-center space-x-2">
+      {windows.d365.isOpen && !windows.d365.isMinimized && (
+        <div
+          onClick={() => focusWindow('d365')}
+          style={{ zIndex: windows.d365.zIndex }}
+          className="absolute top-16 left-40 w-[520px] bg-[#c0c0c0] shadow-2xl flex flex-col border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] p-[2px]"
+        >
+          <div className="w-full h-full flex flex-col border-t border-l border-t-[#dfdfdf] border-l-[#dfdfdf] border-r border-b border-r-[#808080] border-b-[#808080]">
+            <div
+              className={`h-[22px] px-1.5 flex items-center justify-between text-white font-bold text-[12px] select-none ${
+                activeWindowId === 'd365'
+                  ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]'
+                  : 'bg-gradient-to-r from-[#808080] to-[#b5b5b5]'
+              }`}
+            >
+              <div className="flex items-center space-x-1.5">
+                <span>⚙️</span>
+                <span>D365_Bot.exe - Automation Diagnostics</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <button onClick={() => toggleMinimizeWindow('d365')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px] pb-1">_</button>
+                <button onClick={() => closeWindow('d365')} className="w-[16px] h-[14px] bg-[#c0c0c0] text-black font-bold flex items-center justify-center border-t border-l border-t-[#ffffff] border-l-[#ffffff] border-r border-b border-r-[#000000] border-b-[#000000] text-[10px]">✕</button>
+              </div>
+            </div>
+
+            <div className="p-4 bg-white m-1 border-t-2 border-l-2 border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] text-xs font-mono space-y-3">
+              <div className="font-bold text-[#000080]">TRUFE ENTERPRISE RPA // WIN98 DIAGNOSTIC DRIVER</div>
+              <div className="p-2 bg-gray-100 border border-gray-300 space-y-1 text-[11px]">
+                <div>• Pipeline: Multi-Entity Invoice Processor</div>
+                <div>• Modules: AI Builder OCR, Deterministic Gate, ERP Upload</div>
+                <div>• Status: Running unattended in production at Trufe</div>
+              </div>
+              <div className="text-[11px] text-gray-600">
+                Processed 1,200+ monthly documents with 99.2% extraction accuracy.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 9. WINDOWS 98 START MENU FLYOUT                           */}
+      {/* ========================================================= */}
+      {startOpen && (
+        <div
+          ref={startMenuRef}
+          className="absolute bottom-9 left-0 z-50 w-52 bg-[#c0c0c0] shadow-2xl flex border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000]"
+        >
+          {/* Vertical Blue Banner: Windows 98 */}
+          <div className="w-7 bg-gradient-to-t from-[#000080] to-[#1084d0] flex items-end justify-center pb-2 select-none">
+            <span className="transform -rotate-90 origin-bottom-left text-white font-bold tracking-widest text-[13px] whitespace-nowrap mb-6 ml-3">
+              Windows<span className="font-light">98</span>
+            </span>
+          </div>
+
+          {/* Start Menu Items */}
+          <div className="flex-1 py-1 text-[11px] text-black flex flex-col">
+            <div
+              onClick={() => { focusWindow('about'); setStartOpen(false); }}
+              className="px-3 py-1.5 flex items-center space-x-2 hover:bg-[#000080] hover:text-white cursor-pointer"
+            >
+              <span>📝</span>
+              <span><u>A</u>bout Me (Notepad)</span>
+            </div>
+
+            <div
+              onClick={() => { focusWindow('projects'); setStartOpen(false); }}
+              className="px-3 py-1.5 flex items-center space-x-2 hover:bg-[#000080] hover:text-white cursor-pointer"
+            >
+              <span>📁</span>
+              <span><u>P</u>rojects Archive</span>
+            </div>
+
+            <div
+              onClick={() => { focusWindow('winamp'); setStartOpen(false); }}
+              className="px-3 py-1.5 flex items-center space-x-2 hover:bg-[#000080] hover:text-white cursor-pointer"
+            >
+              <span>⚡</span>
+              <span><u>W</u>inamp (Lo-Fi Radio)</span>
+            </div>
+
+            <div
+              onClick={() => { focusWindow('dos'); setStartOpen(false); }}
+              className="px-3 py-1.5 flex items-center space-x-2 hover:bg-[#000080] hover:text-white cursor-pointer"
+            >
+              <span>💻</span>
+              <span><u>M</u>S-DOS Prompt</span>
+            </div>
+
+            <div
+              onClick={() => { focusWindow('resume'); setStartOpen(false); }}
+              className="px-3 py-1.5 flex items-center space-x-2 hover:bg-[#000080] hover:text-white cursor-pointer"
+            >
+              <span>📄</span>
+              <span><u>R</u>esume.doc</span>
+            </div>
+
+            <div
+              onClick={() => { focusWindow('contact'); setStartOpen(false); }}
+              className="px-3 py-1.5 flex items-center space-x-2 hover:bg-[#000080] hover:text-white cursor-pointer"
+            >
+              <span>✉️</span>
+              <span><u>O</u>utlook Express</span>
+            </div>
+
+            <div className="border-t border-[#808080] my-1 mx-2" />
+
+            <div
+              onClick={() => {
+                if (onExitFocus) onExitFocus();
+                setStartOpen(false);
+              }}
+              className="px-3 py-1.5 flex items-center space-x-2 hover:bg-[#000080] hover:text-white cursor-pointer"
+            >
+              <span>🪑</span>
+              <span><u>D</u>esk View</span>
+            </div>
+
+            <div
+              onClick={() => {
+                closeWindow('about');
+                closeWindow('projects');
+                closeWindow('winamp');
+                closeWindow('dos');
+                closeWindow('resume');
+                closeWindow('contact');
+                setStartOpen(false);
+              }}
+              className="px-3 py-1.5 flex items-center space-x-2 hover:bg-[#000080] hover:text-white cursor-pointer"
+            >
+              <span>🔌</span>
+              <span><u>S</u>hut Down Windows...</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 10. AUTHENTIC WINDOWS 98 TASKBAR                           */}
+      {/* ========================================================= */}
+      <div className="absolute bottom-0 left-0 right-0 h-9 z-40 bg-[#c0c0c0] border-t-2 border-t-[#ffffff] border-b border-b-[#000000] flex items-center justify-between px-1 select-none">
+        <div className="flex items-center space-x-1.5 h-full py-1">
+          {/* Windows 98 Start Button */}
           <button
-            onClick={showDesktop}
-            className="px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 text-[#f3f4f6] font-sans font-medium text-xs transition-colors flex items-center space-x-1.5"
-            title="Toggle Desktop"
+            onClick={() => {
+              onPlayKeyClick();
+              setStartOpen((prev) => !prev);
+            }}
+            className={`h-full px-2 flex items-center space-x-1.5 font-bold text-[12px] text-black ${
+              startOpen
+                ? 'border-t-2 border-l-2 border-t-[#000000] border-l-[#000000] border-r-2 border-b-2 border-r-[#ffffff] border-b-[#ffffff] bg-[#dfdfdf]'
+                : 'border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] active:border-t-[#000000] active:border-l-[#000000] bg-[#c0c0c0]'
+            }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#fcd5a0]" />
-            <span>Desktop</span>
+            {/* Windows 98 Flag Icon */}
+            <div className="grid grid-cols-2 gap-[1px] w-3.5 h-3.5">
+              <div className="bg-[#ff0000] w-1.5 h-1.5" />
+              <div className="bg-[#00aa00] w-1.5 h-1.5" />
+              <div className="bg-[#0000ff] w-1.5 h-1.5" />
+              <div className="bg-[#ffff00] w-1.5 h-1.5" />
+            </div>
+            <span>Start</span>
           </button>
 
-          {/* Active open window tabs */}
-          <div className="flex items-center space-x-1.5 ml-2 overflow-x-auto">
-            {Object.values(windows).filter((w) => w.isOpen).map((w) => (
-              <button
-                key={w.id}
-                onClick={() => focusWindow(w.id)}
-                className={`px-2.5 py-1 rounded-md text-xs font-sans transition-all flex items-center space-x-1.5 border ${
-                  !w.isMinimized
-                    ? 'bg-white/15 border-white/20 text-white'
-                    : 'bg-black/30 border-white/5 text-white/50 hover:text-white'
-                }`}
-              >
-                <span>{w.icon}</span>
-                <span>{w.shortTitle}</span>
-              </button>
-            ))}
+          {/* Quick Divider */}
+          <div className="h-5 w-[2px] border-l border-l-[#808080] border-r border-r-[#ffffff] mx-0.5" />
+
+          {/* Open Windows Tabs */}
+          <div className="flex items-center space-x-1 h-full overflow-x-auto">
+            {Object.values(windows).filter((w) => w.isOpen).map((w) => {
+              const isActive = activeWindowId === w.id && !w.isMinimized;
+              return (
+                <button
+                  key={w.id}
+                  onClick={() => toggleTaskbarWindow(w.id)}
+                  className={`h-full px-2 max-w-[150px] truncate flex items-center space-x-1.5 text-[11px] text-black text-left ${
+                    isActive
+                      ? 'border-t-2 border-l-2 border-t-[#000000] border-l-[#000000] border-r-2 border-b-2 border-r-[#ffffff] border-b-[#ffffff] bg-[#dfdfdf] font-bold'
+                      : 'border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000] bg-[#c0c0c0]'
+                  }`}
+                >
+                  <span>{w.icon}</span>
+                  <span className="truncate">{w.shortTitle}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div className="text-[11px] text-white/40 font-mono hidden sm:inline">
-          Abdul Samad Khan &bull; Studio Ultrabook 16"
+        {/* Windows 98 System Tray (Right) */}
+        <div className="h-7 px-2 flex items-center space-x-2 border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] bg-[#c0c0c0] text-[11px] font-mono text-black">
+          {/* Winamp Playing Indicator */}
+          <button
+            onClick={() => focusWindow('winamp')}
+            className={`flex items-center text-[10px] ${winampPlaying ? 'text-[#000080] font-bold animate-pulse' : 'text-gray-500'}`}
+            title="Winamp Audio Status"
+          >
+            ⚡
+          </button>
+
+          {/* Sound Mute Toggle */}
+          {onToggleSound && (
+            <button onClick={onToggleSound} className="cursor-pointer" title="Toggle Sound">
+              {soundEnabled ? '🔊' : '🔇'}
+            </button>
+          )}
+
+          {/* Desk View Button */}
+          {onExitFocus && (
+            <button
+              onClick={onExitFocus}
+              className="text-[10px] font-sans px-1 py-0.2 bg-[#c0c0c0] hover:bg-[#d0d0d0] border border-gray-600 cursor-pointer"
+              title="Return to 3D Desk"
+            >
+              Desk
+            </button>
+          )}
+
+          {/* Digital Clock */}
+          <span className="font-sans font-medium">{timeStr || '12:00 PM'}</span>
         </div>
       </div>
     </div>
