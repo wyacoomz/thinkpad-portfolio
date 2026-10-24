@@ -1765,13 +1765,13 @@ export const ThinkPadWorkstation: React.FC = () => {
                 </div>
               </div>
 
-              {/* Windows 98 Typography */}
+              {/* WINOWS98 Typography */}
               <div className="mt-2 flex flex-col items-center">
-                <span className="text-white/90 text-sm font-sans tracking-[0.28em] uppercase font-light">
-                  Microsoft<sup className="text-[10px]">®</sup>
+                <span className="text-white/90 text-sm font-sans tracking-[0.28em] uppercase font-bold">
+                  MOGRO SOFT<sup className="text-[10px]">®</sup>
                 </span>
                 <h1 className="text-5xl font-black italic tracking-wide text-white drop-shadow-[0_3px_6px_rgba(0,0,0,0.8)] font-sans">
-                  Windows<span className="text-[#38bdf8] font-normal not-italic ml-2">98</span>
+                  WINOWS<span className="text-[#38bdf8] font-normal not-italic ml-1">98</span>
                 </h1>
                 <div className="mt-1 flex items-center space-x-2 text-white/80 text-xs font-semibold tracking-widest uppercase">
                   <span>Second Edition</span>
@@ -1781,10 +1781,10 @@ export const ThinkPadWorkstation: React.FC = () => {
               </div>
             </div>
 
-            {/* Bottom: Animated Retro Windows 98 Gradient Progress Bar */}
+            {/* Bottom: Animated Retro WINOWS98 Gradient Progress Bar */}
             <div className="relative z-10 w-full max-w-sm px-6 flex flex-col items-center space-y-2">
               <div className="text-[12px] font-sans text-white/90 tracking-wide font-medium">
-                Starting Windows 98...
+                Starting WINOWS98...
               </div>
 
               {/* Inset Beveled Progress Track */}

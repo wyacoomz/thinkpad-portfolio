@@ -91,7 +91,7 @@ class Win98LofiEngine {
       [130.81, 196.00, 246.94, 329.63],         // Cmaj7
       [220.00, 277.18, 349.23, 415.30]          // A7alt
     ]},
-    { title: '03. Abdul - Windows 98 Chill.mp3', name: 'Windows 98 Chill', artist: 'Abdul Samad Khan', chords: [
+    { title: '03. Abdul - WINOWS98 Chill.mp3', name: 'WINOWS98 Chill', artist: 'Abdul Samad Khan', chords: [
       [174.61, 220.00, 261.63, 329.63, 392.00], // Fmaj9
       [164.81, 196.00, 246.94, 293.66],         // Em7
       [146.83, 174.61, 220.00, 261.63],         // Dm7
@@ -744,7 +744,7 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
 
   // MS-DOS Prompt State
   const [dosHistory, setDosHistory] = useState<Array<{ cmd: string; res: string }>>([
-    { cmd: 'ver', res: 'Windows 98 [Version 4.10.1998]' },
+    { cmd: 'ver', res: 'Mogrosoft(R) WINOWS98 [Version 4.10.1998]' },
     { cmd: 'whoami', res: 'Abdul Samad Khan (@wyacoomz)\nRole: RPA Developer @ Trufe | Game Dev (Godot)\nLocation: India (IST, UTC+05:30)' }
   ]);
   const [dosInput, setDosInput] = useState<string>('');
@@ -760,7 +760,7 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
     if (cmd === 'help' || cmd === '/?') {
       res = 'Available commands: DIR, WHOAMI, PROJECTS, WINAMP, MINES, CLS, VER, EXIT, HELP';
     } else if (cmd === 'ver') {
-      res = 'Microsoft(R) Windows 98 [Version 4.10.1998]';
+      res = 'Mogrosoft(R) WINOWS98 [Version 4.10.1998]';
     } else if (cmd === 'dir') {
       res = ' Volume in drive C has no label.\n Volume Serial Number is 1998-2026\n Directory of C:\\WINDOWS\n\nABOUT    TXT         1,248 10-25-98  12:00a\nPROJECTS DIR             0 10-25-98  12:00a\nWINAMP   EXE       245,760 10-25-98  12:00a\nMINES    EXE        32,768 10-25-98  12:00a\nRESUME   DOC        48,128 10-25-98  12:00a\n        5 file(s)        327,904 bytes\n        1 dir(s)   4,294,967,296 bytes free';
     } else if (cmd === 'whoami') {
@@ -826,9 +826,12 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       {/* WALLPAPER BACKGROUNDS                                     */}
       {/* ========================================================= */}
       {wallpaperTheme === 'clouds' && (
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1b58b8] via-[#4d88e0] to-[#b3d4fc] pointer-events-none flex items-center justify-center">
-          <div className="text-center font-bold tracking-widest text-white/40 text-6xl font-serif">
-            Microsoft Windows 98
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1b58b8] via-[#4d88e0] to-[#b3d4fc] pointer-events-none flex flex-col items-center justify-center">
+          <div className="text-center font-bold tracking-[0.25em] text-white/50 text-2xl font-sans uppercase">
+            MOGRO SOFT
+          </div>
+          <div className="text-center font-black tracking-widest text-white/40 text-6xl font-serif">
+            WINOWS98
           </div>
         </div>
       )}
@@ -850,9 +853,12 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
       )}
 
       {wallpaperTheme === 'teal' && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
-          <div className="text-center font-bold tracking-widest text-white text-6xl font-serif">
-            Microsoft Windows 98
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-10">
+          <div className="text-center font-bold tracking-[0.25em] text-white text-2xl font-sans uppercase">
+            MOGRO SOFT
+          </div>
+          <div className="text-center font-black tracking-widest text-white text-6xl font-serif">
+            WINOWS98
           </div>
         </div>
       )}
@@ -1362,8 +1368,8 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
 
             <div className="flex-1 bg-black p-3 text-white font-mono text-[12px] overflow-y-auto leading-relaxed border-t border-l border-t-black border-l-black">
               <div className="text-gray-400 mb-2">
-                Microsoft(R) Windows 98<br />
-                (C)Copyright Microsoft Corp 1981-1998.<br />
+                Mogrosoft(R) WINOWS98<br />
+                (C)Copyright Mogrosoft Corp 1981-1998.<br />
                 Type 'HELP' for command list.
               </div>
 
@@ -1551,7 +1557,7 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
                 <span className="w-12 font-bold text-gray-700"><u>S</u>ubject:</span>
                 <input
                   type="text"
-                  defaultValue="Hello Abdul! Testing your Windows 98 Workstation"
+                  defaultValue="Hello Abdul! Testing your MOGRO SOFT WINOWS98 Workstation"
                   className="flex-1 bg-white px-2 py-0.5 border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] text-[11px]"
                 />
               </div>
@@ -1560,7 +1566,7 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
             <div className="p-2 bg-[#c0c0c0]">
               <textarea
                 rows={5}
-                defaultValue={`Hi Abdul,\n\nI was testing your 3D developer workstation. Really love the nostalgic Windows 98 aesthetic, the playable Minesweeper, and the relaxing Winamp lo-fi audio!\n\nBest regards,`}
+                defaultValue={`Hi Abdul,\n\nI was testing your 3D developer workstation. Really love the nostalgic Mogrosoft WINOWS98 aesthetic, the playable Minesweeper, and the relaxing Winamp lo-fi audio!\n\nBest regards,`}
                 className="w-full bg-white p-2 border-t-2 border-l-2 border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] text-xs font-sans outline-none resize-none"
               />
             </div>
@@ -1618,7 +1624,7 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
                 <div className="bg-white border-t border-l border-t-[#808080] border-l-[#808080] border-r border-b border-r-[#ffffff] border-b-[#ffffff] p-1 h-28 overflow-y-auto space-y-0.5">
                   {[
                     { id: 'teal', label: '(None) - Classic Teal 98' },
-                    { id: 'clouds', label: 'Windows 98 Clouds' },
+                    { id: 'clouds', label: 'WINOWS98 Clouds' },
                     { id: 'twilight', label: 'Twilight Mountain Ridge' },
                     { id: 'bliss', label: 'Windows Bliss Hill' }
                   ].map((w) => (
@@ -1685,10 +1691,10 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
           ref={startMenuRef}
           className="absolute bottom-9 left-0 z-50 w-52 bg-[#c0c0c0] shadow-2xl flex border-t-2 border-l-2 border-t-[#ffffff] border-l-[#ffffff] border-r-2 border-b-2 border-r-[#000000] border-b-[#000000]"
         >
-          {/* Vertical Blue Banner: Windows 98 */}
-          <div className="w-7 bg-gradient-to-t from-[#000080] to-[#1084d0] flex items-end justify-center pb-2 select-none">
-            <span className="transform -rotate-90 origin-bottom-left text-white font-bold tracking-widest text-[13px] whitespace-nowrap mb-6 ml-3">
-              Windows<span className="font-light">98</span>
+          {/* Vertical Blue Banner: MOGRO SOFT WINOWS98 */}
+          <div className="w-8 bg-gradient-to-t from-[#000080] to-[#1084d0] flex items-end justify-center pb-2 select-none">
+            <span className="transform -rotate-90 origin-bottom-left text-white font-bold tracking-widest text-[12px] whitespace-nowrap mb-6 ml-3.5">
+              Mogrosoft <span className="font-black text-cyan-200">WINOWS98</span>
             </span>
           </div>
 
@@ -1785,7 +1791,7 @@ export const LinuxDesktopOS: React.FC<Win98DesktopProps> = ({
               className="px-3 py-1.5 flex items-center space-x-2 hover:bg-[#000080] hover:text-white cursor-pointer"
             >
               <span>🔌</span>
-              <span><u>S</u>hut Down Windows...</span>
+              <span><u>S</u>hut Down WINOWS98...</span>
             </div>
           </div>
         </div>
